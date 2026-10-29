@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Language Lab Events</title>
+<!-- Student-facing. Lives in lab-hub/events/visual/. Reads ../current/events.json and the flyers next to it
+     (named [campus]-[n].pdf / .jpg / .png …). Built by labs/event-generator.html. Do not edit event content here. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+[hidden] { display: none !important; } /* .btn's display would otherwise show hidden buttons ("Open flyer" with no flyer) */
+/* Tokens: design/theme.json colorModes (light/dark), bandColors (mode-invariant masthead), badgeCategories (campus chips). */
+:root {
+  --bg: #F7F7F5; --surface: #FFFFFF; --raised: #FFFFFF;
+  --ink: #1F2937; --muted: #5A6472; --faint: #657081;
+  --navy: #1A3A6B; --navy-dark: #132C52; --gold: #8A6D2E;
+  --border: rgba(31,41,55,0.14); --border-strong: rgba(31,41,55,0.28);
+  --today: rgba(26,58,107,0.07); --focus: #1A3A6B;
+  --band-bg: #1A3A6B; --band-text: #FFFFFF; --band-gold: #D9B968;
+  /* campus chips = badgeCategories vocab / comp / quiz / panorama / note */
+  --gvl-bg: #DBEAFE; --gvl-tx: #1A3A6B;
+  --dah-bg: #DCFCE7; --dah-tx: #166534;
+  --ocn-bg: #EDE9FE; --ocn-tx: #5B21B6;
+  --cmg-bg: #CFFAFE; --cmg-tx: #155E75;
+  --oth-bg: #FEF3C7; --oth-tx: #92400E;
+  --ec-bg: #FBF3E3; --ec-tx: #7A5D14;
+  --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --sans: "DM Sans", "Segoe UI", Arial, sans-serif;
+  --mono: "JetBrains Mono", Consolas, monospace;
+  color-scheme: light;
+}
+:root[data-mode="dark"] {
+  --bg: #0F1115; --surface: #181B22; --raised: #20242D;
+  --ink: #F1F3F6; --muted: #B8C0CE; --faint: #7A8496;
+  --navy: #7B9FE0; --navy-dark: #5C7FC4; --gold: #D9B968;
+  --border: rgba(241,243,246,0.14); --border-strong: rgba(241,243,246,0.28);
+  --today: rgba(123,159,224,0.12); --focus: #D9B968;
+  --gvl-bg: rgba(123,159,224,0.16); --gvl-tx: #A9C3EE;
+  --dah-bg: rgba(74,222,128,0.16); --dah-tx: #86EFAC;
+  --ocn-bg: rgba(167,139,250,0.16); --ocn-tx: #C4B5FD;
+  --cmg-bg: rgba(45,212,191,0.16); --cmg-tx: #5EEAD4;
+  --oth-bg: rgba(251,191,36,0.16); --oth-tx: #FCD34D;
+  --ec-bg: rgba(217,185,104,0.16); --ec-tx: #E8CC7E;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { font-size: 16px; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 1rem/1.55 var(--sans); }
+a { color: var(--navy); }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.skip { position: absolute; left: -9999px; top: 0; background: var(--band-bg); color: var(--band-text); padding: 10px 16px; font-weight: 700; z-index: 10; }
+.skip:focus { left: 8px; top: 8px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* masthead (band colors stay fixed in both modes) */
+.mast { background: var(--band-bg); color: var(--band-text); }
+.mast-in { max-width: 1120px; margin: 0 auto; padding: 20px 16px 18px; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px; }
+.mast h1 { margin: 0; font: 700 clamp(1.6rem, 3.2vw, 2.1rem)/1.1 var(--serif); }
+.mast p { margin: 4px 0 0; color: var(--band-gold); font-size: .95rem; font-weight: 500; }
+.page-toolbar { display: flex; flex-wrap: wrap; gap: 8px; }
+.page-toolbar button { min-height: 44px; padding: 0 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,.35); background: transparent; color: var(--band-text); font: 600 .9rem var(--sans); cursor: pointer; }
+.page-toolbar button:hover { background: rgba(255,255,255,.1); }
+.page-toolbar button:focus-visible { outline-color: var(--band-gold); }
+
+.wrap { max-width: 1120px; margin: 0 auto; padding: 20px 16px 48px; display: grid; gap: 18px; }
+.filters { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.filters .lbl { font-size: .85rem; font-weight: 600; color: var(--muted); margin-right: 4px; }
+.chip { min-height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--border-strong); background: var(--surface); color: var(--ink); font: 600 .9rem var(--sans); cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+.chip .n { font: 500 .8rem var(--mono); color: var(--muted); }
+.chip[aria-pressed="true"] { background: var(--navy); border-color: var(--navy); color: var(--surface); }
+.chip[aria-pressed="true"] .n { color: inherit; opacity: .85; }
+
+/* stage */
+.stage { display: grid; grid-template-columns: 52px minmax(0, 1fr) 52px; align-items: center; gap: 12px; }
+.nav { width: 48px; height: 48px; border-radius: 50%; border: 1px solid var(--border-strong); background: var(--surface); color: var(--ink); font: 600 1.3rem/1 var(--sans); cursor: pointer; display: grid; place-items: center; }
+.nav:disabled { opacity: .35; cursor: default; }
+.slide { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); min-height: 460px; }
+.slide.is-hidden { display: none; }
+.flyer { background: var(--today); border-right: 1px solid var(--border); display: grid; place-items: center; padding: 18px; min-width: 0; }
+.flyer img, .flyer canvas { display: block; max-width: 100%; max-height: 620px; height: auto; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,.08), 0 6px 20px rgba(0,0,0,.08); background: #fff; }
+.flyer object { width: 100%; height: 560px; border: 0; border-radius: 6px; background: #fff; }
+.ph { width: 100%; max-width: 360px; aspect-ratio: 8.5 / 11; border-radius: 6px; background: var(--band-bg); color: var(--band-text); display: flex; flex-direction: column; justify-content: space-between; padding: 26px 24px; }
+.ph .k { font: 600 .82rem var(--sans); letter-spacing: .12em; text-transform: uppercase; color: var(--band-gold); }
+.ph .t { font: 700 1.9rem/1.12 var(--serif); }
+.ph .d { font: 500 1rem var(--sans); }
+.ph .note { font-size: .82rem; opacity: .8; }
+
+.info { padding: 26px 28px 24px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.toprow { display: flex; align-items: flex-start; gap: 16px; }
+.tile { flex-shrink: 0; width: 76px; border: 1px solid var(--border-strong); border-radius: 10px; overflow: hidden; text-align: center; background: var(--raised); }
+.tile .m { background: var(--band-bg); color: var(--band-text); font: 700 .8rem/1 var(--sans); letter-spacing: .1em; text-transform: uppercase; padding: 6px 0; }
+.tile .dd { font: 700 2rem/1 var(--serif); padding: 6px 0 2px; }
+.tile .w { font: 600 .8rem var(--sans); color: var(--muted); padding-bottom: 6px; }
+.status { display: inline-flex; align-items: center; gap: 6px; font: 700 .82rem var(--sans); letter-spacing: .06em; text-transform: uppercase; color: var(--gold); }
+.status.now { color: var(--dah-tx); }
+.status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.info h2 { margin: 4px 0 0; font: 700 clamp(1.45rem, 2.6vw, 1.9rem)/1.15 var(--serif); text-wrap: balance; }
+.alt { margin: 2px 0 0; font: italic 400 1.05rem var(--serif); color: var(--muted); }
+.facts { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; font-size: .95rem; }
+.facts dt { font-weight: 700; color: var(--muted); font-size: .85rem; letter-spacing: .04em; text-transform: uppercase; padding-top: 2px; }
+.facts dd { margin: 0; min-width: 0; }
+.campus { display: inline-block; font: 700 .8rem var(--sans); padding: 2px 9px; border-radius: 999px; background: var(--oth-bg); color: var(--oth-tx); }
+.campus[data-c="gvl"] { background: var(--gvl-bg); color: var(--gvl-tx); }
+.campus[data-c="dah"] { background: var(--dah-bg); color: var(--dah-tx); }
+.campus[data-c="ocn"] { background: var(--ocn-bg); color: var(--ocn-tx); }
+.campus[data-c="cmg"] { background: var(--cmg-bg); color: var(--cmg-tx); }
+.summary { margin: 0; max-width: 62ch; }
+.ec { display: flex; gap: 10px; align-items: flex-start; background: var(--ec-bg); color: var(--ec-tx); border-radius: 8px; padding: 10px 12px; font-size: .92rem; }
+.ec b { white-space: nowrap; }
+details.mp { border: 1px solid var(--border); border-radius: 8px; }
+details.mp summary { cursor: pointer; padding: 10px 12px; font-weight: 700; min-height: 44px; display: flex; align-items: center; }
+details.mp .body { padding: 0 14px 12px; font-size: .93rem; }
+details.mp ol { margin: 4px 0 8px; padding-left: 1.2rem; }
+details.mp p { margin: 4px 0; }
+.badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.badge { font: 700 .78rem var(--sans); padding: 3px 10px; border-radius: 999px; background: var(--ec-bg); color: var(--ec-tx); }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: auto; padding-top: 4px; }
+.btn { min-height: 44px; padding: 0 16px; border-radius: 8px; font: 700 .92rem var(--sans); display: inline-flex; align-items: center; gap: 8px; cursor: pointer; text-decoration: none; }
+.btn.primary { background: var(--navy); color: var(--surface); border: 1px solid var(--navy); }
+.btn.secondary { background: var(--surface); color: var(--navy); border: 1px solid var(--border-strong); }
+
+/* rail */
+.rail-wrap { display: grid; gap: 8px; }
+.rail-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.rail-head h2 { margin: 0; font: 700 1.15rem var(--serif); }
+.rail-head span { font-size: .9rem; color: var(--muted); }
+/* every upcoming event visible at once: a wrapping grid, never a sideways scroller */
+.rail { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
+.rail li { min-width: 0; }
+.rail button { width: 100%; height: 100%; text-align: left; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; cursor: pointer; display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; color: var(--ink); font: inherit; }
+.rail button[aria-current="true"] { border: 2px solid var(--navy); padding: 9px 11px; background: var(--today); }
+.rail .rd { grid-row: span 2; text-align: center; font: 700 1.35rem/1 var(--serif); }
+.rail .rd small { display: block; font: 700 .72rem var(--sans); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
+.rail .rt { font-weight: 700; font-size: .92rem; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.rail .rm { font-size: .82rem; color: var(--muted); display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.rail .campus { font-size: .74rem; padding: 1px 7px; }
+
+.empty { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 40px 24px; text-align: center; }
+.empty h2 { margin: 0 0 6px; font: 700 1.4rem var(--serif); }
+.empty p { margin: 0; color: var(--muted); }
+footer { max-width: 1120px; margin: 0 auto; padding: 0 16px 28px; color: var(--muted); font-size: .85rem; }
+
+@media (max-width: 820px) {
+  .stage { grid-template-columns: 1fr; }
+  .stage > .nav { display: none; }
+  .slide { grid-template-columns: 1fr; min-height: 0; }
+  .flyer { border-right: 0; border-bottom: 1px solid var(--border); }
+  .flyer object { height: 420px; }
+  .info { padding: 20px 18px; }
+  .mobile-nav { display: flex !important; }
+}
+/* wide screens: all slides share one grid cell, so every card is as tall as the tallest and nothing jumps between events */
+@media (min-width: 821px) {
+  #slides { display: grid; }
+  #slides > .slide { grid-area: 1 / 1; }
+  .slide.is-hidden { display: grid; visibility: hidden; }
+}
+.mobile-nav { display: none; justify-content: space-between; align-items: center; gap: 12px; }
+.mobile-nav span { font-size: .9rem; color: var(--muted); }
+@media (prefers-reduced-motion: no-preference) { .slide:not(.is-hidden) { animation: in .22s ease-out; } @keyframes in { from { opacity: .4; } to { opacity: 1; } } }
+
+/* full screen (lab display): slim masthead, one slide sized to the screen, flyer scaled to fit; rail and footer drop out */
+@media (min-width: 821px) {
+  :root.fs body { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+  /* the top bar keeps its normal look (px, so it doesn't grow with the fitted text below) */
+  :root.fs .mast-in { max-width: none; padding: 8px 20px; align-items: center; }
+  :root.fs .mast h1 { font-size: 28px; }
+  :root.fs .mast p { display: none; }
+  :root.fs .page-toolbar { gap: 8px; }
+  :root.fs .page-toolbar button { min-height: 44px; padding: 0 14px; font-size: 14.4px; }
+  :root.fs .wrap { flex: 1; min-height: 0; width: 100%; max-width: none; padding: 12px 20px; grid-template-rows: auto minmax(0, 1fr); gap: 12px; }
+  :root.fs .filters:empty { display: none; }
+  :root.fs .wrap:has(.filters:empty) { grid-template-rows: minmax(0, 1fr); }
+  :root.fs .rail-wrap, :root.fs footer, :root.fs .sr { display: none !important; }
+  :root.fs #carousel, :root.fs .stage, :root.fs #slides { height: 100%; min-height: 0; }
+  :root.fs .slide { height: 100%; min-height: 0; }
+  :root.fs .flyer { position: relative; min-height: 0; }
+  :root.fs .flyer img, :root.fs .flyer canvas { position: absolute; inset: 14px; width: calc(100% - 28px) !important; height: calc(100% - 28px); max-height: none; object-fit: contain; box-shadow: none; background: transparent; }
+  :root.fs .flyer object { height: 100%; }
+  :root.fs .flyer .ph { position: absolute; top: 14px; bottom: 14px; left: 50%; transform: translateX(-50%); height: auto; width: auto; max-width: calc(100% - 28px); overflow: hidden; }
+  :root.fs .info { overflow-y: auto; }
+}
+
+@page { size: letter; margin: 0.65in; }
+@media print {
+  .no-print, .page-toolbar, .skip { display: none !important; }
+  :root { --bg: #fff; --surface: #fff; --ink: #000; --muted: #333; --today: #fff; }
+  body { background: #fff !important; color: #000 !important; }
+  .mast { background: #fff !important; color: #000 !important; border-bottom: 2px solid #000; }
+  .mast p { color: #333 !important; }
+  .wrap { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
+  * { box-shadow: none !important; text-shadow: none !important; }
+  .stage { display: block; }
+  #slides { display: block !important; }
+  .slide, .slide.is-hidden { visibility: visible !important; display: grid !important; grid-template-columns: 2.6in 1fr; min-height: 0; margin-bottom: .25in; break-inside: avoid; page-break-inside: avoid; border: 1px solid #999; }
+  .flyer img, .flyer canvas { max-height: 3.4in; }
+  .flyer object { display: none; }
+  details.mp { display: block; } details.mp .body { display: block; }
+  h1, h2, h3 { break-after: avoid; page-break-after: avoid; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to events</a>
+<header class="mast">
+  <div class="mast-in">
+    <div>
+      <h1>Language Lab Events</h1>
+      <p id="sub">Upcoming events across UNG campuses</p>
+    </div>
+    <div class="page-toolbar no-print">
+      <button type="button" id="mode-btn" onclick="toggleMode()">Dark mode</button>
+      <button type="button" onclick="printAll()">🖨 Print / Save as PDF</button>
+      <button type="button" id="fs-btn" onclick="toggleFS()">⛶ Full Screen</button>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="wrap" tabindex="-1">
+  <div class="filters no-print" id="filters" role="group" aria-label="Show events for"></div>
+  <section aria-roledescription="carousel" aria-label="Upcoming events" id="carousel">
+    <div class="stage">
+      <button class="nav no-print" id="prev" type="button" aria-label="Previous event">‹</button>
+      <div id="slides"></div>
+      <button class="nav no-print" id="next" type="button" aria-label="Next event">›</button>
+    </div>
+    <div class="mobile-nav no-print">
+      <button class="nav" id="prev-m" type="button" aria-label="Previous event">‹</button>
+      <span id="count-m"></span>
+      <button class="nav" id="next-m" type="button" aria-label="Next event">›</button>
+    </div>
+  </section>
+  <section class="rail-wrap no-print" aria-labelledby="rail-h" id="rail-wrap">
+    <div class="rail-head"><h2 id="rail-h">All upcoming events</h2><span id="count"></span></div>
+    <ol class="rail" id="rail"></ol>
+  </section>
+  <p class="sr" aria-live="polite" id="live"></p>
+</main>
+<footer id="foot">Past events drop off this page automatically.</footer>
+
+<script>
+/* Data lives next to the flyers. Relative paths only (Decision 0010); first one that loads wins. */
+const DATA_PATHS = ['../current/events.json', './events.json', '../../events/current/events.json'];
+const FLYER_EXTS = ['.pdf', '.jpg', '.jpeg', '.png', '.webp', '.avif', '.gif'];
+const PDFJS = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';
+const params = new URLSearchParams(location.search);
+/* Preview hook: the Event Planner injects window.__LAB_PREVIEW__ = { doc, files, today, open, mode } so this page renders unsaved data. */
+const PV = window.__LAB_PREVIEW__ || null;
+const TODAY = PV?.today || params.get('today');
+const NOW = TODAY ? new Date(TODAY + 'T08:00') : new Date();
+
+let DATA = null, BASE = '', ALL = [], LIST = [], idx = 0, campusFilter = params.get('campus') || 'all';
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+/* ---------- mode + fullscreen (bulletin-board pattern) ---------- */
+function setMode(m) { document.documentElement.dataset.mode = m; $('mode-btn').textContent = m === 'dark' ? 'Light mode' : 'Dark mode'; try { localStorage.setItem('labEventsMode', m); } catch (e) {} }
+function toggleMode() { setMode(document.documentElement.dataset.mode === 'dark' ? 'light' : 'dark'); }
+(() => { let m = PV?.mode || null; if (!m) { try { m = localStorage.getItem('labEventsMode'); } catch (e) {} } setMode(m || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')); })();
+/* Full screen (2026-10-29). Three places this page runs:
+   - its own tab: the button goes full screen;
+   - a frame the Event Planner made (Preview, or the exported carousel file): the hosting frame goes full screen, so it stays
+     full screen through "See details" and "Back";
+   - D2L's frame, which can't go full screen: the same page opens in its own tab (if pop-ups are blocked, it fills the frame).
+   A page built in memory is never copied into a new tab: the copy would lose the Planner's data. */
+let filled = false;
+function hostFrame() { try { return window.frameElement; } catch (e) { return null; } }
+function fsEl() { const fe = hostFrame(); try { if (fe && fe.ownerDocument.fullscreenElement === fe) return fe; } catch (e) {} return document.fullscreenElement; }
+const inMemory = () => !/^(https?|file):/.test(location.protocol);
+function fillFrame() { filled = true; syncFS(); }
+function openFull() {
+  const fe = hostFrame();
+  if (fe && fe.ownerDocument.fullscreenEnabled) { fe.requestFullscreen().catch(fillFrame); return; }
+  if (inMemory() || !window.open(location.href, '_blank')) fillFrame();
+}
+function toggleFS() {
+  const el = fsEl(); if (el) { el.ownerDocument.exitFullscreen(); return; }
+  if (filled) { filled = false; syncFS(); return; }
+  const fe = hostFrame();
+  if (fe && fe.ownerDocument.fullscreenEnabled) { openFull(); return; }
+  if (document.fullscreenEnabled) document.documentElement.requestFullscreen().catch(openFull); else openFull();
+}
+addEventListener('DOMContentLoaded', () => { const b = document.getElementById('fs-btn'), fe = hostFrame();
+  if (b && !document.fullscreenEnabled && !(fe && fe.ownerDocument.fullscreenEnabled) && !inMemory()) { b.textContent = '⛶ Full Screen (new tab)'; b.title = 'This frame cannot go full screen, so the page opens in its own tab'; } });
+/* full screen = the Full Screen button, or the browser's own (F11), which doesn't fire fullscreenchange */
+function isFS() { return !!fsEl() || filled || matchMedia('(display-mode: fullscreen)').matches
+  || (window === top && innerHeight >= screen.height - 1 && innerWidth >= screen.width - 1); }
+function syncFS() { const on = isFS(); document.documentElement.classList.toggle('fs', on);
+  const b = $('fs-btn'); if (b && (fsEl() || filled || b.textContent.includes('Exit'))) b.textContent = fsEl() || filled ? '⛶ Exit Full Screen' : '⛶ Full Screen'; fitFS(); }
+/* full screen: grow the whole page's text (everything is rem-sized) to the largest size at which EVERY event's details still fit
+   on screen, so the cards fill the display and the size doesn't jump between events */
+function fitFS() {
+  const r = document.documentElement;
+  r.style.fontSize = '';
+  if (!r.classList.contains('fs') || innerWidth <= 820 || !LIST.length) return;
+  const slides = [...document.querySelectorAll('.slide')];
+  const fits = px => { r.style.fontSize = px + 'px';
+    return slides.every(s => { const i = s.querySelector('.info'); return i.scrollHeight <= i.clientHeight + 1; }); };
+  let lo = 16, hi = 24; // at most 1.5x normal, so buttons and text keep their usual proportions
+  if (!fits(lo)) { r.style.fontSize = ''; return; }
+  while (hi - lo > 0.5) { const m = (lo + hi) / 2; if (fits(m)) lo = m; else hi = m; }
+  fits(Math.floor(lo * 2) / 2);
+}
+let fitT = null;
+addEventListener('resize', () => { clearTimeout(fitT); fitT = setTimeout(syncFS, 150); });
+document.addEventListener('fullscreenchange', () => { requestAnimationFrame(syncFS); });
+(() => { const fe = hostFrame(); if (fe) fe.ownerDocument.addEventListener('fullscreenchange', () => requestAnimationFrame(syncFS)); })();
+/* print: every slide prints, so load every flyer first (hidden slides' flyers are lazy and would print blank) */
+function loadAllFlyers() { document.querySelectorAll('.flyer img[loading="lazy"]').forEach(i => i.loading = 'eager'); }
+async function printAll() {
+  loadAllFlyers();
+  await Promise.race([Promise.all([...document.querySelectorAll('.flyer img')].map(i => i.decode().catch(() => {}))), new Promise(r => setTimeout(r, 4000))]);
+  window.print();
+}
+window.addEventListener('beforeprint', loadAllFlyers);
+
+/* ---------- dates ---------- */
+const at = (d, t) => new Date(`${d}T${t || '00:00'}`);
+const endOf = e => e.end ? at(e.date, e.end) : at(e.date, '23:59');
+const fmtTime = t => { if (!t) return ''; const [h, m] = t.split(':').map(Number); return `${((h + 11) % 12) + 1}:${String(m).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`; };
+const fmtDate = d => at(d).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+/* deadlines: optional time; a date with no time means the end of that day */
+const byWhen = (d, t) => at(d).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) + (t ? ', ' + fmtTime(t) : '');
+const passed = (d, t) => !!d && NOW > at(d, t || '23:59');
+function when(e) {
+  const s = at(e.date, e.start), en = endOf(e);
+  if (NOW >= s && NOW <= en) return { txt: 'Happening now', cls: 'now' };
+  const days = Math.round((at(e.date) - at(NOW.toISOString().slice(0, 10))) / 864e5);
+  if (days <= 0) return { txt: 'Today', cls: 'now' };
+  if (days === 1) return { txt: 'Tomorrow', cls: '' };
+  return { txt: `In ${days} days`, cls: '' };
+}
+const campusName = code => (DATA.campuses || []).find(c => c.code === code)?.name || code;
+
+/* ---------- flyers: exact name first, then the same base with other extensions (bulletin-board fallback idea) ---------- */
+async function resolveFlyer(name) {
+  if (!name) return null;
+  if (PV) return PV.files[name] || null;
+  const base = name.replace(/\.[a-z0-9]+$/i, '');
+  const tries = [name, ...FLYER_EXTS.map(x => base + x).filter(n => n !== name)];
+  for (const n of tries) {
+    try { const r = await fetch(BASE + n, { method: 'HEAD', cache: 'no-store' }); if (r.ok) return BASE + n; } catch (e) { return BASE + name; }
+  }
+  return null;
+}
+let pdfReady = null;
+function loadPdfJs() {
+  if (pdfReady) return pdfReady;
+  pdfReady = new Promise((res, rej) => {
+    const s = document.createElement('script'); s.src = PDFJS + 'pdf.min.js';
+    s.onload = () => { try { pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS + 'pdf.worker.min.js'; res(pdfjsLib); } catch (e) { rej(e); } };
+    s.onerror = rej; document.head.appendChild(s);
+  });
+  return pdfReady;
+}
+async function drawFlyer(e, box) {
+  const url = await resolveFlyer(e.flyer);
+  const alt = e.flyer_alt || `Flyer for ${e.title}`;
+  if (!url) { box.innerHTML = placeholder(e); return; }
+  const open = box.closest('.slide').querySelector('[data-open]');
+  if (open) { open.href = url; open.hidden = false; }
+  const isPdf = PV ? /\.pdf$/i.test(e.flyer) : /\.pdf$/i.test(url);
+  if (!isPdf) { box.innerHTML = `<img src="${esc(url)}" alt="${esc(alt)}" loading="lazy">`; box.querySelector('img').onerror = () => { box.innerHTML = placeholder(e); }; return; }
+  try {
+    const lib = await loadPdfJs();
+    const pdf = await lib.getDocument(url).promise;
+    const page = await pdf.getPage(1);
+    const w = Math.min((box.clientWidth || 556) - 36, 520); // hidden slides measure 0 wide
+    const v1 = page.getViewport({ scale: 1 });
+    const scale = (w / v1.width) * (window.devicePixelRatio || 1);
+    const vp = page.getViewport({ scale });
+    const c = document.createElement('canvas'); c.width = vp.width; c.height = vp.height; c.style.width = (vp.width / (window.devicePixelRatio || 1)) + 'px';
+    c.setAttribute('role', 'img'); c.setAttribute('aria-label', alt);
+    await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
+    box.innerHTML = ''; box.appendChild(c);
+  } catch (err) {
+    box.innerHTML = `<object data="${esc(url)}" type="application/pdf" aria-label="${esc(alt)}">${placeholder(e)}</object>`;
+  }
+}
+function placeholder(e) {
+  return `<div class="ph" role="img" aria-label="${esc(e.title)}, ${esc(fmtDate(e.date))}"><span class="k">${esc(campusName(e.campus))} · Language Lab</span><span class="t">${esc(e.title)}</span><span><span class="d">${esc(at(e.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric' }))} · ${esc(fmtTime(e.start))}</span><br><span class="note">Flyer coming soon</span></span></div>`;
+}
+
+/* ---------- calendar file ---------- */
+function ics(e) {
+  const d = e.date.replace(/-/g, ''), t = x => (x || '00:00').replace(':', '') + '00';
+  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//UNG Language Lab//Events//EN', 'BEGIN:VEVENT',
+    `UID:${e.id}@ung-language-lab`, `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').slice(0, 15)}Z`,
+    `DTSTART:${d}T${t(e.start)}`, `DTEND:${d}T${t(e.end || e.start)}`,
+    `SUMMARY:${(e.title || '').replace(/[,;]/g, '\\$&')}`, `LOCATION:${(e.location || '').replace(/[,;]/g, '\\$&')}`,
+    `DESCRIPTION:${(e.summary || '').replace(/[,;]/g, '\\$&').replace(/\n/g, '\\n')}`, 'END:VEVENT', 'END:VCALENDAR'];
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([lines.join('\r\n')], { type: 'text/calendar' }));
+  a.download = `${e.id}.ics`; document.body.appendChild(a); a.click(); a.remove();
+}
+
+/* ---------- render ---------- */
+function slideHTML(e, i) {
+  const w = when(e), d = at(e.date);
+  const facts = [
+    ['When', `${esc(fmtDate(e.date))}<br>${esc(fmtTime(e.start))}${e.end ? ' – ' + esc(fmtTime(e.end)) : ''}`],
+    ['Where', `${esc(e.location || 'Location to be announced')}`],
+    ['Campus', `<span class="campus" data-c="${esc(e.campus)}">${esc(campusName(e.campus))}</span>`],
+    e.entry?.url && e.entry.deadline ? ['Enter by', esc(byWhen(e.entry.deadline, e.entry.deadline_time))] : null,
+    e.mini_project?.due ? ['Turn in by', esc(byWhen(e.mini_project.due, e.mini_project.due_time))] : null,
+    e.languages?.length ? ['Languages', esc(e.languages.join(', '))] : null,
+    e.partners?.length ? ['With', esc(e.partners.join(', '))] : null,
+  ].filter(Boolean).map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
+  const badges = [e.prizes?.length || e.prizes_note ? '<span class="badge">🏆 Prizes</span>' : '', e.rubric ? '<span class="badge">Judged competition</span>' : ''].join('');
+  const ec = e.extra_credit?.offered ? `<div class="ec"><b>✓ Extra credit</b><span>${esc(e.extra_credit.note || '')}</span></div>` : '';
+  const mp = e.mini_project?.title ? `<details class="mp"><summary>Mini-project: ${esc(e.mini_project.title)}${e.mini_project.title_es && e.mini_project.title_es !== e.mini_project.title ? ` <span lang="es" style="font-weight:400;margin-left:6px">(${esc(e.mini_project.title_es)})</span>` : ''}</summary><div class="body">
+      ${e.mini_project.steps?.length ? `<ol>${e.mini_project.steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol>` : ''}
+      ${e.mini_project.deliverable ? `<p><b>Turn in:</b> ${esc(e.mini_project.deliverable)}</p>` : ''}
+      ${e.mini_project.submit ? `<p><b>Submit:</b> ${esc(e.mini_project.submit)}</p>` : ''}
+      ${e.mini_project.due ? `<p><b>Turn in by:</b> ${esc(byWhen(e.mini_project.due, e.mini_project.due_time))}</p>` : ''}</div></details>` : '';
+  const hasMore = (e.prizes?.length || e.prizes_note || e.rules?.length || e.rubric || e.activities?.length);
+  const moreLabel = [e.prizes?.length || e.prizes_note ? 'prizes' : '', e.rules?.length || e.rubric ? 'rules' : '', e.rubric ? 'rubric' : ''].filter(Boolean);
+  const more = hasMore ? `<a class="btn primary" href="event-details.html?ev=${encodeURIComponent(e.id)}" data-details="${esc(e.id)}">${moreLabel.length ? 'See ' + esc(moreLabel.join(', ').replace(/, ([^,]*)$/, ' & $1')) : 'See details'} →</a>` : '';
+  const entry = !e.entry?.url ? '' : passed(e.entry.deadline, e.entry.deadline_time) ? `<span class="btn secondary" aria-disabled="true" style="opacity:.6;cursor:default">Entries closed</span>` : `<a class="btn secondary" href="${esc(e.entry.url)}" target="_blank" rel="noopener">${esc(e.entry.label || 'Enter')}</a>`;
+  const link = e.link?.url ? `<a class="btn secondary" href="${esc(e.link.url)}" target="_blank" rel="noopener">${esc(e.link.label || 'More info')}</a>` : '';
+  return `<article class="slide${i === idx ? '' : ' is-hidden'}" id="ev-${esc(e.id)}" role="group" aria-roledescription="slide" aria-label="${i + 1} of ${LIST.length}: ${esc(e.title)}">
+    <div class="flyer" data-flyer="${i}">${placeholder(e)}</div>
+    <div class="info">
+      <div class="toprow">
+        <div class="tile" aria-hidden="true"><div class="m">${d.toLocaleDateString('en-US', { month: 'short' })}</div><div class="dd">${d.getDate()}</div><div class="w">${d.toLocaleDateString('en-US', { weekday: 'short' })}</div></div>
+        <div>
+          <span class="status ${w.cls}">${i === 0 && w.cls !== 'now' ? 'Next up · ' : ''}${w.txt}</span>
+          <h2>${esc(e.title)}</h2>
+          ${e.title_alt ? `<p class="alt" lang="${esc(e.title_alt_lang || '')}">${esc(e.title_alt)}</p>` : ''}
+          ${badges ? `<div class="badges">${badges}</div>` : ''}
+        </div>
+      </div>
+      <dl class="facts">${facts}</dl>
+      ${e.summary ? `<p class="summary">${esc(e.summary)}</p>` : ''}
+      ${e.details ? `<p class="summary">${esc(e.details)}</p>` : ''}
+      ${ec}${mp}
+      <div class="actions no-print">
+        ${more}${entry}
+        <button class="btn ${hasMore ? 'secondary' : 'primary'}" type="button" data-ics="${i}">Add to my calendar</button>
+        <a class="btn secondary" data-open hidden target="_blank" rel="noopener">Open flyer</a>
+        ${link}
+      </div>
+    </div>
+  </article>`;
+}
+
+function render() {
+  LIST = ALL.filter(e => campusFilter === 'all' || e.campus === campusFilter);
+  if (idx >= LIST.length) idx = 0;
+  const counts = {}; ALL.forEach(e => counts[e.campus] = (counts[e.campus] || 0) + 1);
+  const codes = Object.keys(counts);
+  $('filters').innerHTML = codes.length > 1 || campusFilter !== 'all'
+    ? `<span class="lbl">Campus</span><button class="chip" type="button" data-c="all" aria-pressed="${campusFilter === 'all'}">All campuses <span class="n">${ALL.length}</span></button>` +
+      codes.map(c => `<button class="chip" type="button" data-c="${esc(c)}" aria-pressed="${campusFilter === c}">${esc(campusName(c))} <span class="n">${counts[c]}</span></button>`).join('')
+    : '';
+  if (!LIST.length) {
+    $('slides').innerHTML = `<div class="empty"><h2>No upcoming events right now</h2><p>New events are added through the semester. Check back soon, or ask at the Language Lab front desk.</p></div>`;
+    $('rail-wrap').hidden = true; ['prev', 'next', 'prev-m', 'next-m'].forEach(id => $(id).disabled = true); $('count-m').textContent = '';
+    return;
+  }
+  $('rail-wrap').hidden = LIST.length < 2;
+  $('slides').innerHTML = LIST.map(slideHTML).join('');
+  $('rail').innerHTML = LIST.map((e, i) => { const d = at(e.date); return `<li><button type="button" data-go="${i}" aria-current="${i === idx}" aria-label="${esc(e.title)}, ${esc(fmtDate(e.date))}, ${esc(campusName(e.campus))}">
+      <span class="rd"><small>${d.toLocaleDateString('en-US', { month: 'short' })}</small>${d.getDate()}</span>
+      <span class="rt">${esc(e.title)}</span>
+      <span class="rm"><span class="campus" data-c="${esc(e.campus)}">${esc(e.campus.toUpperCase())}</span>${esc(fmtTime(e.start))}</span></button></li>`; }).join('');
+  $('count').textContent = `${LIST.length} event${LIST.length === 1 ? '' : 's'}`;
+  document.querySelectorAll('[data-flyer]').forEach(box => drawFlyer(LIST[+box.dataset.flyer], box));
+  syncFS();
+  setTimeout(loadAllFlyers, 1500); // the shown flyer first, then the rest quietly (ready for › and for Ctrl+P)
+  go(idx, false);
+}
+
+function go(i, announce = true) {
+  if (!LIST.length) return;
+  idx = Math.max(0, Math.min(LIST.length - 1, i));
+  document.querySelectorAll('.slide').forEach((s, k) => s.classList.toggle('is-hidden', k !== idx));
+  document.querySelectorAll('#rail button').forEach((b, k) => b.setAttribute('aria-current', k === idx));
+  ['prev', 'prev-m'].forEach(id => $(id).disabled = idx === 0);
+  ['next', 'next-m'].forEach(id => $(id).disabled = idx === LIST.length - 1);
+  $('count-m').textContent = `${idx + 1} of ${LIST.length}`;
+  if (announce) { const e = LIST[idx]; $('live').textContent = `Event ${idx + 1} of ${LIST.length}: ${e.title}, ${fmtDate(e.date)}.`; }
+}
+
+document.addEventListener('click', ev => {
+  const d = ev.target.closest('[data-details]');
+  if (d && PV) { ev.preventDefault(); PV.open('details', d.dataset.details); return; }
+  const t = ev.target.closest('button'); if (!t) return;
+  if (t.id === 'prev' || t.id === 'prev-m') go(idx - 1);
+  else if (t.id === 'next' || t.id === 'next-m') go(idx + 1);
+  else if (t.dataset.go) { go(+t.dataset.go); if (t.closest('#rail')) { const s = $('carousel'); if (s.getBoundingClientRect().top < 0) s.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); } }
+  else if (t.dataset.ics) ics(LIST[+t.dataset.ics]);
+  else if (t.dataset.c) { campusFilter = t.dataset.c; idx = 0; render(); }
+});
+$('carousel').addEventListener('keydown', ev => {
+  if (ev.target.closest('input, textarea, summary')) return;
+  if (ev.key === 'ArrowLeft') { ev.preventDefault(); go(idx - 1); }
+  if (ev.key === 'ArrowRight') { ev.preventDefault(); go(idx + 1); }
+});
+let tx = null;
+$('slides').addEventListener('touchstart', ev => { tx = ev.touches[0].clientX; }, { passive: true });
+$('slides').addEventListener('touchend', ev => { if (tx == null) return; const dx = ev.changedTouches[0].clientX - tx; if (Math.abs(dx) > 50) go(idx + (dx < 0 ? 1 : -1)); tx = null; });
+
+/* ---------- load ---------- */
+(async () => {
+  if (PV) DATA = PV.doc;
+  else for (const p of DATA_PATHS) {
+    try { const r = await fetch(p, { cache: 'no-store' }); if (r.ok) { DATA = await r.json(); BASE = p.replace(/events\.json$/, ''); break; } } catch (e) {}
+  }
+  if (!DATA) { $('slides').innerHTML = `<div class="empty"><h2>Events could not be loaded</h2><p>The events list is missing. Please let the Language Lab know.</p></div>`; $('rail-wrap').hidden = true; return; }
+  ALL = (DATA.events || []).filter(e => e.status !== 'draft' && endOf(e) >= NOW)
+    .sort((a, b) => at(a.date, a.start) - at(b.date, b.start));
+  if (DATA.title) $('sub').textContent = DATA.title;
+  const hash = PV?.ev || location.hash.replace('#ev-', '').replace('#', '');
+  render();
+  if (hash) { const k = LIST.findIndex(e => e.id === hash); if (k >= 0) go(k, false); }
+})();
+</script>
+</body>
+</html>

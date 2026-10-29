@@ -1,0 +1,231 @@
+{
+ "id": "dia-de-muertos-mini-ofrenda-2026",
+ "schema": "lab-event-rubric/1",
+ "event_id": "2026-11-04-dia-de-muertos",
+ "title": "Mini-Ofrenda Competition",
+ "title_alt": "Concurso de mini-ofrendas",
+ "title_alt_lang": "es",
+ "summary": "Make a small ofrenda (a Day of the Dead altar) for someone you want to remember. Your own ideas, your own materials. Open to every UNG student; no Spanish needed.",
+ "facts": [
+  {
+   "label": "Who",
+   "value": "Any UNG student, one entry each"
+  },
+  {
+   "label": "Size",
+   "value": "Fits on a 12 × 12 inch base · any height"
+  },
+  {
+   "label": "Drop off",
+   "value": "Wed, Nov 4, from 8:00 a.m. · Language Lab, Nesbitt 4201"
+  },
+  {
+   "label": "Pick up",
+   "value": "Wed, Nov 4, at 2:00 p.m."
+  },
+  {
+   "label": "Judging",
+   "value": "Nov 4, during the Día de Muertos event (11:00–1:00)"
+  },
+  {
+   "label": "Prizes",
+   "value": "1st, 2nd and 3rd place, announced soon"
+  }
+ ],
+ "requirements": [
+  {
+   "id": "size",
+   "text": "Fits on a base no bigger than 12 × 12 inches (any height)."
+  },
+  {
+   "id": "honoree",
+   "text": "Remembers someone who has died: a relative, friend, pet, or famous person."
+  },
+  {
+   "id": "own",
+   "text": "Your own work, one entry per student. Homemade and store-bought pieces are both fine."
+  },
+  {
+   "id": "safe",
+   "text": "No real flames, alcohol or food that spoils. Use LED candles and fake or wrapped food."
+  },
+  {
+   "id": "respect",
+   "text": "A remembrance, not Halloween: no zombies, witches or fake blood."
+  },
+  {
+   "id": "anon",
+   "text": "Put your name on the back or bottom only. Judges see an entry number."
+  }
+ ],
+ "disqualifiers": [],
+ "scale": {
+  "levels": [
+   {
+    "value": 3,
+    "label": "Wow",
+    "label_alt": "¡Increíble!"
+   },
+   {
+    "value": 2,
+    "label": "Solid",
+    "label_alt": "Bien"
+   },
+   {
+    "value": 1,
+    "label": "Started",
+    "label_alt": "Empezado"
+   }
+  ],
+  "points_rule": "Each judge scores each area 1–3. Your score is the average of the judges’ totals, out of 12."
+ },
+ "groups": [
+  {
+   "id": "main",
+   "label": "What judges look for",
+   "label_alt": "Lo que buscan los jueces"
+  }
+ ],
+ "criteria": [
+  {
+   "id": "tradicion",
+   "group": "main",
+   "points": 3,
+   "name": "Tradition",
+   "name_alt": "Tradición",
+   "question": "Does it use ofrenda elements, in your own way?",
+   "levels": {
+    "3": "5 or more elements, each with a clear purpose.",
+    "2": "3–4 elements.",
+    "1": "1–2 elements."
+   }
+  },
+  {
+   "id": "homenaje",
+   "group": "main",
+   "points": 3,
+   "name": "Tribute",
+   "name_alt": "Homenaje",
+   "question": "Can we tell who it remembers, and something about them?",
+   "levels": {
+    "3": "We learn who they were: photo or drawing, favorite things, personal details.",
+    "2": "We know who it is, with a detail or two.",
+    "1": "Not clear who it remembers."
+   }
+  },
+  {
+   "id": "creatividad",
+   "group": "main",
+   "points": 3,
+   "name": "Creativity",
+   "name_alt": "Creatividad",
+   "question": "Is it your own idea, made with care?",
+   "levels": {
+    "3": "Original idea, handmade touches, finished with care.",
+    "2": "Some personal touches; neat.",
+    "1": "Mostly plain or unfinished."
+   }
+  },
+  {
+   "id": "explicacion",
+   "group": "main",
+   "points": 3,
+   "name": "Explanation",
+   "name_alt": "Explicación",
+   "question": "Does a small card tell us who it’s for and what the pieces mean?",
+   "levels": {
+    "3": "Card + labels on several elements. Any language; a few Spanish words are a nice touch.",
+    "2": "A card or a few labels.",
+    "1": "No card or labels."
+   }
+  }
+ ],
+ "total_points": 12,
+ "tiebreakers": [
+  "Higher Tradition + Tribute.",
+  "Then higher Creativity.",
+  "Then the judges vote."
+ ],
+ "judging": {
+  "judges": 4,
+  "how": "Four judges score every entry by its number, without seeing names. Your score is the average of their totals, out of 12. Top three win.",
+  "blind": true
+ },
+ "essential_elements": [
+  {
+   "es": "la foto",
+   "en": "photo",
+   "meaning": "Shows who you remember.",
+   "make": "Print one, or draw them."
+  },
+  {
+   "es": "las velas",
+   "en": "candles",
+   "meaning": "Light the way home.",
+   "make": "LED tea lights, or paper candles."
+  },
+  {
+   "es": "el cempasúchil",
+   "en": "marigolds",
+   "meaning": "Their color and scent guide the spirits.",
+   "make": "Orange tissue-paper flowers or petals."
+  },
+  {
+   "es": "el papel picado",
+   "en": "cut-paper banner",
+   "meaning": "Stands for wind and how delicate life is.",
+   "make": "Fold tissue paper, snip shapes, unfold."
+  },
+  {
+   "es": "el agua",
+   "en": "water",
+   "meaning": "Quenches thirst after the long journey.",
+   "make": "A small cup or bottle (can be empty)."
+  },
+  {
+   "es": "el pan de muerto",
+   "en": "bread of the dead",
+   "meaning": "A welcome to family and friends.",
+   "make": "Clay, paper, or a photo."
+  },
+  {
+   "es": "la calaverita",
+   "en": "skull",
+   "meaning": "Death remembered with a smile, not fear.",
+   "make": "Draw, color or shape one from clay; no sugar needed."
+  },
+  {
+   "es": "la comida favorita",
+   "en": "favorite food",
+   "meaning": "What they loved, offered to welcome them.",
+   "make": "Wrapped snacks, toy food, or a picture."
+  },
+  {
+   "es": "los objetos personales",
+   "en": "personal things",
+   "meaning": "A hobby, team, song or job that was theirs.",
+   "make": "Small objects, drawings, or printed images."
+  },
+  {
+   "es": "los niveles",
+   "en": "levels",
+   "meaning": "Steps between heaven and earth.",
+   "make": "Stack two or three small boxes."
+  }
+ ],
+ "learn_more": [
+  {
+   "label": "UNESCO: Mexico’s festivity dedicated to the dead",
+   "url": "https://ich.unesco.org/en/RL/indigenous-festivity-dedicated-to-the-dead-00054"
+  },
+  {
+   "label": "Mexico City: Day of the Dead ofrendas",
+   "url": "https://mexicocity.cdmx.gob.mx/day-of-the-dead-ofrendas/"
+  },
+  {
+   "label": "PBS: Beyond sugar skulls",
+   "url": "https://www.pbs.org/education/blogs/voices-in-education/beyond-sugar-skulls-the-history-and-culture-of-dia-de-los-muertos"
+  }
+ ],
+ "notes_for_organizers": "Simplified for an extra-credit activity open to all students: 4 areas scored 1–3 (12 points), English-first with Spanish words optional. Elements are interpreted, not replicated; homemade versions are listed for each. Categories follow those common to Mexican altar contests (tradition, theme, creativity, presentation)."
+}

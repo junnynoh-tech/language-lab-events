@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Event Details · Language Lab</title>
+<!-- Student-facing. Opened from event-carousel.html as event-details.html?ev=<event id> (or #rules, #judging … to open a section).
+     Reads ../current/events.json, the event's rubric (../current/rubrics/*.json) and prize photos (../current/prizes/<key>-prize-<n>.jpg|png…).
+     Layout: left menu (like the Event Planner) shows one section at a time; "View all" stacks every section.
+     Phones/tablets (≤860px): the menu becomes a slide-out left drawer opened by the ☰ Sections button (like the Pulse app). -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+[hidden] { display: none !important; } /* .btn's display would otherwise show hidden buttons ("Open flyer" with no flyer) */
+:root {
+  --bg: #F7F7F5; --surface: #FFFFFF; --sunk: #EFEFEC;
+  --ink: #1F2937; --muted: #5A6472; --faint: #657081;
+  --navy: #1A3A6B; --gold: #8A6D2E;
+  --border: rgba(31,41,55,0.14); --border-strong: rgba(31,41,55,0.28);
+  --today: rgba(26,58,107,0.07); --focus: #1A3A6B;
+  --band-bg: #1A3A6B; --band-text: #FFFFFF; --band-gold: #D9B968;
+  --gold-bg: #FBF3E3; --gold-tx: #7A5D14;
+  --ok-bg: #DCFCE7; --ok-tx: #166534;
+  --l3-bg: #DCFCE7; --l3-tx: #166534; --l2-bg: #DBEAFE; --l2-tx: #1A3A6B; --l1-bg: #F3F4F6; --l1-tx: #374151;
+  --modal-shadow: 0 16px 48px rgba(0,0,0,0.2); /* theme.json shadows.modalShadow */
+  --scrim: color-mix(in srgb, var(--band-bg) 50%, transparent);
+  --serif: "Source Serif 4", Georgia, serif; --sans: "DM Sans", "Segoe UI", Arial, sans-serif; --mono: "JetBrains Mono", Consolas, monospace;
+  color-scheme: light;
+}
+:root[data-mode="dark"] {
+  --bg: #0F1115; --surface: #181B22; --sunk: #13161B;
+  --ink: #F1F3F6; --muted: #B8C0CE; --faint: #7A8496;
+  --navy: #7B9FE0; --gold: #D9B968;
+  --border: rgba(241,243,246,0.14); --border-strong: rgba(241,243,246,0.28);
+  --today: rgba(123,159,224,0.12); --focus: #D9B968;
+  --gold-bg: rgba(217,185,104,0.16); --gold-tx: #E8CC7E;
+  --ok-bg: rgba(74,222,128,0.16); --ok-tx: #86EFAC;
+  --l3-bg: rgba(74,222,128,0.16); --l3-tx: #86EFAC; --l2-bg: rgba(123,159,224,0.16); --l2-tx: #A9C3EE; --l1-bg: rgba(241,243,246,0.08); --l1-tx: #B8C0CE;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 1rem/1.55 var(--sans); }
+a { color: var(--navy); }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.skip { position: absolute; left: -9999px; } .skip:focus { left: 8px; top: 8px; z-index: 20; background: var(--band-bg); color: #fff; padding: 10px 16px; font-weight: 700; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* compact band (mode-invariant band colors) with a papel-picado edge */
+.band { background: var(--band-bg); color: var(--band-text); position: relative; padding-bottom: 12px; }
+.band::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 12px; background: var(--bg);
+  -webkit-mask: radial-gradient(circle at 10px 0, transparent 7px, #000 8px) 0 0 / 20px 12px repeat-x; mask: radial-gradient(circle at 10px 0, transparent 7px, #000 8px) 0 0 / 20px 12px repeat-x; }
+.band-in { max-width: 1160px; margin: 0 auto; padding: 12px 16px 16px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 20px; align-items: center; }
+/* back to the carousel: a real button, set apart from the title */
+.back { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px 0 12px; margin-bottom: 12px; border-radius: 9px; border: 1.5px solid rgba(255,255,255,.6); background: rgba(255,255,255,.1); color: var(--band-text); font-weight: 700; font-size: .95rem; text-decoration: none; }
+.back:hover { background: rgba(255,255,255,.2); }
+.back .arr { font-size: 1.15rem; line-height: 1; }
+.menu-back { margin-top: 2px; text-decoration: none; }
+.band h1 { margin: 2px 0 0; font: 700 clamp(1.6rem, 3.6vw, 2.3rem)/1.1 var(--serif); }
+.band .alt { font: italic 400 1.05rem var(--serif); color: var(--band-gold); margin-left: 8px; }
+.band .when { margin: 2px 0 0; font-size: .95rem; opacity: .92; }
+.band .acts { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+.btn { min-height: 44px; padding: 0 16px; border-radius: 9px; font: 700 .92rem var(--sans); display: inline-flex; align-items: center; gap: 8px; text-decoration: none; cursor: pointer; border: 1px solid transparent; }
+.btn.gold { background: var(--band-gold); color: #1F2937; }
+.btn.ghost { background: transparent; color: var(--band-text); border-color: rgba(255,255,255,.45); }
+.btn.navy { background: var(--navy); color: var(--surface); }
+.page-toolbar { display: flex; gap: 6px; flex-wrap: wrap; }
+.page-toolbar button { min-height: 40px; padding: 0 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,.35); background: transparent; color: var(--band-text); font: 600 .85rem var(--sans); cursor: pointer; }
+.page-toolbar button:hover { background: rgba(255,255,255,.1); }
+.band :focus-visible { outline-color: var(--band-gold); }
+
+/* shell: left menu + one panel */
+.shell { max-width: 1160px; margin: 0 auto; padding: 18px 16px 40px; display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 24px; align-items: start; }
+.menu { position: sticky; top: 12px; display: grid; gap: 6px; }
+.tab { display: grid; grid-template-columns: 30px 1fr; align-items: center; gap: 8px; width: 100%; text-align: left; background: var(--surface); border: 1.5px solid var(--border); border-left: 5px solid transparent; border-radius: 9px; padding: 8px 10px; min-height: 48px; cursor: pointer; font-weight: 600; }
+.tab .ic { font: 700 .95rem var(--mono); width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--sunk); color: var(--muted); }
+.tab small { display: block; font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.tab:hover { border-left-color: var(--band-gold); }
+.tab[aria-selected="true"] { background: var(--band-bg); border-color: var(--band-bg); border-left-color: var(--band-gold); color: #fff; }
+.tab[aria-selected="true"] .ic { background: var(--band-gold); color: #1F2937; }
+.tab[aria-selected="true"] small { color: #E8D9A8; }
+.viewall { margin-top: 6px; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; border-radius: 9px; border: 1.5px dashed var(--border-strong); background: transparent; cursor: pointer; font-weight: 700; color: var(--navy); }
+.viewall[aria-pressed="true"] { background: var(--gold-bg); color: var(--gold-tx); border-style: solid; border-color: var(--gold); }
+main { min-width: 0; }
+.panel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 22px 24px; display: grid; gap: 16px; }
+.panel[hidden] { display: none; }
+.all .panel { margin-bottom: 18px; }
+.panel h2 { margin: 0; font: 700 1.5rem/1.2 var(--serif); }
+.panel h2 .es { font: italic 400 1rem var(--serif); color: var(--muted); margin-left: 8px; }
+.lede { margin: 0; color: var(--muted); max-width: 64ch; }
+.next { display: flex; justify-content: flex-end; }
+.next button { background: none; border: 0; color: var(--navy); font-weight: 700; cursor: pointer; min-height: 40px; }
+.all .next { display: none; }
+.mbar, .dhead, .scrim { display: none; }
+
+/* start */
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin: 0; }
+.fact { background: var(--sunk); border-radius: 10px; padding: 10px 12px; }
+.fact dt { font: 700 .74rem var(--sans); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.fact dd { margin: 2px 0 0; font-weight: 600; }
+.steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; counter-reset: s; }
+.steps li { counter-increment: s; border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; display: grid; gap: 2px; align-content: start; }
+.steps li::before { content: counter(s); width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--band-bg); color: #fff; font: 700 .95rem var(--mono); margin-bottom: 4px; }
+.steps b { font: 700 1.05rem var(--serif); }
+.steps span { font-size: .93rem; color: var(--muted); }
+
+/* prizes */
+.podium { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.prize { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.prize[data-rank="1"] { border: 2px solid var(--gold); }
+.prize .img { aspect-ratio: 4/3; background: var(--sunk); display: grid; place-items: center; overflow: hidden; }
+.prize .img img { width: 100%; height: 100%; object-fit: cover; }
+.mystery { display: grid; place-items: center; gap: 4px; text-align: center; color: var(--muted); font-size: .9rem; }
+.mystery .q { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; font: 700 1.8rem var(--serif); background: var(--gold-bg); color: var(--gold-tx); border: 2px dashed currentColor; }
+.prize .b { padding: 10px 12px; display: grid; gap: 2px; }
+.place { font-weight: 700; }
+.prize .name { font: 700 1.05rem var(--serif); }
+.prize .tba { color: var(--muted); font-size: .9rem; }
+.note { background: var(--gold-bg); color: var(--gold-tx); border-radius: 10px; padding: 8px 12px; font-weight: 600; margin: 0; }
+
+/* rules */
+.rules { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
+.rules li { border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px 12px 48px; position: relative; }
+.rules li::before { content: "✓"; position: absolute; left: 14px; top: 12px; width: 24px; height: 24px; border-radius: 50%; background: var(--ok-bg); color: var(--ok-tx); display: grid; place-items: center; font-weight: 700; font-size: .85rem; }
+
+/* rubric grid */
+.gridwrap { overflow-x: auto; }
+table.grid { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 620px; font-size: .95rem; }
+table.grid caption { text-align: left; font-weight: 700; padding-bottom: 8px; }
+table.grid th, table.grid td { padding: 10px 12px; vertical-align: top; text-align: left; border-bottom: 1px solid var(--border); }
+table.grid thead th { font-size: .9rem; border-bottom: 2px solid var(--border-strong); }
+table.grid thead th .pts { display: block; font: 500 .78rem var(--mono); }
+table.grid thead th.l3 { background: var(--l3-bg); color: var(--l3-tx); border-radius: 10px 0 0 0; }
+table.grid thead th.l2 { background: var(--l2-bg); color: var(--l2-tx); }
+table.grid thead th.l1 { background: var(--l1-bg); color: var(--l1-tx); border-radius: 0 10px 0 0; }
+table.grid tbody th { width: 28%; }
+table.grid tbody th b { display: block; font: 700 1.1rem var(--serif); }
+table.grid tbody th .es { font: italic .9rem var(--serif); color: var(--muted); }
+table.grid tbody th small { display: block; font-weight: 400; color: var(--muted); font-size: .85rem; margin-top: 2px; }
+table.grid td.l3 { background: color-mix(in srgb, var(--l3-bg) 45%, transparent); }
+.how { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.how div { background: var(--sunk); border-radius: 10px; padding: 10px 12px; font-size: .93rem; }
+.how b { display: block; }
+
+/* ideas: elements grid with checklist */
+.elements { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
+.el { position: relative; }
+.el input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.el label { display: grid; grid-template-columns: 28px 1fr; gap: 2px 10px; border: 1px solid var(--border); border-radius: 12px; padding: 12px; cursor: pointer; height: 100%; background: var(--surface); }
+.el .box { grid-row: span 4; width: 24px; height: 24px; border-radius: 7px; border: 2px solid var(--border-strong); display: grid; place-items: center; font-weight: 700; color: transparent; }
+.el input:checked + label { border-color: var(--ok-tx); background: var(--ok-bg); }
+.el input:checked + label .box { background: var(--ok-tx); border-color: var(--ok-tx); color: var(--surface); }
+.el input:focus-visible + label { outline: 3px solid var(--focus); outline-offset: 2px; }
+.el .en { font: 700 1.05rem var(--serif); }
+.el .es { font: italic .9rem var(--serif); color: var(--muted); }
+.el .m { font-size: .9rem; }
+.el .mk { font-size: .85rem; color: var(--gold-tx); font-weight: 600; }
+.progress { font-weight: 700; color: var(--ok-tx); }
+.bylines { margin: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.bylines span { background: var(--gold-bg); color: var(--gold-tx); border-radius: 999px; padding: 4px 12px; font-size: .93rem; }
+.links { margin: 0; padding-left: 1.2rem; display: grid; gap: 6px; }
+.empty { padding: 32px; text-align: center; }
+
+@media (max-width: 860px) {
+  .band-in { grid-template-columns: 1fr; } .band .acts { justify-content: flex-start; }
+  .shell { grid-template-columns: 1fr; gap: 12px; padding-top: 6px; }
+  /* sticky bar: ☰ Sections + where you are */
+  .mbar { display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 5; background: var(--bg); padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .hamb { display: inline-flex; align-items: center; gap: 10px; flex: 0 0 auto; min-height: 44px; padding: 0 16px 0 12px; border-radius: 9px; border: 1.5px solid var(--border-strong); background: var(--surface); font-weight: 700; cursor: pointer; }
+  .hamb svg { width: 22px; height: 22px; }
+  .mcur { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font-weight: 600; font-size: .92rem; }
+  .mcur b { color: var(--ink); }
+  /* the menu becomes a left drawer */
+  .menu { position: fixed; inset: 0 auto 0 0; z-index: 30; width: min(320px, 86vw); background: var(--bg); padding: 10px 12px 24px; overflow-y: auto; align-content: start; border-right: 1px solid var(--border); box-shadow: var(--modal-shadow); transform: translateX(-104%); visibility: hidden; }
+  .drawer-open .menu { transform: none; visibility: visible; }
+  .dhead { display: flex; align-items: center; justify-content: space-between; padding: 2px 2px 8px 4px; margin-bottom: 4px; border-bottom: 1px solid var(--border); }
+  .dhead b { font: 700 1.1rem var(--serif); }
+  .dclose { width: 44px; height: 44px; border-radius: 9px; border: 0; background: transparent; font-size: 1.25rem; cursor: pointer; }
+  .dclose:hover { background: var(--sunk); }
+  .scrim { display: block; position: fixed; inset: 0; z-index: 25; background: var(--scrim); opacity: 0; visibility: hidden; }
+  .drawer-open .scrim { opacity: 1; visibility: visible; }
+  body.drawer-open { overflow: hidden; }
+  .panel { padding: 18px 16px; }
+}
+@media (max-width: 860px) and (prefers-reduced-motion: no-preference) {
+  .menu { transition: transform .22s ease-out, visibility 0s linear .22s; }
+  .scrim { transition: opacity .22s ease-out, visibility 0s linear .22s; }
+  .drawer-open .menu, .drawer-open .scrim { transition-delay: 0s; }
+}
+@media (prefers-reduced-motion: no-preference) { .panel:not([hidden]) { animation: in .2s ease-out; } @keyframes in { from { opacity: .4; transform: translateY(4px); } to { opacity: 1; transform: none; } } }
+@page { size: letter; margin: 0.6in; }
+@media print {
+  .no-print, .page-toolbar, .menu, .mbar, .scrim, .skip, .back, .next, .band .acts { display: none !important; }
+  body { background: #fff !important; color: #000 !important; }
+  .band { background: #fff !important; color: #000 !important; border-bottom: 2px solid #000; } .band::after { display: none; } .band .alt { color: #333 !important; }
+  .shell { display: block; max-width: 100%; padding: 0; }
+  .panel, .panel[hidden] { display: grid !important; border: 0; padding: 0 0 16px; break-inside: avoid; }
+  * { box-shadow: none !important; }
+  table.grid { min-width: 0; } .el, .rules li, .prize { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to details</a>
+<header class="band">
+  <div class="band-in" id="band"><div><a class="back" id="back" href="event-carousel.html"><span class="arr" aria-hidden="true">←</span>All events</a><h1>Loading…</h1></div></div>
+</header>
+<div class="shell" id="shell">
+  <div class="mbar no-print"><button class="hamb" type="button" id="menuBtn" aria-expanded="false" aria-controls="menu"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>Sections</button><span class="mcur" id="mcur"></span></div>
+  <nav class="menu no-print" id="menu" aria-label="Sections"><div class="dhead"><b>Sections</b><button class="dclose" type="button" id="menuClose" aria-label="Close sections menu">✕</button></div><div role="tablist" aria-orientation="vertical" id="tabs" style="display:contents"></div><button class="viewall" type="button" id="viewAll" aria-pressed="false">View all</button><a class="viewall menu-back" id="menuBack" href="event-carousel.html">← All events</a></nav>
+  <div class="scrim no-print" id="scrim"></div>
+  <main id="main" tabindex="-1"></main>
+</div>
+<p class="sr" aria-live="polite" id="live"></p>
+
+<script>
+const DATA_PATHS = ['../current/events.json', './events.json'];
+const IMG_EXTS = ['.jpg', '.jpeg', '.png', '.webp', '.avif', '.gif'];
+const params = new URLSearchParams(location.search);
+/* Preview hook: the Event Planner injects window.__LAB_PREVIEW__ = { doc, rubrics, files, ev, open, mode } so this page renders unsaved data. */
+const PV = window.__LAB_PREVIEW__ || null;
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const at = (d, t) => new Date(`${d}T${t || '00:00'}`);
+const fmtTime = t => { if (!t) return ''; const [h, m] = t.split(':').map(Number); return `${((h + 11) % 12) + 1}:${String(m).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`; };
+const fmtDate = d => at(d).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+const ordinal = n => n + ({ 1: 'st', 2: 'nd', 3: 'rd' }[n % 10 * (Math.floor(n / 10) % 10 !== 1)] || 'th');
+const fileURL = (base, f) => PV ? (PV.files[f] || '') : base + f;
+const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
+/* deadlines: optional time; a date with no time means the end of that day. The planner preview can pretend it's another day. */
+const NOW = PV?.today ? new Date(PV.today + 'T08:00') : (params.get('today') ? new Date(params.get('today') + 'T08:00') : new Date());
+const byWhen = (d, t) => at(d).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }) + (t ? ', ' + fmtTime(t) : '');
+const passed = (d, t) => !!d && NOW > at(d, t || '23:59');
+
+function setMode(m) { document.documentElement.dataset.mode = m; const b = $('mode-btn'); if (b) b.textContent = m === 'dark' ? 'Light mode' : 'Dark mode'; try { if (!PV) localStorage.setItem('labEventsMode', m); } catch (e) {} }
+function toggleMode() { setMode(document.documentElement.dataset.mode === 'dark' ? 'light' : 'dark'); }
+function initMode() { let m = PV?.mode || null; if (!m) { try { m = localStorage.getItem('labEventsMode'); } catch (e) {} } setMode(m || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')); }
+/* Full screen (2026-10-29). Three places this page runs:
+   - its own tab: the button goes full screen;
+   - a frame the Event Planner made (Preview, or the exported carousel file): the hosting frame goes full screen, so it stays
+     full screen through "See details" and "Back";
+   - D2L's frame, which can't go full screen: the same page opens in its own tab (if pop-ups are blocked, it fills the frame).
+   A page built in memory is never copied into a new tab: the copy would lose the Planner's data. */
+let filled = false;
+function hostFrame() { try { return window.frameElement; } catch (e) { return null; } }
+function fsEl() { const fe = hostFrame(); try { if (fe && fe.ownerDocument.fullscreenElement === fe) return fe; } catch (e) {} return document.fullscreenElement; }
+const inMemory = () => !/^(https?|file):/.test(location.protocol);
+function fillFrame() { filled = true; syncFS(); } /* details already fills its frame; only the button label changes */
+function openFull() {
+  const fe = hostFrame();
+  if (fe && fe.ownerDocument.fullscreenEnabled) { fe.requestFullscreen().catch(fillFrame); return; }
+  if (inMemory() || !window.open(location.href, '_blank')) fillFrame();
+}
+function toggleFS() {
+  const el = fsEl(); if (el) { el.ownerDocument.exitFullscreen(); return; }
+  if (filled) { filled = false; syncFS(); return; }
+  const fe = hostFrame();
+  if (fe && fe.ownerDocument.fullscreenEnabled) { openFull(); return; }
+  if (document.fullscreenEnabled) document.documentElement.requestFullscreen().catch(openFull); else openFull();
+}
+addEventListener('DOMContentLoaded', () => { const b = document.getElementById('fs-btn'), fe = hostFrame();
+  if (b && !document.fullscreenEnabled && !(fe && fe.ownerDocument.fullscreenEnabled) && !inMemory()) { b.textContent = '⛶ Full Screen (new tab)'; b.title = 'This frame cannot go full screen, so the page opens in its own tab'; } });
+function syncFS() { const b = $('fs-btn'); if (b && (fsEl() || filled || b.textContent.includes('Exit'))) b.textContent = fsEl() || filled ? '⛶ Exit Full Screen' : '⛶ Full Screen'; }
+document.addEventListener('fullscreenchange', syncFS);
+(() => { const fe = hostFrame(); if (fe) fe.ownerDocument.addEventListener('fullscreenchange', syncFS); })();
+initMode();
+
+const mystery = place => `<div class="mystery"><span class="q" aria-hidden="true">?</span><span>${esc(place)} prize<br>coming soon</span></div>`;
+function imgFallback(img) {
+  if (PV) { img.closest('.img').innerHTML = mystery(img.dataset.place); return; }
+  const tried = (img.dataset.tried || '').split('|').filter(Boolean), next = IMG_EXTS.find(x => !tried.includes(x));
+  if (!next) { img.closest('.img').innerHTML = mystery(img.dataset.place); return; }
+  img.dataset.tried = [...tried, next].join('|'); img.src = img.dataset.base + next;
+}
+function ics(e) {
+  const d = e.date.replace(/-/g, ''), t = x => (x || '00:00').replace(':', '') + '00';
+  const L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//UNG Language Lab//Events//EN', 'BEGIN:VEVENT', `UID:${e.id}@ung-language-lab`, `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').slice(0, 15)}Z`,
+    `DTSTART:${d}T${t(e.start)}`, `DTEND:${d}T${t(e.end || e.start)}`, `SUMMARY:${(e.title || '').replace(/[,;]/g, '\\$&')}`, `LOCATION:${(e.location || '').replace(/[,;]/g, '\\$&')}`, 'END:VEVENT', 'END:VCALENDAR'];
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([L.join('\r\n')], { type: 'text/calendar' })); a.download = `${e.id}.ics`; document.body.appendChild(a); a.click(); a.remove();
+}
+
+let SECTIONS = [], current = '', viewAll = false;
+function render(e, R, base) {
+  document.title = `${R?.title || e.title} · Language Lab`;
+  const closed = passed(e.entry?.deadline, e.entry?.deadline_time);
+  const entry = !e.entry?.url ? '' : closed ? `<span class="btn ghost" aria-disabled="true" style="opacity:.7;cursor:default">Entries closed</span>` : `<a class="btn gold" href="${esc(e.entry.url)}" target="_blank" rel="noopener">${esc(e.entry.label || 'Enter')}</a>`;
+  const byLine = [e.entry?.url && e.entry.deadline && `<span><b>${closed ? 'Entries closed' : 'Enter by'}</b> ${esc(byWhen(e.entry.deadline, e.entry.deadline_time))}</span>`,
+    e.mini_project?.due && `<span><b>Turn in by</b> ${esc(byWhen(e.mini_project.due, e.mini_project.due_time))}</span>`].filter(Boolean).join('');
+  $('band').innerHTML = `<div><a class="back" id="back" href="event-carousel.html#ev-${encodeURIComponent(e.id)}"><span class="arr" aria-hidden="true">←</span>All events</a>
+      <h1>${esc(R?.title || e.title)}${(R?.title_alt || e.title_alt) ? `<span class="alt" lang="${esc(R?.title_alt_lang || e.title_alt_lang || 'es')}">${esc(R?.title_alt || e.title_alt)}</span>` : ''}</h1>
+      <p class="when">${esc(fmtDate(e.date))} · ${esc(fmtTime(e.start))}${e.end ? '–' + esc(fmtTime(e.end)) : ''} · ${esc(e.location || '')}</p></div>
+    <div class="acts">${entry}<button class="btn ghost" type="button" id="icsBtn">Add to calendar</button>
+      <div class="page-toolbar no-print"><button type="button" id="mode-btn" onclick="toggleMode()">Dark mode</button><button type="button" onclick="window.print()">🖨 Print</button><button type="button" id="fs-btn" onclick="toggleFS()">⛶ Full Screen</button></div></div>`;
+  initMode();
+  $('icsBtn').onclick = () => ics(e);
+  $('menuBack').href = $('back').href;
+  if (PV) $('back').onclick = $('menuBack').onclick = ev => { ev.preventDefault(); PV.open('carousel', e.id); };
+
+  const S = [];
+  /* 1. start: facts + steps */
+  const facts = R?.facts?.length ? R.facts : [{ label: 'When', value: `${fmtDate(e.date)}, ${fmtTime(e.start)}` }, { label: 'Where', value: e.location }];
+  const steps = e.mini_project?.steps?.length ? e.mini_project.steps : (e.activities || []).map(a => a.text).filter(Boolean);
+  const stepTitles = ['Pick someone', 'Make it', 'Explain it', 'Bring it'];
+  const allSteps = [...steps, ...(e.mini_project?.deliverable ? [e.mini_project.deliverable] : [])];
+  S.push({ id: 'start', label: 'Start here', sub: 'The quick version', html: `<h2>Start here</h2><p class="lede">${esc(R?.summary || e.summary || '')}</p>
+    <dl class="facts">${facts.map(f => `<div class="fact"><dt>${esc(f.label)}</dt><dd>${esc(f.value)}</dd></div>`).join('')}</dl>
+    ${allSteps.length ? `<ol class="steps">${allSteps.map((s, i) => `<li><b>${stepTitles[i] || 'Step ' + (i + 1)}</b><span>${esc(s)}</span></li>`).join('')}</ol>` : ''}
+    ${byLine ? `<p class="bylines">${byLine}</p>` : ''}
+    ${entry && !closed ? `<div>${entry.replace('btn gold', 'btn navy')}</div>` : ''}` });
+  /* 2. prizes */
+  if (e.prizes?.length || e.prizes_note) {
+    const cards = (e.prizes || []).map((p, i) => {
+      const place = p.place || ordinal(i + 1) + ' place', file = p.image || `prizes/${e.key}-prize-${i + 1}.jpg`, src = fileURL(base, file);
+      const img = (PV && !src) ? mystery(place) : `<img src="${esc(src)}" alt="${esc(p.alt || p.name || place + ' prize')}" data-base="${esc(base + file.replace(/\.[a-z0-9]+$/i, ''))}" data-place="${esc(place)}" data-tried="${esc((file.match(/\.[a-z0-9]+$/i) || ['.jpg'])[0])}" onerror="imgFallback(this)">`;
+      return `<article class="prize" data-rank="${i + 1}"><div class="img">${img}</div><div class="b"><span class="place">${esc(place)}</span>${p.name ? `<span class="name">${esc(p.name)}</span>` : `<span class="tba">To be announced</span>`}</div></article>`;
+    }).join('');
+    S.push({ id: 'prizes', label: 'Prizes', sub: (e.prizes || []).length ? `${e.prizes.length} to win` : 'Coming soon', html: `<h2>Prizes <span class="es" lang="es">Premios</span></h2>${e.prizes_note ? `<p class="note">${esc(e.prizes_note)}</p>` : ''}<div class="podium">${cards}</div>` });
+  }
+  /* 3. rules */
+  const rules = [...(R?.requirements || []).map(r => r.text), ...(e.rules || [])];
+  if (rules.length) S.push({ id: 'rules', label: 'Rules', sub: `${rules.length} quick ones`, html: `<h2>Rules <span class="es" lang="es">Reglas</span></h2><ul class="rules">${rules.map(r => `<li>${esc(r)}</li>`).join('')}</ul>${R?.disqualifiers?.length ? `<p class="lede">Entries can be removed for: ${R.disqualifiers.map(esc).join(' ')}</p>` : ''}` });
+  /* 4. judging grid */
+  if (R?.criteria?.length) {
+    const lv = [...(R.scale?.levels || [{ value: 3, label: '3' }, { value: 2, label: '2' }, { value: 1, label: '1' }])].sort((a, b) => b.value - a.value);
+    const top = lv[0].value;
+    const cls = v => 'l' + Math.min(3, Math.max(1, Math.round(v / top * 3)));
+    const total = R.total_points || R.criteria.reduce((s, c) => s + c.points, 0);
+    const ptsFor = (c, l) => { const p = Math.round(l.value / top * c.points * 10) / 10; return `${p} point${p === 1 ? '' : 's'}`; };
+    const samePts = R.criteria.every(c => c.points === top);
+    const grid = `<div class="gridwrap"><table class="grid"><caption>What judges look for: ${R.criteria.length} areas, ${total} points</caption>
+      <thead><tr><th scope="col">Area</th>${lv.map(l => `<th scope="col" class="${cls(l.value)}">${esc(l.label)}${l.label_alt ? ` <span lang="es">· ${esc(l.label_alt)}</span>` : ''}${samePts ? `<span class="pts">${ptsFor(R.criteria[0], l)}</span>` : ''}</th>`).join('')}</tr></thead>
+      <tbody>${R.criteria.map(c => `<tr><th scope="row"><b>${esc(c.name)}</b>${c.name_alt ? `<span class="es" lang="es">${esc(c.name_alt)}</span>` : ''}<small>${esc(c.question || '')}${samePts ? '' : ` · ${c.points} pts`}</small></th>${lv.map(l => `<td class="${cls(l.value)}">${esc(c.levels?.[l.value] || '')}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+    S.push({ id: 'judging', label: 'How it’s judged', sub: `${R.criteria.length} areas · ${total} pts`, html: `<h2>How it’s judged <span class="es" lang="es">Rúbrica</span></h2>${grid}
+      <div class="how">${R.judging ? `<div><b>${R.judging.judges || ''} judges${R.judging.blind ? ', names hidden' : ''}</b>${esc(R.judging.how)}</div>` : ''}${R.tiebreakers?.length ? `<div><b>If there’s a tie</b>${R.tiebreakers.map(esc).join(' ')}</div>` : ''}</div>` });
+  }
+  /* 5. ideas checklist */
+  if (R?.essential_elements?.length) {
+    const key = `labEventChecklist:${R.id}`; let saved = []; try { saved = JSON.parse(localStorage.getItem(key)) || []; } catch (x) {}
+    S.push({ id: 'ideas', label: 'Ideas to include', sub: 'Pick 3 or more', html: `<h2>Ideas to include <span class="es" lang="es">Los elementos</span></h2><p class="lede">Pick at least three. Your own version is perfect. Tick them to plan; your list stays on this device. <span class="progress" id="prog" aria-live="polite"></span></p>
+      <div class="elements">${R.essential_elements.map((x, i) => `<div class="el"><input type="checkbox" id="el${i}" data-i="${i}" ${saved.includes(i) ? 'checked' : ''}><label for="el${i}"><span class="box" aria-hidden="true">✓</span><span class="en">${esc(cap(x.en) || x.es)}</span><span class="es" lang="es">${esc(x.es)}</span><span class="m">${esc(x.meaning)}</span>${x.make ? `<span class="mk">Make it: ${esc(x.make)}</span>` : '<span></span>'}</label></div>`).join('')}</div>`,
+      after: () => { const upd = () => { const on = [...document.querySelectorAll('.el input:checked')].map(i => +i.dataset.i); try { localStorage.setItem(key, JSON.stringify(on)); } catch (x) {} $('prog').textContent = on.length ? `${on.length} picked` : ''; }; document.querySelectorAll('.el input').forEach(i => i.addEventListener('change', upd)); upd(); } });
+  }
+  /* 6. learn more */
+  if (R?.learn_more?.length) S.push({ id: 'learn', label: 'Learn more', sub: 'About the tradition', html: `<h2>Learn more</h2><p class="lede">Curious about the tradition? Start here.</p><ul class="links">${R.learn_more.map(l => `<li><a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label)}</a></li>`).join('')}</ul>` });
+
+  SECTIONS = S;
+  $('main').innerHTML = S.map((s, i) => `<section class="panel" id="${s.id}" role="tabpanel" aria-labelledby="tab-${s.id}" tabindex="-1">${s.html}${i < S.length - 1 ? `<div class="next no-print"><button type="button" data-go="${S[i + 1].id}">Next: ${esc(S[i + 1].label)} →</button></div>` : ''}</section>`).join('');
+  $('tabs').innerHTML = S.map((s, i) => `<button class="tab" type="button" role="tab" id="tab-${s.id}" aria-controls="${s.id}" data-go="${s.id}"><span class="ic" aria-hidden="true">${i + 1}</span><span>${esc(s.label)}<small>${esc(s.sub || '')}</small></span></button>`).join('');
+  S.forEach(s => s.after && s.after());
+  const h = location.hash.slice(1);
+  show(S.some(s => s.id === h) ? h : 'start', false);
+}
+function show(id, focus = true) {
+  current = id;
+  document.querySelectorAll('.tab').forEach(t => { t.setAttribute('aria-selected', t.dataset.go === id && !viewAll); t.tabIndex = t.dataset.go === id ? 0 : -1; });
+  document.querySelectorAll('.panel').forEach(p => p.hidden = !viewAll && p.id !== id);
+  if (focus && !viewAll) { $(id).focus({ preventScroll: true }); $('live').textContent = SECTIONS.find(s => s.id === id)?.label || ''; if (window.scrollY > 200) window.scrollTo({ top: 0 }); }
+  if (focus && viewAll) $(id).scrollIntoView({ block: 'start' });
+  const n = SECTIONS.findIndex(s => s.id === id);
+  $('mcur').innerHTML = viewAll ? '<b>All sections</b>' : `${n + 1} of ${SECTIONS.length} · <b>${esc(SECTIONS[n]?.label || '')}</b>`;
+  if (!PV) { try { history.replaceState(null, '', '#' + id); } catch (e) {} }
+}
+/* phone/tablet drawer: opened by ☰, closed by ✕, the scrim, Esc or picking a section; focus stays inside while open */
+const narrow = matchMedia('(max-width: 860px)');
+const drawerOpen = () => document.body.classList.contains('drawer-open');
+function setDrawer(open, refocus = true) {
+  open = open && narrow.matches;
+  document.body.classList.toggle('drawer-open', open);
+  $('menuBtn').setAttribute('aria-expanded', open);
+  if (open) (document.querySelector('.tab[aria-selected="true"]') || $('menuClose')).focus();
+  else if (refocus && narrow.matches) $('menuBtn').focus();
+}
+$('menuBtn').onclick = () => setDrawer(true);
+$('menuClose').onclick = () => setDrawer(false);
+$('scrim').onclick = () => setDrawer(false);
+narrow.addEventListener('change', () => { if (drawerOpen()) setDrawer(false, false); });
+document.addEventListener('keydown', ev => {
+  if (!drawerOpen()) return;
+  if (ev.key === 'Escape') { ev.preventDefault(); setDrawer(false); return; }
+  if (ev.key === 'Tab') {
+    const f = [...$('menu').querySelectorAll('button, a[href]')].filter(x => x.tabIndex >= 0), first = f[0], last = f[f.length - 1];
+    if (ev.shiftKey && document.activeElement === first) { ev.preventDefault(); last.focus(); }
+    else if (!ev.shiftKey && document.activeElement === last) { ev.preventDefault(); first.focus(); }
+  }
+});
+document.addEventListener('click', ev => { const b = ev.target.closest('[data-go]'); if (b) { if (drawerOpen()) setDrawer(false, false); show(b.dataset.go); } });
+$('tabs').addEventListener('keydown', ev => {
+  const ids = SECTIONS.map(s => s.id), i = ids.indexOf(current), step = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[ev.key];
+  if (step) { ev.preventDefault(); const n = ids[(i + step + ids.length) % ids.length]; show(n, false); $('tab-' + n).focus(); }
+});
+$('viewAll').onclick = () => { if (drawerOpen()) setDrawer(false, false); viewAll = !viewAll; $('viewAll').setAttribute('aria-pressed', viewAll); $('viewAll').textContent = viewAll ? 'One at a time' : 'View all'; $('shell').classList.toggle('all', viewAll); show(current, false); $('live').textContent = viewAll ? 'Showing every section' : 'Showing one section'; };
+
+(async () => {
+  let D = PV ? PV.doc : null, base = '';
+  if (!D) for (const p of DATA_PATHS) { try { const r = await fetch(p, { cache: 'no-store' }); if (r.ok) { D = await r.json(); base = p.replace(/events\.json$/, ''); break; } } catch (x) {} }
+  const id = PV?.ev || params.get('ev');
+  const e = D?.events?.find(x => x.id === id || x.key === id);
+  if (!e) { $('band').innerHTML = '<div><a class="back" href="event-carousel.html"><span class="arr" aria-hidden="true">←</span>All events</a><h1>Event not found</h1></div>'; $('main').innerHTML = `<div class="panel empty"><p>This event may have ended. <a href="event-carousel.html">See upcoming events</a>.</p></div>`; return; }
+  let R = null;
+  if (e.rubric && PV) R = PV.rubrics[e.rubric] || null;
+  else if (e.rubric) { try { const r = await fetch(base + e.rubric, { cache: 'no-store' }); if (r.ok) R = await r.json(); } catch (x) {} }
+  render(e, R, base);
+  syncFS(); // opened while already full screen (the Planner's frame stays full screen between pages)
+})();
+</script>
+</body>
+</html>
