@@ -1,227 +1,153 @@
-<!DOCTYPE html>
-<html lang="en"><head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Event Reflection — SPAN 1001</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&amp;family=DM+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-  /* ============================================================
-     Tokens embedded directly (D2L content items can't reliably
-     fetch an external theme.json at runtime) -- every value below
-     traces 1:1 to design/theme.json, matching the Welcome and
-     Required Textbook pages so this reads as the same product.
-     ============================================================ */
-  :root{
-    --bg:#F7F7F5; --surface:#FFFFFF; --surface-raised:#FFFFFF;
-    --ink:#1F2937; --ink-muted:#5A6472; --ink-faint:#657081;
-    --navy:#1A3A6B; --navy-dark:#132C52; --gold:#8A6D2E;
-    --navy-btn-text:#FFFFFF;
-    --border:rgba(31,41,55,0.14); --border-strong:rgba(31,41,55,0.28);
-    --focus-ring:#1A3A6B;
-    --note-bg:#FEF3C7; --note-tx:#7A5D14;
-    --date-bg:#DBEAFE; --date-tx:#1A3A6B;
-  }
-  [data-mode="dark"]{
-    --bg:#0F1115; --surface:#181B22; --surface-raised:#20242D;
-    --ink:#F1F3F6; --ink-muted:#B8C0CE; --ink-faint:#7A8496;
-    --navy:#7B9FE0; --navy-dark:#5C7FC4; --gold:#D9B968;
-    --navy-btn-text:#0F1115;
-    --border:rgba(241,243,246,0.14); --border-strong:rgba(241,243,246,0.28);
-    --focus-ring:#D9B968;
-    --note-bg:rgba(251,191,36,0.16); --note-tx:#FCD34D;
-    --date-bg:rgba(123,159,224,0.16); --date-tx:#A9C3EE;
-  }
+:root{--bg:#F7F7F5;--surface:#FFFFFF;--ink:#1F2937;--ink-muted:#5A6472;--ink-faint:#657081;--navy:#1A3A6B;--gold:#8A6D2E;
+  --border:rgba(31,41,55,.14);--border-strong:rgba(31,41,55,.30);--note-bg:#FEF3C7;--note-tx:#7A5D14;--focus:#1A3A6B;}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F1115;--surface:#181B22;--ink:#F1F3F6;--ink-muted:#B8C0CE;--ink-faint:#9AA4B5;
+  --navy:#9DB8EC;--gold:#D9B968;--border:rgba(241,243,246,.14);--border-strong:rgba(241,243,246,.34);--note-bg:rgba(251,191,36,.16);--note-tx:#FCD34D;--focus:#D9B968;}}
+:root[data-theme="dark"]{--bg:#0F1115;--surface:#181B22;--ink:#F1F3F6;--ink-muted:#B8C0CE;--ink-faint:#9AA4B5;--navy:#9DB8EC;--gold:#D9B968;
+  --border:rgba(241,243,246,.14);--border-strong:rgba(241,243,246,.34);--note-bg:rgba(251,191,36,.16);--note-tx:#FCD34D;--focus:#D9B968;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 'DM Sans',system-ui,sans-serif;}
+.wrap{max-width:760px;margin:0 auto;padding:24px 20px 56px;}
+.skip{position:absolute;left:-999px;top:0;background:var(--navy);color:#fff;padding:8px 14px;border-radius:0 0 8px 0;}
+.skip:focus{left:0;}
+.bar{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;margin-bottom:12px;}
+.btn{font:600 14px/1 'DM Sans',sans-serif;min-height:44px;padding:0 16px;border-radius:999px;border:1.5px solid var(--border-strong);
+  background:var(--surface);color:var(--ink);cursor:pointer;}
+.btn.primary{background:var(--navy);border-color:var(--navy);color:var(--bg);}
+.btn:focus-visible,[contenteditable]:focus-visible,input:focus-visible,.drop:focus-visible{outline:3px solid var(--focus);outline-offset:2px;}
+.kicker{font:600 13px/1.2 'DM Sans',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin:0 0 6px;}
+h1{font:600 30px/1.15 'Source Serif 4',Georgia,serif;color:var(--navy);margin:0 0 6px;}
+h1 .es{font-weight:400;font-style:italic;}
+.lead{color:var(--ink-muted);margin:0 0 18px;}
+.how{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin:0 0 18px;font-size:15px;}
+.how b{color:var(--navy);}
+section.part{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin:0 0 14px;}
+h2{font:600 19px/1.3 'Source Serif 4',Georgia,serif;color:var(--navy);margin:0 0 4px;display:flex;justify-content:space-between;gap:12px;}
+h2 .pts{font:600 13px/1.6 'DM Sans',sans-serif;color:var(--ink-faint);}
+.part p{margin:0 0 10px;}
+.f{display:block;min-height:34px;padding:6px 2px 2px;border-bottom:1.5px solid var(--border-strong);outline:none;margin:0 0 4px;}
+.f:empty::before{content:attr(data-ph);color:var(--ink-faint);}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:6px 18px;}
+.num{display:grid;grid-template-columns:22px 1fr;align-items:end;}
+.num > span{color:var(--ink-faint);font-size:14px;padding-bottom:6px;}
+.lbl{font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-faint);}
+.pick{display:flex;flex-wrap:wrap;gap:8px 24px;margin:4px 0 0;border:0;padding:0;}
+.pick legend{font-weight:600;margin-bottom:4px;}
+.pick label{display:flex;gap:8px;align-items:center;min-height:44px;cursor:pointer;}
+.pick input{width:20px;height:20px;accent-color:var(--navy);}
+.drop{display:flex;align-items:center;justify-content:center;text-align:center;min-height:150px;border:2px dashed var(--border-strong);border-radius:12px;
+  color:var(--ink-muted);cursor:pointer;padding:12px;margin:0 0 10px;}
+.drop.over{border-color:var(--navy);color:var(--navy);}
+.photo{display:none;margin:0 0 10px;} .photo.on{display:block;} .photo img{max-width:100%;max-height:340px;border-radius:8px;display:block;}
+.photo button{margin-top:6px;}
+.frames{margin:0 0 10px;padding-left:20px;font-size:15px;} .frames li{margin:0 0 3px;}
+.es{font-style:italic;} .gl{color:var(--ink-muted);font-size:14px;}
+.note{background:var(--note-bg);color:var(--note-tx);border-left:4px solid var(--gold);border-radius:0 10px 10px 0;padding:12px 16px;margin:16px 0 0;font-size:15px;}
+.status{color:var(--ink-muted);font-size:14px;min-height:1.4em;margin:6px 0 0;}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;}
+.print-only{display:none;}
 
-  *{box-sizing:border-box}
-  body{
-    font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--ink);
-    line-height:1.6; margin:0; padding:0; font-size:16px;
-    transition:background 0.2s,color 0.2s;
-  }
-  .wrap{max-width:720px; margin:0 auto; padding:32px 24px 64px;}
-
-  .skip-link{
-    position:absolute; left:-999px; top:0; background:var(--navy); color:var(--navy-btn-text);
-    padding:10px 16px; z-index:100; border-radius:0 0 8px 0; font-weight:600;
-  }
-  .skip-link:focus{left:0;}
-
-  .mode-toggle{display:flex; justify-content:flex-end; gap:8px; margin-bottom:8px;}
-  .mode-btn{
-    display:inline-flex; align-items:center; gap:6px; background:var(--surface);
-    border:1px solid var(--border-strong); color:var(--ink); font-family:'DM Sans',sans-serif;
-    font-size:13px; font-weight:600; padding:8px 14px; border-radius:999px; cursor:pointer;
-    min-height:44px;
-  }
-  .mode-btn:focus-visible{outline:2px solid var(--focus-ring); outline-offset:2px;}
-  .mode-btn:hover{border-color:var(--navy);}
-
-  @page{size:letter; margin:0.75in;}
-  @media print{
-    .no-print{display:none !important;}
-    [data-mode="dark"]{
-      --bg:#F7F7F5; --surface:#FFFFFF; --surface-raised:#FFFFFF;
-      --ink:#1F2937; --ink-muted:#5A6472; --ink-faint:#657081;
-      --navy:#1A3A6B; --navy-dark:#132C52; --gold:#8A6D2E;
-      --navy-btn-text:#FFFFFF;
-      --border:rgba(31,41,55,0.14); --border-strong:rgba(31,41,55,0.28);
-      --note-bg:#FEF3C7; --note-tx:#7A5D14;
-      --date-bg:#DBEAFE; --date-tx:#1A3A6B;
-    }
-    body{background:#fff !important; font-size:11pt;}
-    .wrap{max-width:100% !important; padding:0 !important; margin:0 !important;}
-    .details-card, .callout{page-break-inside:avoid; break-inside:avoid; box-shadow:none !important;}
-    .btn-primary{background:#fff !important; color:var(--navy) !important; border:1.5px solid var(--navy); padding:8px 16px;}
-  }
-
-  .kicker{
-    font-size:13px; font-weight:600; letter-spacing:0.12em; text-transform:uppercase;
-    color:var(--gold); margin-bottom:8px;
-  }
-  h1{
-    font-family:'Source Serif 4',serif; font-weight:600; font-size:32px; line-height:1.15;
-    color:var(--navy); margin:0 0 6px;
-  }
-  .subtitle{font-size:16px; color:var(--ink-muted); margin:0 0 24px;}
-
-  h2{
-    font-family:'Source Serif 4',serif; font-weight:600; font-size:19px; line-height:1.3;
-    color:var(--navy); margin:0 0 10px;
-  }
-  p{font-size:16px; line-height:1.65; margin:0 0 16px; color:var(--ink);}
-
-  .steps{margin:0 0 24px; padding-left:22px;}
-  .steps li{margin:0 0 8px; line-height:1.6;}
-  .codes{width:100%; border-collapse:collapse; margin:0 0 16px; font-size:15px; background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:hidden;}
-  .codes th,.codes td{padding:8px 10px; text-align:left; vertical-align:top; border-bottom:1px solid var(--border);}
-  .codes thead th{font-size:13px; font-weight:600; letter-spacing:0.04em; text-transform:uppercase; color:var(--ink-faint);}
-  .codes tbody tr:last-child td{border-bottom:none;}
-  .codes td.code{font-weight:700; color:var(--navy); white-space:nowrap;}
-  .sr-only{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;}
-  @media (max-width:560px){ .codes{font-size:14px;} .codes th,.codes td{padding:7px 6px;} .codes td.code{white-space:normal;} }
-  .callout{
-    background:var(--note-bg); border-left:4px solid var(--gold); border-radius:0 8px 8px 0;
-    padding:16px 20px; margin:0 0 24px;
-  }
-  .callout p{margin:0; font-size:15px; line-height:1.6; color:var(--note-tx);}
-  .callout strong{color:var(--note-tx);}
-
-  .details-card{
-    background:var(--surface); border:1px solid var(--border); border-radius:12px;
-    padding:22px 24px; margin:0 0 24px;
-  }
-  .details-row{
-    display:flex; gap:16px; align-items:flex-start; padding:10px 0;
-    border-bottom:1px solid var(--border);
-  }
-  .details-row:last-child{border-bottom:none;}
-  .details-label{
-    flex:0 0 120px; font-size:13px; font-weight:600; letter-spacing:0.04em;
-    text-transform:uppercase; color:var(--ink-faint); padding-top:2px;
-  }
-  .details-value{font-size:16px; color:var(--ink); line-height:1.5;}
-  .details-value strong{color:var(--navy);}
-
-  .btn-primary{
-    display:inline-flex; align-items:center; gap:8px; background:var(--navy); color:var(--navy-btn-text);
-    font-family:'DM Sans',sans-serif; font-weight:600; font-size:15px; text-decoration:none;
-    padding:12px 22px; border-radius:8px; margin:4px 8px 4px 0; min-height:44px;
-  }
-  .btn-primary:hover{background:var(--navy-dark);}
-  .btn-primary:focus-visible{outline:2px solid var(--focus-ring); outline-offset:2px;}
-
-  .signoff{margin-top:28px;}
-  .signoff p{margin:0 0 2px;}
-  .signoff .name{
-    font-family:'Source Serif 4',serif; font-weight:600; font-size:18px; color:var(--navy);
-  }
-
-  a{color:var(--navy);}
-  a:focus-visible{outline:2px solid var(--focus-ring); outline-offset:2px;}
-
-  .steps{margin:0 0 20px; padding-left:22px;} .steps li{margin:0 0 8px; line-height:1.6;}
-  .codes{width:100%; border-collapse:collapse; margin:0 0 16px; font-size:15px; background:var(--surface); border:1px solid var(--border);}
-  .codes th,.codes td{padding:8px 10px; text-align:left; vertical-align:top; border-bottom:1px solid var(--border);}
-  .codes thead th{font-size:13px; font-weight:600; letter-spacing:0.04em; text-transform:uppercase; color:var(--ink-faint);}
-  .codes tbody tr:last-child td{border-bottom:none;}
-  .sr-only{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;}
-  .part{background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px 20px; margin:0 0 16px; break-inside:avoid;}
-  .part h2{margin:0 0 6px;} .part h2 .pts{float:right; font-family:'DM Sans',sans-serif; font-size:14px; color:var(--ink-faint); font-weight:600;}
-  .part p{margin:0 0 10px;}
-  .ln{display:block; border-bottom:1.5px solid var(--border-strong); height:30px; margin:0 0 6px;}
-  .ln.n{position:relative; padding-left:24px;} .ln.n::before{content:attr(data-n) "."; position:absolute; left:0; bottom:4px; color:var(--ink-faint); font-size:14px;}
-  .es{font-style:italic;} .gl{color:var(--ink-muted); font-size:14px;}
-  .frames{margin:0 0 12px; padding-left:20px;} .frames li{margin:0 0 4px;}
-  .pick{display:flex; gap:24px; flex-wrap:wrap; font-size:16px; margin:0 0 6px;}
-  .box{display:inline-block; width:16px; height:16px; border:1.5px solid var(--ink); border-radius:3px; vertical-align:-2px; margin-right:6px;}
-  .grid2{width:100%; border-collapse:collapse;} .grid2 td,.grid2 th{border-bottom:1.5px solid var(--border-strong); height:34px; padding:4px 8px; text-align:left; vertical-align:bottom;}
-  .grid2 thead th{border-bottom:1px solid var(--border); font-size:13px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-faint); height:auto;}
-  @media print{ .part{border:1px solid #999; padding:8px 12px; margin:0 0 8px;} body{font-size:10pt;} .wrap{padding:0 !important;}
-    .ln{height:22px; margin:0 0 2px;} p, .part p{font-size:10pt; margin:0 0 5px; line-height:1.4;} h1{font-size:20pt; margin:0 0 2px;} .subtitle{margin:0 0 8px; font-size:10pt;}
-    .part h2, h2{font-size:12pt; margin:0 0 4px;} .frames{margin:0 0 6px;} .frames li{margin:0; font-size:9.5pt;} .grid2 td{height:24px;}
-    .callout{padding:8px 12px; margin:0 0 8px;} .signoff{display:none;} .kicker{margin-bottom:2px;} }
+/* ---------- print: a document, not a web page ---------- */
+@page{size:letter;margin:0.7in 0.8in;}
+@media print{
+  :root,:root[data-theme="dark"]{--ink:#111;--ink-muted:#333;--ink-faint:#555;--navy:#111;--gold:#555;--border-strong:#888;}
+  body{background:#fff;color:#111;font:10.5pt/1.42 'Source Serif 4',Georgia,'Times New Roman',serif;}
+  .wrap{max-width:none;padding:0;}
+  .bar,.skip,.how,.drop,.photo button,.status,.screen-only{display:none!important;}
+  .print-only{display:block;}
+  .kicker{font:9pt/1.2 'Source Serif 4',Georgia,serif;letter-spacing:.14em;color:#444;margin:0 0 2pt;}
+  h1{font:600 18pt/1.15 'Source Serif 4',Georgia,serif;color:#111;margin:0 0 2pt;}
+  .lead{font-size:10pt;color:#333;margin:0 0 8pt;border-bottom:.6pt solid #111;padding-bottom:6pt;}
+  section.part{background:none;border:0;border-radius:0;padding:0;margin:0 0 9pt;break-inside:avoid;}
+  h2{font:600 11.5pt/1.3 'Source Serif 4',Georgia,serif;color:#111;margin:0 0 2pt;border-bottom:.4pt solid #999;padding-bottom:1pt;}
+  h2 .pts{font:italic 9pt/1.6 'Source Serif 4',Georgia,serif;color:#444;}
+  .part p{margin:0 0 3pt;}
+  .f{min-height:20pt;padding:3pt 1pt 1pt;border-bottom:.5pt solid #555;margin:0 0 1pt;}
+  .f:empty::before{content:'';}
+  .lbl{font:italic 8.5pt 'Source Serif 4',Georgia,serif;letter-spacing:0;text-transform:none;color:#444;}
+  .frames{font-size:9.5pt;margin:0 0 4pt;} .frames li{margin:0;} .gl{font-size:9pt;color:#444;}
+  .pick label{min-height:0;} .pick input{width:11pt;height:11pt;}
+  .photo.on img{max-height:2.6in;border-radius:0;}
+  .note{background:none;color:#111;border:0;border-top:.5pt solid #111;border-radius:0;padding:5pt 0 0;margin:8pt 0 0;font-size:9.5pt;}
+  a{color:#111;text-decoration:none;}
+  *:focus,*:focus-visible{outline:none!important;}
+}
 </style>
 </head>
-<body data-mode="light"><p><a href="#main" class="skip-link">Skip to main content</a></p>
+<body>
+<a href="#main" class="skip">Skip to the sheet</a>
 <div class="wrap">
-<div class="mode-toggle no-print"><button class="mode-btn" type="button" onclick="window.print()">🖨 Print / Save as PDF</button> <button class="mode-btn" type="button" id="fs-btn" onclick="toggleFS()">⛶ Full Screen</button> <button class="mode-btn" id="modeToggle" aria-pressed="false" onclick="toggleMode()"> <span id="modeLabel">Dark mode</span> </button></div>
+<div class="bar"><button type="button" class="btn primary" id="printBtn">Save as PDF / Print</button><button type="button" class="btn" id="clearBtn">Clear</button><button type="button" class="btn" id="themeBtn">Dark mode</button></div>
 <main id="main">
-<div class="kicker">SPAN 1001 · Extra credit</div>
-<h1>Event Reflection <span lang="es" class="es" style="font-weight:400;">· Reflexión del evento</span></h1>
-<p class="subtitle">Go to <strong>one</strong> event, stay at least 30 minutes, and fill in this sheet.</p>
-<div class="part">
-<p class="pick"><span><span class="box" aria-hidden="true"></span><strong>Lingo Café: Karaoke</strong> · Wed 11/18, 12:00–1:00 · Language Lab (Nesbitt 4201)</span></p>
-<p class="pick"><span><span class="box" aria-hidden="true"></span><strong>Holidays Around the World</strong> · Wed 11/18, 2:00–5:00 · Cleveland Ballroom (Nesbitt 3110)</span></p>
-<p class="gl" style="margin:6px 0 0;">Tick the event you went to. Name: <span class="ln" style="display:inline-block; width:200px; height:18px; vertical-align:bottom;"></span></p></div><div class="part"><h2>1. I was there <span class="pts">2 pts</span></h2>
-<p>A photo of you at the event (at Holidays, your stamped passport works too), or a lab assistant's initials: <span class="ln" style="display:inline-block; width:120px; height:18px; vertical-align:bottom;"></span></p></div>
-<div class="part"><h2>2. Listen <span class="pts">2 pts</span></h2>
+<p class="kicker">SPAN 1001 · Extra credit</p>
+<h1>Event Reflection <span class="es" lang="es">· Reflexión del evento</span></h1>
+<p class="lead">Go to <strong>one</strong> event, stay at least 30 minutes, and fill this in.</p>
+<div class="how"><b>Two ways:</b> type your answers here and add your photo, then <b>Save as PDF</b>; or print it blank and write by hand. Nothing you type or add is uploaded or saved: save the PDF before you close this page.</div>
+
+<div class="row"><div><span class="lbl">Name</span><div class="f" contenteditable="true" role="textbox" aria-label="Your name" data-ph=""></div></div><div></div></div>
+<fieldset class="pick"><legend>The event I went to</legend>
+<label><input type="radio" name="ev"> Lingo Café: Karaoke · Wed 11/18, 12:00–1:00</label>
+<label><input type="radio" name="ev"> Holidays Around the World · Wed 11/18, 2:00–5:00</label></fieldset>
+
+<section class="part" aria-labelledby="p1"><h2 id="p1">1. I was there <span class="pts">2 points</span></h2>
+<p>A photo of you at the event (at Holidays, your stamped passport works too), <em>or</em> a lab assistant’s initials.</p>
+<div class="drop" id="drop" role="button" tabindex="0" aria-describedby="photoStatus">Drag your photo here, or click to choose one</div>
+<input type="file" id="photoIn" accept="image/*,.heic,.heif" hidden>
+<div class="photo" id="photo"><img id="photoImg" alt="My photo at the event"><button type="button" class="btn" id="photoRemove">Remove photo</button></div>
+<p class="status" id="photoStatus" aria-live="polite"></p>
+<div class="row"><div><span class="lbl">Lab assistant’s initials</span><div class="f" contenteditable="true" role="textbox" aria-label="Lab assistant's initials" data-ph=""></div></div><div></div></div></section>
+
+<section class="part" aria-labelledby="p2"><h2 id="p2">2. Listen <span class="pts">2 points</span></h2>
 <p>3 words or phrases you heard, saw or sang, with their meaning.</p>
-<table class="grid2"><caption class="sr-only">Three words or phrases and their meaning</caption><thead><tr><th scope="col">Word or phrase</th><th scope="col">Meaning in English</th></tr></thead>
-<tbody><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr></tbody></table></div>
-<div class="part"><h2>3. Talk <span class="pts">2 pts</span></h2>
-<p>Ask someone at the event 2 questions in Spanish. Write each answer in a word or two.</p><ul class="frames">
-<li><span lang="es" class="es">¿Cómo te llamas?</span> <span class="gl">What's your name?</span></li>
-<li><span lang="es" class="es">¿De dónde eres?</span> <span class="gl">Where are you from?</span></li>
-<li><span lang="es" class="es">¿Qué te gusta hacer los fines de semana?</span> <span class="gl">What do you like to do on weekends?</span></li>
-<li><span lang="es" class="es">¿Prefieres ___ o ___?</span> <span class="gl">Do you prefer ___ or ___?</span></li>
-<li><span lang="es" class="es">¿Qué música te gusta?</span> <span class="gl">What music do you like?</span></li></ul>
-<table class="grid2"><caption class="sr-only">Two questions and the answers</caption><thead><tr><th scope="col">Question</th><th scope="col">Answer</th></tr></thead>
-<tbody><tr><td></td><td></td></tr><tr><td></td><td></td></tr></tbody></table></div>
-<div class="part"><h2>4. Learn <span class="pts">2 pts</span></h2>
-<p>In English, 2–3 sentences: one thing you learned about a culture or a tradition.</p><span class="ln"></span><span class="ln"></span><span class="ln"></span></div>
-<div class="part"><h2>5. Write <span class="pts">2 pts</span></h2>
-<p>5 sentences in Spanish about the event.</p><ul class="frames">
-<li><span lang="es" class="es">En el evento hay ___ y ___.</span> <span class="gl">At the event there is / are…</span></li>
-<li><span lang="es" class="es">Me gusta ___ porque ___.</span> <span class="gl">I like ___ because…</span></li>
-<li><span lang="es" class="es">Escucho música de ___.</span> / <span lang="es" class="es">Como ___ de ___.</span> <span class="gl">I listen to music from… / I eat ___ from… (<span lang="es">la canción</span> = song, <span lang="es">la comida</span> = food)</span></li>
-<li><span lang="es" class="es">Una persona nueva se llama ___ y es de ___.</span> <span class="gl">A new person is named ___ and is from…</span></li>
-<li><span lang="es" class="es">Prefiero ___. Quiero ___.</span> <span class="gl">I prefer… I want…</span></li></ul><span class="ln n" data-n="1"></span><span class="ln n" data-n="2"></span><span class="ln n" data-n="3"></span><span class="ln n" data-n="4"></span><span class="ln n" data-n="5"></span></div>
+<div class="row"><div><div class="f" contenteditable="true" role="textbox" aria-label="Word or phrase 1" data-ph="Word or phrase"></div></div><div><div class="f" contenteditable="true" role="textbox" aria-label="Meaning 1" data-ph="Meaning"></div></div><div><div class="f" contenteditable="true" role="textbox" aria-label="Word or phrase 2" data-ph="Word or phrase"></div></div><div><div class="f" contenteditable="true" role="textbox" aria-label="Meaning 2" data-ph="Meaning"></div></div><div><div class="f" contenteditable="true" role="textbox" aria-label="Word or phrase 3" data-ph="Word or phrase"></div></div><div><div class="f" contenteditable="true" role="textbox" aria-label="Meaning 3" data-ph="Meaning"></div></div></div></section>
+
+<section class="part" aria-labelledby="p3"><h2 id="p3">3. Talk <span class="pts">2 points</span></h2>
+<p>Ask someone at the event 2 questions in Spanish. Write each answer in a word or two.</p><ul class="frames"><li><span lang="es" class="es">¿Cómo te llamas?</span> <span class="gl">What’s your name?</span></li><li><span lang="es" class="es">¿De dónde eres?</span> <span class="gl">Where are you from?</span></li><li><span lang="es" class="es">¿Qué te gusta hacer los fines de semana?</span> <span class="gl">What do you like to do on weekends?</span></li><li><span lang="es" class="es">¿Prefieres ___ o ___?</span> <span class="gl">Do you prefer ___ or ___?</span></li><li><span lang="es" class="es">¿Qué música te gusta?</span> <span class="gl">What music do you like?</span></li></ul>
+<div class="row"><div><div class="f" contenteditable="true" role="textbox" aria-label="Question 1" data-ph="Question"></div></div><div><div class="f" contenteditable="true" role="textbox" aria-label="Answer 1" data-ph="Answer"></div></div><div><div class="f" contenteditable="true" role="textbox" aria-label="Question 2" data-ph="Question"></div></div><div><div class="f" contenteditable="true" role="textbox" aria-label="Answer 2" data-ph="Answer"></div></div></div></section>
+
+<section class="part" aria-labelledby="p4"><h2 id="p4">4. Learn <span class="pts">2 points</span></h2>
+<p>In English, 2–3 sentences: one thing you learned about a culture or a tradition.</p><div class="f" contenteditable="true" role="textbox" aria-label="Learned, line 1" data-ph=""></div><div class="f" contenteditable="true" role="textbox" aria-label="Learned, line 2" data-ph=""></div><div class="f" contenteditable="true" role="textbox" aria-label="Learned, line 3" data-ph=""></div></section>
+
+<section class="part" aria-labelledby="p5"><h2 id="p5">5. Write <span class="pts">2 points</span></h2>
+<p>5 sentences in Spanish about the event.</p><ul class="frames"><li><span lang="es" class="es">En el evento hay ___ y ___.</span> <span class="gl">At the event there is / are…</span></li><li><span lang="es" class="es">Me gusta ___ porque ___.</span> <span class="gl">I like ___ because…</span></li><li><span lang="es" class="es">Escucho música de ___.</span> / <span lang="es" class="es">Como ___ de ___.</span> <span class="gl">I listen to music from… / I eat ___ from… (<span lang="es">la canción</span> song · <span lang="es">la comida</span> food)</span></li><li><span lang="es" class="es">Una persona nueva se llama ___ y es de ___.</span> <span class="gl">A new person is named ___ and is from…</span></li><li><span lang="es" class="es">Prefiero ___. Quiero ___.</span> <span class="gl">I prefer… I want…</span></li></ul><div class="num"><span>1.</span><div class="f" contenteditable="true" role="textbox" aria-label="Sentence 1" data-ph=""></div></div><div class="num"><span>2.</span><div class="f" contenteditable="true" role="textbox" aria-label="Sentence 2" data-ph=""></div></div><div class="num"><span>3.</span><div class="f" contenteditable="true" role="textbox" aria-label="Sentence 3" data-ph=""></div></div><div class="num"><span>4.</span><div class="f" contenteditable="true" role="textbox" aria-label="Sentence 4" data-ph=""></div></div><div class="num"><span>5.</span><div class="f" contenteditable="true" role="textbox" aria-label="Sentence 5" data-ph=""></div></div></section>
+
 <p class="gl">Each part: complete 2 · partly done 1 · missing 0.</p>
-<div class="callout" role="note"><p><strong>Due Fri 11/20, 11:59 PM</strong> · D2L dropbox “Event Reflection” (a photo or scan of this sheet + your event photo). Worth up to <strong>+5 points on your VHL average</strong> (your score ÷ 2), or on one in-class activity or quiz instead.</p></div>
+<p class="note"><strong>Due Fri 11/20, 11:59 PM</strong> in the D2L dropbox “Event Reflection”: this sheet as a PDF (or a photo of the paper). Up to <strong>+5 points on your VHL average</strong> (your score ÷ 2), or on one in-class activity or quiz instead.</p>
 </main></div>
-<p><script>
-function toggleMode(){
-  const body = document.body;
-  const isDark = body.getAttribute('data-mode') === 'dark';
-  const next = isDark ? 'light' : 'dark';
-  body.setAttribute('data-mode', next);
-  document.getElementById('modeToggle').setAttribute('aria-pressed', String(!isDark));
-  document.getElementById('modeLabel').textContent = next === 'dark' ? 'Light mode' : 'Dark mode';
+<script>
+function setTheme(t){ document.documentElement.dataset.theme=t; document.getElementById('themeBtn').textContent = t==='dark' ? 'Light mode' : 'Dark mode'; }
+document.getElementById('themeBtn').onclick=()=>setTheme(document.documentElement.dataset.theme==='dark'?'light':'dark');
+setTheme(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+document.getElementById('printBtn').onclick=()=>window.print();
+document.getElementById('clearBtn').onclick=()=>{ if(!confirm('Clear everything on this sheet?')) return;
+  document.querySelectorAll('.f').forEach(f=>f.textContent=''); document.querySelectorAll('input[type=radio]').forEach(r=>r.checked=false); clearPhoto(); };
+/* photo: read in this browser only, never uploaded or saved */
+const drop=document.getElementById('drop'), file=document.getElementById('photoIn'), box=document.getElementById('photo'), img=document.getElementById('photoImg'), st=document.getElementById('photoStatus');
+function clearPhoto(){ img.removeAttribute('src'); box.classList.remove('on'); drop.hidden=false; st.textContent=''; }
+async function usePhoto(f){
+  if(!f) return;
+  if(/\.(heic|heif)$/i.test(f.name) || /heic|heif/i.test(f.type)){ st.textContent='Converting the iPhone photo…';
+    try{ if(!window.heic2any) await new Promise((res,rej)=>{ const s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js'; s.onload=res; s.onerror=rej; document.head.appendChild(s); });
+      f = await heic2any({blob:f, toType:'image/jpeg', quality:0.85}); }
+    catch(e){ st.textContent='This photo could not be opened. Take a screenshot of it and use that instead.'; return; } }
+  const r=new FileReader(); r.onload=()=>{ img.onload=()=>{ box.classList.add('on'); drop.hidden=true; st.textContent='Photo added. It stays on this device.'; };
+    img.onerror=()=>{ st.textContent='This file is not a photo the browser can show. Try a JPG or PNG, or a screenshot.'; }; img.src=r.result; };
+  r.readAsDataURL(f);
 }
-/* D2L shows pages in a frame that may not allow full screen: then open this page in its own tab */
-function openFull(){ var w=window.open(location.href,'_blank'); if(!w) document.documentElement.scrollIntoView(); }
-function toggleFS(){
-  if(document.fullscreenElement){ document.exitFullscreen(); return; }
-  if(document.fullscreenEnabled) document.documentElement.requestFullscreen().catch(openFull); else openFull();
-}
-document.addEventListener('fullscreenchange', () => {
-  const b = document.getElementById('fs-btn');
-  if(b) b.textContent = document.fullscreenElement ? '⛶ Exit Full Screen' : '⛶ Full Screen';
-});
-if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-  document.body.setAttribute('data-mode', 'dark');
-  document.getElementById('modeLabel').textContent = 'Light mode';
-  document.getElementById('modeToggle').setAttribute('aria-pressed', 'true');
-}
-</script></p></body></html>
+drop.onclick=()=>file.click();
+drop.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); file.click(); } };
+file.onchange=()=>usePhoto(file.files[0]);
+['dragenter','dragover'].forEach(t=>drop.addEventListener(t,e=>{ e.preventDefault(); drop.classList.add('over'); }));
+['dragleave','drop'].forEach(t=>drop.addEventListener(t,e=>{ e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop',e=>usePhoto(e.dataTransfer.files[0]));
+document.getElementById('photoRemove').onclick=clearPhoto;
+</script>
+</body></html>
