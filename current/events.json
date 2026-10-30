@@ -113,7 +113,12 @@
         "deliverable": "Bring your mini-ofrenda to the event on Nov 4 for the competition. Can't attend? Submit a photo of it with your card.",
         "submit": "Where and when to submit is posted in D2L.",
         "due": "2026-11-04",
-        "due_time": "10:30"
+        "due_time": "10:30",
+        "step_titles": [
+          "Pick someone",
+          "Make it",
+          "Explain it"
+        ]
       },
       "link": null,
       "flyer": "gvl-2.jpg",
@@ -183,6 +188,12 @@
           "title": "Remember Me (Lullaby) (from Coco)",
           "artist": "Gael García Bernal",
           "url": "https://www.youtube.com/watch?v=ImutnoiBixY",
+          "kind": "song"
+        },
+        {
+          "title": "Un Poco Loco (de Coco)",
+          "artist": "Luis Ángel Gómez Jaramillo & Gael García Bernal",
+          "url": "https://www.youtube.com/watch?v=t2SkpOwyta8",
           "kind": "song"
         }
       ]
@@ -267,6 +278,18 @@
           "artist": "Gipsy Kings",
           "url": "https://www.youtube.com/watch?v=X8TOhb_4jU0",
           "kind": "Italian"
+        },
+        {
+          "title": "99 Luftballons",
+          "artist": "Nena",
+          "url": "https://www.youtube.com/watch?v=Fpu5a0Bl8eY",
+          "kind": "German"
+        },
+        {
+          "title": "Gangnam Style",
+          "artist": "PSY",
+          "url": "https://www.youtube.com/watch?v=9bZkp7q19f0",
+          "kind": "Korean"
         }
       ]
     },
@@ -348,6 +371,24 @@
           "artist": "Bing Crosby & The Andrews Sisters",
           "url": "https://www.youtube.com/watch?v=gLh5JzyKQqU",
           "kind": "Hawaiian · English"
+        },
+        {
+          "title": "Laylet Eid (ليلة عيد)",
+          "artist": "Fairuz",
+          "url": "https://www.youtube.com/watch?v=ivo2THZ2zbY",
+          "kind": "Arabic"
+        },
+        {
+          "title": "Stille Nacht, heilige Nacht",
+          "artist": "Heintje",
+          "url": "https://www.youtube.com/watch?v=na7L-54XtO0",
+          "kind": "German"
+        },
+        {
+          "title": "Tu scendi dalle stelle",
+          "artist": "Luciano Pavarotti",
+          "url": "https://www.youtube.com/watch?v=K3pa-kD8DHw",
+          "kind": "Italian"
         }
       ]
     },
@@ -407,6 +448,12 @@
           "artist": "José Feliciano",
           "url": "https://www.youtube.com/watch?v=N8NcQzMQN_U",
           "kind": "song"
+        },
+        {
+          "title": "Petit Papa Noël",
+          "artist": "Tino Rossi",
+          "url": "https://www.youtube.com/watch?v=dXFlvs2ZVg8",
+          "kind": "French"
         }
       ]
     }

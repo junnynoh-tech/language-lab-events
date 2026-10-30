@@ -40,19 +40,36 @@
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
+html { font-size: 18px; } /* larger type for accessibility, same as the class pages (2026-10-29) */
+/* event theme (current/themes.json, set by the event's "theme"): --acc text on the light page, --acc-d on the dark page,
+   --acc-bg behind white text (4.5:1 checked by class-pages/build.py), --panel the dark scene behind the band */
+:root { --a: var(--acc, var(--navy)); --abg: var(--acc-bg, var(--band-bg)); }
+:root[data-mode="dark"] { --a: var(--acc-d, var(--navy)); }
 html, body { height: 100%; }
 body { margin: 0; background: var(--bg); color: var(--ink); font: 400 1rem/1.55 var(--sans); }
-a { color: var(--navy); }
+a { color: var(--a); }
 button { font: inherit; color: inherit; }
 :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 .skip { position: absolute; left: -9999px; } .skip:focus { left: 8px; top: 8px; z-index: 20; background: var(--band-bg); color: #fff; padding: 10px 16px; font-weight: 700; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* compact band (mode-invariant band colors) with a papel-picado edge */
-.band { background: var(--band-bg); color: var(--band-text); position: relative; padding-bottom: 12px; }
+.band { background: var(--panel, var(--band-bg)); color: var(--band-text); position: relative; padding-bottom: 12px; isolation: isolate; overflow: hidden; }
+.band .deco { position: absolute; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+.band .deco svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.band.themed .band-in { padding-bottom: max(76px, 9.6vw); } /* the scene's candles / cups / drifts show under the text */
+.band h1, .band .when { text-shadow: 0 1px 2px rgba(0,0,0,.55), 0 0 18px rgba(0,0,0,.45); }
+.band-in.has-thumb { grid-template-columns: auto minmax(0, 1fr); column-gap: 24px; }
+.band-in.has-thumb .thumb { grid-row: 1 / span 2; }
+.band-in.has-thumb .acts { grid-column: 2; justify-content: flex-start; }
+.thumb { display: block; width: 104px; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,.3), 0 14px 30px rgba(0,0,0,.5); align-self: end; transform: rotate(-2deg); }
+.thumb img { display: block; width: 100%; height: auto; }
+.thumb:hover { transform: rotate(0); }
+.thumb:focus-visible { outline: 3px solid var(--band-gold); outline-offset: 3px; }
+@media (prefers-reduced-motion: no-preference) { .thumb { transition: transform .18s ease-out; } }
 .band::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 12px; background: var(--bg);
   -webkit-mask: radial-gradient(circle at 10px 0, transparent 7px, #000 8px) 0 0 / 20px 12px repeat-x; mask: radial-gradient(circle at 10px 0, transparent 7px, #000 8px) 0 0 / 20px 12px repeat-x; }
-.band-in { max-width: 1160px; margin: 0 auto; padding: 12px 16px 16px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 20px; align-items: center; }
+.band-in { position: relative; max-width: 1160px; margin: 0 auto; padding: 12px 16px 16px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 20px; align-items: center; }
 /* back to the carousel: a real button, set apart from the title */
 .back { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px 0 12px; margin-bottom: 12px; border-radius: 9px; border: 1.5px solid rgba(255,255,255,.6); background: rgba(255,255,255,.1); color: var(--band-text); font-weight: 700; font-size: .95rem; text-decoration: none; }
 .back:hover { background: rgba(255,255,255,.2); }
@@ -65,11 +82,14 @@ button { font: inherit; color: inherit; }
 .btn { min-height: 44px; padding: 0 16px; border-radius: 9px; font: 700 .92rem var(--sans); display: inline-flex; align-items: center; gap: 8px; text-decoration: none; cursor: pointer; border: 1px solid transparent; }
 .btn.gold { background: var(--band-gold); color: #1F2937; }
 .btn.ghost { background: transparent; color: var(--band-text); border-color: rgba(255,255,255,.45); }
-.btn.navy { background: var(--navy); color: var(--surface); }
+.btn.navy { background: var(--abg); color: #fff; }
 .page-toolbar { display: flex; gap: 6px; flex-wrap: wrap; }
 .page-toolbar button { min-height: 40px; padding: 0 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,.35); background: transparent; color: var(--band-text); font: 600 .85rem var(--sans); cursor: pointer; }
 .page-toolbar button:hover { background: rgba(255,255,255,.1); }
 .band :focus-visible { outline-color: var(--band-gold); }
+/* on a themed band, buttons get a dark backing so falling petals / flakes never sit right behind their text */
+.band.themed .btn.ghost, .band.themed .page-toolbar button, .band.themed .back { background: rgba(0,0,0,.42); }
+.band.themed .btn.ghost:hover, .band.themed .page-toolbar button:hover, .band.themed .back:hover { background: rgba(0,0,0,.6); }
 
 /* shell: left menu + one panel */
 .shell { max-width: 1160px; margin: 0 auto; padding: 18px 16px 40px; display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 24px; align-items: start; }
@@ -78,9 +98,9 @@ button { font: inherit; color: inherit; }
 .tab .ic { font: 700 .95rem var(--mono); width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--sunk); color: var(--muted); }
 .tab small { display: block; font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
 .tab:hover { border-left-color: var(--band-gold); }
-.tab[aria-selected="true"] { background: var(--band-bg); border-color: var(--band-bg); border-left-color: var(--band-gold); color: #fff; }
+.tab[aria-selected="true"] { background: var(--abg); border-color: var(--abg); border-left-color: var(--band-gold); color: #fff; }
 .tab[aria-selected="true"] .ic { background: var(--band-gold); color: #1F2937; }
-.tab[aria-selected="true"] small { color: #E8D9A8; }
+.tab[aria-selected="true"] small { color: #fff; }
 .viewall { margin-top: 6px; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; border-radius: 9px; border: 1.5px dashed var(--border-strong); background: transparent; cursor: pointer; font-weight: 700; color: var(--navy); }
 .viewall[aria-pressed="true"] { background: var(--gold-bg); color: var(--gold-tx); border-style: solid; border-color: var(--gold); }
 main { min-width: 0; }
@@ -91,7 +111,7 @@ main { min-width: 0; }
 .panel h2 .es { font: italic 400 1rem var(--serif); color: var(--muted); margin-left: 8px; }
 .lede { margin: 0; color: var(--muted); max-width: 64ch; }
 .next { display: flex; justify-content: flex-end; }
-.next button { background: none; border: 0; color: var(--navy); font-weight: 700; cursor: pointer; min-height: 40px; }
+.next button { background: none; border: 0; color: var(--a); font-weight: 700; cursor: pointer; min-height: 40px; }
 .all .next { display: none; }
 .mbar, .dhead, .scrim { display: none; }
 
@@ -102,20 +122,29 @@ main { min-width: 0; }
 .fact dd { margin: 2px 0 0; font-weight: 600; }
 .steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; counter-reset: s; }
 .steps li { counter-increment: s; border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; display: grid; gap: 2px; align-content: start; }
-.steps li::before { content: counter(s); width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--band-bg); color: #fff; font: 700 .95rem var(--mono); margin-bottom: 4px; }
+.steps li::before { content: counter(s); width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--abg); color: #fff; font: 700 .95rem var(--mono); margin-bottom: 4px; }
 .steps b { font: 700 1.05rem var(--serif); }
-.steps span { font-size: .93rem; color: var(--muted); }
+.steps span { font-size: .93rem; color: var(--ink); }
+.steps li.turnin { border-color: color-mix(in srgb, var(--a) 45%, transparent); background: color-mix(in srgb, var(--a) 6%, var(--surface)); }
 
 /* prizes */
 .podium { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
-.prize { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
-.prize[data-rank="1"] { border: 2px solid var(--gold); }
-.prize .img { aspect-ratio: 4/3; background: var(--sunk); display: grid; place-items: center; overflow: hidden; }
-.prize .img img { width: 100%; height: 100%; object-fit: cover; }
+.podium { align-items: end; }
+.prize { --medal: #E3B54A; position: relative; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; background: var(--surface); }
+.prize[data-rank="1"] { --medal: #E3B54A; border: 2px solid var(--medal); }
+.prize[data-rank="2"] { --medal: #C9CED6; }
+.prize[data-rank="3"] { --medal: #D9A06E; }
+.prize .img { aspect-ratio: 1; background: #fff; display: grid; place-items: center; overflow: hidden; padding: 14px; }
+.prize[data-rank="1"] .img { padding: 10px; }
+.prize .img img { width: 100%; height: 100%; object-fit: contain; }
+.medal { position: absolute; top: 10px; left: 10px; z-index: 1; width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; background: var(--medal); color: #1F2937;
+  font: 700 1rem/1 var(--serif); box-shadow: 0 0 0 3px #fff, 0 3px 8px rgba(0,0,0,.25); display: flex; align-items: center; justify-content: center; }
+.medal sup { font-size: .6em; margin-left: 1px; }
+.prize .b { border-top: 1px solid var(--border); }
 .mystery { display: grid; place-items: center; gap: 4px; text-align: center; color: var(--muted); font-size: .9rem; }
 .mystery .q { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; font: 700 1.8rem var(--serif); background: var(--gold-bg); color: var(--gold-tx); border: 2px dashed currentColor; }
 .prize .b { padding: 10px 12px; display: grid; gap: 2px; }
-.place { font-weight: 700; }
+.place { font: 700 .78rem var(--sans); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .prize .name { font: 700 1.05rem var(--serif); }
 .prize .tba { color: var(--muted); font-size: .9rem; }
 .note { background: var(--gold-bg); color: var(--gold-tx); border-radius: 10px; padding: 8px 12px; font-weight: 600; margin: 0; }
@@ -123,7 +152,7 @@ main { min-width: 0; }
 /* rules */
 .rules { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
 .rules li { border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px 12px 48px; position: relative; }
-.rules li::before { content: "✓"; position: absolute; left: 14px; top: 12px; width: 24px; height: 24px; border-radius: 50%; background: var(--ok-bg); color: var(--ok-tx); display: grid; place-items: center; font-weight: 700; font-size: .85rem; }
+.rules li::before { content: "✓"; position: absolute; left: 14px; top: 12px; width: 24px; height: 24px; border-radius: 50%; background: var(--abg); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: .85rem; }
 
 /* rubric grid */
 .gridwrap { overflow-x: auto; }
@@ -164,7 +193,8 @@ table.grid td.l3 { background: color-mix(in srgb, var(--l3-bg) 45%, transparent)
 .empty { padding: 32px; text-align: center; }
 
 @media (max-width: 860px) {
-  .band-in { grid-template-columns: 1fr; } .band .acts { justify-content: flex-start; }
+  .band-in, .band-in.has-thumb { grid-template-columns: 1fr; } .band .acts, .band-in.has-thumb .acts { grid-column: 1; justify-content: flex-start; }
+  .band-in.has-thumb .thumb { grid-row: auto; width: 84px; }
   .shell { grid-template-columns: 1fr; gap: 12px; padding-top: 6px; }
   /* sticky bar: ☰ Sections + where you are */
   .mbar { display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 5; background: var(--bg); padding: 8px 0; border-bottom: 1px solid var(--border); }
@@ -194,7 +224,7 @@ table.grid td.l3 { background: color-mix(in srgb, var(--l3-bg) 45%, transparent)
 @media print {
   .no-print, .page-toolbar, .menu, .mbar, .scrim, .skip, .back, .next, .band .acts { display: none !important; }
   body { background: #fff !important; color: #000 !important; }
-  .band { background: #fff !important; color: #000 !important; border-bottom: 2px solid #000; } .band::after { display: none; } .band .alt { color: #333 !important; }
+  .band { background: #fff !important; color: #000 !important; border-bottom: 2px solid #000; } .band::after, .band .deco, .thumb { display: none; } .band.themed .band-in { padding-bottom: 12px; } .band h1, .band .when { text-shadow: none; } .band .alt { color: #333 !important; }
   .shell { display: block; max-width: 100%; padding: 0; }
   .panel, .panel[hidden] { display: grid !important; border: 0; padding: 0 0 16px; break-inside: avoid; }
   * { box-shadow: none !important; }
@@ -281,14 +311,27 @@ function ics(e) {
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([L.join('\r\n')], { type: 'text/calendar' })); a.download = `${e.id}.ics`; document.body.appendChild(a); a.click(); a.remove();
 }
 
-let SECTIONS = [], current = '', viewAll = false;
+let SECTIONS = [], current = '', viewAll = false, THEMES = null;
+/* the event's theme: colours for the whole page + its animated scene behind the band (same file the carousel reads) */
+function applyTheme(e) {
+  const TT = THEMES?.themes || {}; let id = e.theme;
+  if (!TT[id]) { const s = THEMES?.seasons; id = s?.themes?.[s.months?.[NOW.getMonth() + 1]]; }
+  const T = TT[id]; if (!T) return;
+  const r = document.documentElement.style;
+  r.setProperty('--acc', T.text); r.setProperty('--acc-d', T.textDark || T.text); r.setProperty('--acc-bg', T.accent); if (T.panel) r.setProperty('--panel', T.panel);
+  const st = document.createElement('style'); st.textContent = THEMES.css || ''; document.head.appendChild(st);
+  const band = document.querySelector('.band'); band.classList.add('themed');
+  band.insertAdjacentHTML('afterbegin', `<div class="deco" aria-hidden="true"><svg viewBox="0 0 1200 800" preserveAspectRatio="xMidYMax slice" focusable="false" style="${T.colors.map((c, k) => `--t${k + 1}:${c}`).join(';')}">${T.svg}</svg></div>`);
+}
 function render(e, R, base) {
   document.title = `${R?.title || e.title} · Language Lab`;
   const closed = passed(e.entry?.deadline, e.entry?.deadline_time);
   const entry = !e.entry?.url ? '' : closed ? `<span class="btn ghost" aria-disabled="true" style="opacity:.7;cursor:default">Entries closed</span>` : `<a class="btn gold" href="${esc(e.entry.url)}" target="_blank" rel="noopener">${esc(e.entry.label || 'Enter')}</a>`;
   const byLine = [e.entry?.url && e.entry.deadline && `<span><b>${closed ? 'Entries closed' : 'Enter by'}</b> ${esc(byWhen(e.entry.deadline, e.entry.deadline_time))}</span>`,
     e.mini_project?.due && `<span><b>Turn in by</b> ${esc(byWhen(e.mini_project.due, e.mini_project.due_time))}</span>`].filter(Boolean).join('');
-  $('band').innerHTML = `<div><a class="back" id="back" href="event-carousel.html#ev-${encodeURIComponent(e.id)}"><span class="arr" aria-hidden="true">←</span>All events</a>
+  const fly = e.flyer && !/\.pdf$/i.test(e.flyer) ? fileURL(base, e.flyer) : '';
+  $('band').classList.toggle('has-thumb', !!fly);
+  $('band').innerHTML = (fly ? `<a class="thumb" href="${esc(fly)}" target="_blank" rel="noopener"><img src="${esc(fly)}" alt="Flyer: ${esc(e.flyer_alt || e.title)} (opens full size)" onerror="this.closest('.thumb').remove()"></a>` : '') + `<div><a class="back" id="back" href="event-carousel.html#ev-${encodeURIComponent(e.id)}"><span class="arr" aria-hidden="true">←</span>All events</a>
       <h1>${esc(R?.title || e.title)}${(R?.title_alt || e.title_alt) ? `<span class="alt" lang="${esc(R?.title_alt_lang || e.title_alt_lang || 'es')}">${esc(R?.title_alt || e.title_alt)}</span>` : ''}</h1>
       <p class="when">${esc(fmtDate(e.date))} · ${esc(fmtTime(e.start))}${e.end ? '–' + esc(fmtTime(e.end)) : ''} · ${esc(e.location || '')}</p></div>
     <div class="acts">${entry}<button class="btn ghost" type="button" id="icsBtn">Add to calendar</button>
@@ -302,11 +345,12 @@ function render(e, R, base) {
   /* 1. start: facts + steps */
   const facts = R?.facts?.length ? R.facts : [{ label: 'When', value: `${fmtDate(e.date)}, ${fmtTime(e.start)}` }, { label: 'Where', value: e.location }];
   const steps = e.mini_project?.steps?.length ? e.mini_project.steps : (e.activities || []).map(a => a.text).filter(Boolean);
-  const stepTitles = ['Pick someone', 'Make it', 'Explain it', 'Bring it'];
-  const allSteps = [...steps, ...(e.mini_project?.deliverable ? [e.mini_project.deliverable] : [])];
+  /* step headings only when the event gives them (mini_project.step_titles); the deliverable is always "Turn in" */
+  const stepTitles = e.mini_project?.steps?.length ? (e.mini_project.step_titles || []) : [];
+  const allSteps = [...steps.map((s, i) => [stepTitles[i] || '', s, '']), ...(e.mini_project?.deliverable ? [['Turn in', e.mini_project.deliverable, 'turnin']] : [])];
   S.push({ id: 'start', label: 'Start here', sub: 'The quick version', html: `<h2>Start here</h2><p class="lede">${esc(R?.summary || e.summary || '')}</p>
     <dl class="facts">${facts.map(f => `<div class="fact"><dt>${esc(f.label)}</dt><dd>${esc(f.value)}</dd></div>`).join('')}</dl>
-    ${allSteps.length ? `<ol class="steps">${allSteps.map((s, i) => `<li><b>${stepTitles[i] || 'Step ' + (i + 1)}</b><span>${esc(s)}</span></li>`).join('')}</ol>` : ''}
+    ${allSteps.length ? `<ol class="steps">${allSteps.map(([h, s, c]) => `<li${c ? ` class="${c}"` : ''}>${h ? `<b>${esc(h)}</b>` : ''}<span>${esc(s)}</span></li>`).join('')}</ol>` : ''}
     ${byLine ? `<p class="bylines">${byLine}</p>` : ''}
     ${entry && !closed ? `<div>${entry.replace('btn gold', 'btn navy')}</div>` : ''}` });
   /* 2. prizes */
@@ -314,7 +358,7 @@ function render(e, R, base) {
     const cards = (e.prizes || []).map((p, i) => {
       const place = p.place || ordinal(i + 1) + ' place', file = p.image || `prizes/${e.key}-prize-${i + 1}.jpg`, src = fileURL(base, file);
       const img = (PV && !src) ? mystery(place) : `<img src="${esc(src)}" alt="${esc(p.alt || p.name || place + ' prize')}" data-base="${esc(base + file.replace(/\.[a-z0-9]+$/i, ''))}" data-place="${esc(place)}" data-tried="${esc((file.match(/\.[a-z0-9]+$/i) || ['.jpg'])[0])}" onerror="imgFallback(this)">`;
-      return `<article class="prize" data-rank="${i + 1}"><div class="img">${img}</div><div class="b"><span class="place">${esc(place)}</span>${p.name ? `<span class="name">${esc(p.name)}</span>` : `<span class="tba">To be announced</span>`}</div></article>`;
+      return `<article class="prize" data-rank="${i + 1}"><span class="medal" aria-hidden="true">${i + 1}<sup>${({ 1: 'st', 2: 'nd', 3: 'rd' })[i + 1] || 'th'}</sup></span><div class="img">${img}</div><div class="b"><span class="place">${esc(place)}</span>${p.name ? `<span class="name">${esc(p.name)}</span>` : `<span class="tba">To be announced</span>`}</div></article>`;
     }).join('');
     S.push({ id: 'prizes', label: 'Prizes', sub: (e.prizes || []).length ? `${e.prizes.length} to win` : 'Coming soon', html: `<h2>Prizes <span class="es" lang="es">Premios</span></h2>${e.prizes_note ? `<p class="note">${esc(e.prizes_note)}</p>` : ''}<div class="podium">${cards}</div>` });
   }
@@ -398,6 +442,9 @@ $('viewAll').onclick = () => { if (drawerOpen()) setDrawer(false, false); viewAl
   const id = PV?.ev || params.get('ev');
   const e = D?.events?.find(x => x.id === id || x.key === id);
   if (!e) { $('band').innerHTML = '<div><a class="back" href="event-carousel.html"><span class="arr" aria-hidden="true">←</span>All events</a><h1>Event not found</h1></div>'; $('main').innerHTML = `<div class="panel empty"><p>This event may have ended. <a href="event-carousel.html">See upcoming events</a>.</p></div>`; return; }
+  if (PV) THEMES = PV.themes || null;
+  else try { const r = await fetch(base + 'themes.json', { cache: 'no-store' }); if (r.ok) THEMES = await r.json(); } catch (x) {}
+  applyTheme(e);
   let R = null;
   if (e.rubric && PV) R = PV.rubrics[e.rubric] || null;
   else if (e.rubric) { try { const r = await fetch(base + e.rubric, { cache: 'no-store' }); if (r.ok) R = await r.json(); } catch (x) {} }
