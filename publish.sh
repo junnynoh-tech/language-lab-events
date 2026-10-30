@@ -10,6 +10,7 @@ cp "$HUB/current/events.json" "$HERE/current/"
 mkdir -p "$HERE/current/rubrics"; cp "$HUB/current/rubrics/"*.json "$HERE/current/rubrics/" 2>/dev/null || true
 cp "$LABS/class-pages/themes.json" "$HUB/current/themes.json"; cp "$LABS/class-pages/themes.json" "$HERE/current/themes.json"   # event backgrounds (one source: class-pages/themes.json)
 mkdir -p "$HERE/current/prizes"; cp "$HUB/current/prizes/"* "$HERE/current/prizes/" 2>/dev/null || true
+mkdir -p "$HERE/current/music"; cp "$HUB/current/music/"* "$HERE/current/music/" 2>/dev/null || true   # ambient tracks for the carousel turntable
 for f in "$LABS"/flyers-*/*.jpg; do [ -e "$f" ] && cp "$f" "$HERE/current/"; done
 if ! python3 "$LABS/check_music.py" "$HUB/current/events.json"; then   # every event's YouTube links must still play
   [ -n "$SKIP_MUSIC_CHECK" ] || { echo "Fix the music links above in the Event Generator (or SKIP_MUSIC_CHECK=1 bash publish.sh)"; exit 1; }

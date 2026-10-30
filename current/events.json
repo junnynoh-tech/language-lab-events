@@ -161,40 +161,11 @@
       "theme": "dia-de-muertos",
       "music": [
         {
-          "title": "Day of the Dead Music and Ambience",
-          "artist": "Macabre Mabel",
-          "url": "https://www.youtube.com/watch?v=StIGkh7lqfo",
-          "kind": "ambient"
-        },
-        {
-          "title": "Música instrumental para el Día de los Muertos",
-          "artist": "Dame Regional",
-          "url": "https://www.youtube.com/watch?v=tIgZqb2ONkU",
-          "kind": "instrumental"
-        },
-        {
-          "title": "La Llorona",
-          "artist": "Ángela Aguilar",
-          "url": "https://www.youtube.com/watch?v=h5z99EYHY4I",
-          "kind": "song"
-        },
-        {
-          "title": "Recuérdame (de Coco)",
-          "artist": "Carlos Rivera",
-          "url": "https://www.youtube.com/watch?v=4xvmRCvCnq4",
-          "kind": "song"
-        },
-        {
-          "title": "Remember Me (Lullaby) (from Coco)",
-          "artist": "Gael García Bernal",
-          "url": "https://www.youtube.com/watch?v=ImutnoiBixY",
-          "kind": "song"
-        },
-        {
-          "title": "Un Poco Loco (de Coco)",
-          "artist": "Luis Ángel Gómez Jaramillo & Gael García Bernal",
-          "url": "https://www.youtube.com/watch?v=t2SkpOwyta8",
-          "kind": "song"
+          "title": "Las Chiapanecas (marimba)",
+          "artist": "Alejandro Nuricumbo, courtesy of Museo de la Marimba Chiapas",
+          "file": "music/ddm-chiapanecas.mp3",
+          "license": "Public domain",
+          "source": "https://commons.wikimedia.org/wiki/File:Chiapanecas_marimba.ogg"
         }
       ]
     },
@@ -256,40 +227,11 @@
       "theme": "karaoke",
       "music": [
         {
-          "title": "Vivir Mi Vida",
-          "artist": "Marc Anthony",
-          "url": "https://www.youtube.com/watch?v=YXnjy5YlDwk",
-          "kind": "Spanish"
-        },
-        {
-          "title": "La Bamba",
-          "artist": "Ritchie Valens",
-          "url": "https://www.youtube.com/watch?v=BycLmWI97Nc",
-          "kind": "Spanish"
-        },
-        {
-          "title": "Dernière danse",
-          "artist": "Indila",
-          "url": "https://www.youtube.com/watch?v=K5KAc5CoCuk",
-          "kind": "French"
-        },
-        {
-          "title": "Volare (Nel blu dipinto di blu)",
-          "artist": "Gipsy Kings",
-          "url": "https://www.youtube.com/watch?v=X8TOhb_4jU0",
-          "kind": "Italian"
-        },
-        {
-          "title": "99 Luftballons",
-          "artist": "Nena",
-          "url": "https://www.youtube.com/watch?v=Fpu5a0Bl8eY",
-          "kind": "German"
-        },
-        {
-          "title": "Gangnam Style",
-          "artist": "PSY",
-          "url": "https://www.youtube.com/watch?v=9bZkp7q19f0",
-          "kind": "Korean"
+          "title": "Casa Bossa Nova",
+          "artist": "Kevin MacLeod (incompetech.com)",
+          "file": "music/cafe-casa-bossa-nova.mp3",
+          "license": "CC BY 3.0",
+          "source": "https://commons.wikimedia.org/wiki/File:Casa_Bossa_Nova_(ISRC_USUAN1600012).mp3"
         }
       ]
     },
@@ -349,46 +291,11 @@
       "theme": "winter-holidays",
       "music": [
         {
-          "title": "Feliz Navidad",
-          "artist": "José Feliciano",
-          "url": "https://www.youtube.com/watch?v=N8NcQzMQN_U",
-          "kind": "Spanish · English"
-        },
-        {
-          "title": "Mi Burrito Sabanero",
-          "artist": "Aventura",
-          "url": "https://www.youtube.com/watch?v=d57joTW4kmA",
-          "kind": "Spanish"
-        },
-        {
-          "title": "Petit Papa Noël",
-          "artist": "Tino Rossi",
-          "url": "https://www.youtube.com/watch?v=dXFlvs2ZVg8",
-          "kind": "French"
-        },
-        {
-          "title": "Mele Kalikimaka",
-          "artist": "Bing Crosby & The Andrews Sisters",
-          "url": "https://www.youtube.com/watch?v=gLh5JzyKQqU",
-          "kind": "Hawaiian · English"
-        },
-        {
-          "title": "Laylet Eid (ليلة عيد)",
-          "artist": "Fairuz",
-          "url": "https://www.youtube.com/watch?v=ivo2THZ2zbY",
-          "kind": "Arabic"
-        },
-        {
-          "title": "Stille Nacht, heilige Nacht",
-          "artist": "Heintje",
-          "url": "https://www.youtube.com/watch?v=na7L-54XtO0",
-          "kind": "German"
-        },
-        {
-          "title": "Tu scendi dalle stelle",
-          "artist": "Luciano Pavarotti",
-          "url": "https://www.youtube.com/watch?v=K3pa-kD8DHw",
-          "kind": "Italian"
+          "title": "Jingle Bells (Calm)",
+          "artist": "Kevin MacLeod (incompetech.com)",
+          "file": "music/holidays-jingle-bells-calm.mp3",
+          "license": "CC BY 3.0",
+          "source": "https://commons.wikimedia.org/wiki/File:Jingle_Bells_(Calm)_(Kevin_MacLeod)_(ISRC_USUAN1100188).oga"
         }
       ]
     },
@@ -432,28 +339,11 @@
       "theme": "lingo-cafe",
       "music": [
         {
-          "title": "Cozy Christmas Coffee Shop Ambience",
-          "artist": "Cozy Ambience",
-          "url": "https://www.youtube.com/watch?v=-wsAlCP6auY",
-          "kind": "ambient"
-        },
-        {
-          "title": "Cozy Coffee Shop Jazz & Bossa Nova",
-          "artist": "The Kae Siblings",
-          "url": "https://www.youtube.com/watch?v=zrNgpmEscwQ",
-          "kind": "ambient"
-        },
-        {
-          "title": "Feliz Navidad",
-          "artist": "José Feliciano",
-          "url": "https://www.youtube.com/watch?v=N8NcQzMQN_U",
-          "kind": "song"
-        },
-        {
-          "title": "Petit Papa Noël",
-          "artist": "Tino Rossi",
-          "url": "https://www.youtube.com/watch?v=dXFlvs2ZVg8",
-          "kind": "French"
+          "title": "Silent Night",
+          "artist": "Kevin MacLeod (incompetech.com)",
+          "file": "music/chill-silent-night.mp3",
+          "license": "CC BY 3.0",
+          "source": "https://commons.wikimedia.org/wiki/File:Silent_Night_(Kevin_MacLeod)_(ISRC_USUAN1100075).oga"
         }
       ]
     }
