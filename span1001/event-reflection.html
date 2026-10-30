@@ -14,7 +14,7 @@
 :root[data-theme="dark"]{--bg:#0F1115;--surface:#181B22;--ink:#F1F3F6;--ink-muted:#B8C0CE;--ink-faint:#9AA4B5;--navy:#9DB8EC;--gold:#D9B968;
   --border:rgba(241,243,246,.14);--border-strong:rgba(241,243,246,.34);--note-bg:rgba(251,191,36,.16);--note-tx:#FCD34D;--focus:#D9B968;}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 'DM Sans',system-ui,sans-serif;}
+body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.55 'DM Sans',system-ui,sans-serif;}
 .wrap{max-width:760px;margin:0 auto;padding:24px 20px 56px;}
 .skip{position:absolute;left:-999px;top:0;background:var(--navy);color:#fff;padding:8px 14px;border-radius:0 0 8px 0;}
 .skip:focus{left:0;}
@@ -48,8 +48,8 @@ h2 .pts{font:600 13px/1.6 'DM Sans',sans-serif;color:var(--ink-faint);}
 .drop.over{border-color:var(--navy);color:var(--navy);}
 .photo{display:none;margin:0 0 10px;} .photo.on{display:block;} .photo img{max-width:100%;max-height:340px;border-radius:8px;display:block;}
 .photo button{margin-top:6px;}
-.frames{margin:0 0 10px;padding-left:20px;font-size:15px;} .frames li{margin:0 0 3px;}
-.es{font-style:italic;} .gl{color:var(--ink-muted);font-size:14px;}
+.frames{margin:0 0 10px;padding-left:20px;font-size:17px;} .frames li{margin:0 0 3px;}
+.es{font-style:italic;} .gl{color:var(--ink-muted);font-size:16px;}
 .note{background:var(--note-bg);color:var(--note-tx);border-left:4px solid var(--gold);border-radius:0 10px 10px 0;padding:12px 16px;margin:16px 0 0;font-size:15px;}
 .status{color:var(--ink-muted);font-size:14px;min-height:1.4em;margin:6px 0 0;}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;}
@@ -120,7 +120,7 @@ h2 .pts{font:600 13px/1.6 'DM Sans',sans-serif;color:var(--ink-faint);}
 <p>5 sentences in Spanish about the event.</p><ul class="frames"><li><span lang="es" class="es">En el evento hay ___ y ___.</span> <span class="gl">At the event there is / are…</span></li><li><span lang="es" class="es">Me gusta ___ porque ___.</span> <span class="gl">I like ___ because…</span></li><li><span lang="es" class="es">Escucho música de ___.</span> / <span lang="es" class="es">Como ___ de ___.</span> <span class="gl">I listen to music from… / I eat ___ from… (<span lang="es">la canción</span> song · <span lang="es">la comida</span> food)</span></li><li><span lang="es" class="es">Una persona nueva se llama ___ y es de ___.</span> <span class="gl">A new person is named ___ and is from…</span></li><li><span lang="es" class="es">Prefiero ___. Quiero ___.</span> <span class="gl">I prefer… I want…</span></li></ul><div class="num"><span>1.</span><div class="f" contenteditable="true" role="textbox" aria-label="Sentence 1" data-ph=""></div></div><div class="num"><span>2.</span><div class="f" contenteditable="true" role="textbox" aria-label="Sentence 2" data-ph=""></div></div><div class="num"><span>3.</span><div class="f" contenteditable="true" role="textbox" aria-label="Sentence 3" data-ph=""></div></div><div class="num"><span>4.</span><div class="f" contenteditable="true" role="textbox" aria-label="Sentence 4" data-ph=""></div></div><div class="num"><span>5.</span><div class="f" contenteditable="true" role="textbox" aria-label="Sentence 5" data-ph=""></div></div></section>
 
 <p class="gl">Each part: complete 2 · partly done 1 · missing 0.</p>
-<p class="note"><strong>Due Fri 11/20, 11:59 PM</strong> in the D2L dropbox “Event Reflection”: this sheet as a PDF (or a photo of the paper). Up to <strong>+5 points on your VHL average</strong> (your score ÷ 2), or on one in-class activity or quiz instead.</p>
+<p class="note"><strong>Due Fri 11/20, 11:59 PM</strong> in the D2L dropbox “Event Reflection”: this sheet as a PDF (or a photo of the paper). Up to 5 percentage points on one of your lowest grades (a lab, a VHL homework, or an in-class assignment or quiz): your score out of 10, halved.</p>
 </main></div>
 <script>
 function setTheme(t){ document.documentElement.dataset.theme=t; document.getElementById('themeBtn').textContent = t==='dark' ? 'Light mode' : 'Dark mode'; }
