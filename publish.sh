@@ -8,6 +8,7 @@ HERE="$(cd "$(dirname "$0")" && pwd)"; LABS="$(dirname "$HERE")"; HUB="$LABS/lab
 cp "$HUB/visual/event-carousel.html" "$HUB/visual/event-details.html" "$HERE/visual/"
 cp "$HUB/current/events.json" "$HERE/current/"
 mkdir -p "$HERE/current/rubrics"; cp "$HUB/current/rubrics/"*.json "$HERE/current/rubrics/" 2>/dev/null || true
+mkdir -p "$HERE/current/prizes"; cp "$HUB/current/prizes/"* "$HERE/current/prizes/" 2>/dev/null || true
 for f in "$LABS"/flyers-*/*.jpg; do [ -e "$f" ] && cp "$f" "$HERE/current/"; done
 python3 "$LABS/class-pages/build.py"
 cd "$HERE"

@@ -1,304 +1,305 @@
 {
- "year": 2026,
- "title": "Upcoming events across UNG campuses",
- "generated_by": "Event Generator (labs/event-generator.html)",
- "generated_at": "2026-10-13T15:22:30",
- "campuses": [
-  {
-   "code": "gvl",
-   "name": "Gainesville",
-   "room": "Martha T. Nesbitt 4201"
-  },
-  {
-   "code": "dah",
-   "name": "Dahlonega",
-   "room": "Dunlap Hall 317"
-  },
-  {
-   "code": "ocn",
-   "name": "Oconee",
-   "room": "Student Resource Center 573"
-  },
-  {
-   "code": "cmg",
-   "name": "Cumming",
-   "room": "Room 1219"
-  }
- ],
- "events": [
-  {
-   "id": "2026-10-28-lingo-cafe-candy",
-   "status": "published",
-   "campus": "gvl",
-   "title": "Lingo Café & Candies Around the World",
-   "title_alt": "Dulces del mundo",
-   "title_alt_lang": "es",
-   "date": "2026-10-28",
-   "start": "12:00",
-   "end": "13:00",
-   "location": "Language Lab, Martha T. Nesbitt Building, Room 4201",
-   "summary": "Practice your language over candy from around the world. Taste, compare, and talk with other students and Lab assistants.",
-   "details": "",
-   "languages": [
-    "All languages"
-   ],
-   "hosts": [
-    "UNG Language Lab"
-   ],
-   "partners": [
-    "Nighthawks Entertainment"
-   ],
-   "extra_credit": {
-    "offered": true,
-    "note": "Extra credit is up to each instructor. Ask yours whether this event counts in your course."
-   },
-   "mini_project": {
-    "title": "Taste & tell",
-    "title_es": "Prueba y cuenta",
-    "steps": [
-     "Try at least two candies from different countries.",
-     "Describe each one in Spanish: where it's from and what it's like (dulce, ácido, picante, salado).",
-     "Say which one was your favorite and why (porque…). SPAN 1002: tell it in the past (probé, me gustó)."
-    ],
-    "deliverable": "A short paragraph or a 1-minute video in Spanish.",
-    "submit": "Where and when to submit is posted in D2L.",
-    "due": ""
-   },
-   "link": null,
-   "flyer": "",
-   "flyer_alt": "",
-   "key": "gvl-1",
-   "activities": [],
-   "rules": [],
-   "prizes": [],
-   "prizes_note": "",
-   "rubric": "",
-   "entry": null
-  },
-  {
-   "id": "2026-11-04-dia-de-muertos",
-   "status": "published",
-   "campus": "gvl",
-   "title": "Día de Muertos",
-   "title_alt": "",
-   "title_alt_lang": "",
-   "date": "2026-11-04",
-   "start": "11:00",
-   "end": "13:00",
-   "location": "Language Lab, Martha T. Nesbitt Building, Room 4201",
-   "summary": "Celebrate Día de Muertos and enter the mini-ofrenda competition: make a small altar for someone you remember. Open to every UNG student.",
-   "details": "",
-   "languages": [
-    "Spanish"
-   ],
-   "hosts": [
-    "UNG Language Lab"
-   ],
-   "partners": [
-    "LSA"
-   ],
-   "extra_credit": {
-    "offered": true,
-    "note": "Extra credit is up to each instructor. Ask yours whether this event counts in your course."
-   },
-   "mini_project": {
-    "title": "Mini-ofrenda",
-    "title_es": "Mini-ofrenda",
-    "steps": [
-     "Pick someone to remember: a relative, friend, pet or famous person.",
-     "Make a small ofrenda (12 × 12 in base) with at least 3 elements, like a photo, candles and paper marigolds. Your own version is perfect.",
-     "Add a small card: who it’s for and why. English or Spanish; a few Spanish words are a nice touch."
-    ],
-    "deliverable": "Drop off your ofrenda at the Language Lab on Wednesday, Nov 4, from 8:00 a.m. Pick it up at 2:00 p.m.",
-    "submit": "Fill in the entry form (link on this page) so your ofrenda gets an entry number.",
-    "due": "2026-11-04"
-   },
-   "link": null,
-   "flyer": "gvl-2.jpg",
-   "flyer_alt": "Día de Muertos flyer: Wednesday, November 4, 11 a.m.–1 p.m., Gainesville Language Lab, Nesbitt Room 4201. With the Latino Student Association and UNG.",
-   "key": "gvl-2",
-   "activities": [
+  "year": 2026,
+  "title": "Upcoming events across UNG campuses",
+  "generated_by": "Event Generator (labs/event-generator.html)",
+  "generated_at": "2026-10-13T15:22:30",
+  "campuses": [
     {
-     "title": "Mini-ofrenda competition",
-     "text": "Make a small ofrenda (12 × 12 in base, any height) for someone you remember. Drop it off at the Language Lab on Nov 4 from 8:00 a.m.; pick it up at 2:00 p.m. Top three win prizes."
-    }
-   ],
-   "rules": [],
-   "prizes": [
-    {
-     "place": "1st place",
-     "name": "",
-     "image": "",
-     "alt": ""
+      "code": "gvl",
+      "name": "Gainesville",
+      "room": "Martha T. Nesbitt 4201"
     },
     {
-     "place": "2nd place",
-     "name": "",
-     "image": "",
-     "alt": ""
+      "code": "dah",
+      "name": "Dahlonega",
+      "room": "Dunlap Hall 317"
     },
     {
-     "place": "3rd place",
-     "name": "",
-     "image": "",
-     "alt": ""
+      "code": "ocn",
+      "name": "Oconee",
+      "room": "Student Resource Center 573"
+    },
+    {
+      "code": "cmg",
+      "name": "Cumming",
+      "room": "Room 1219"
     }
-   ],
-   "prizes_note": "Prizes will be announced soon.",
-   "rubric": "rubrics/dia-de-muertos-mini-ofrenda-2026.json",
-   "entry": {
-    "label": "Enter the competition",
-    "url": "",
-    "deadline": ""
-   }
-  },
-  {
-   "id": "2026-11-18-lingo-cafe-karaoke",
-   "status": "published",
-   "campus": "gvl",
-   "title": "Lingo Café: Karaoke",
-   "title_alt": "Karaoke",
-   "title_alt_lang": "es",
-   "date": "2026-11-18",
-   "start": "12:00",
-   "end": "13:00",
-   "location": "Language Lab, Martha T. Nesbitt Building, Room 4201",
-   "summary": "Sing in the language you're learning, or just come to listen and chat. No experience needed.",
-   "details": "",
-   "languages": [
-    "All languages"
-   ],
-   "hosts": [
-    "UNG Language Lab"
-   ],
-   "partners": [
-    "Gracias"
-   ],
-   "extra_credit": {
-    "offered": true,
-    "note": "Extra credit is up to each instructor. Ask yours whether this event counts in your course."
-   },
-   "mini_project": {
-    "title": "Event Reflection",
-    "title_es": "Reflexión del evento",
-    "rev": 2,
-    "steps": [
-     "Stay at least 30 minutes. Proof: a photo of you at the event, or a lab assistant's initials.",
-     "Write 3 words or phrases you heard, saw or sang, with their meaning.",
-     "Ask someone 2 questions in the language you're learning, and note the answers.",
-     "In English, write 2–3 sentences about one thing you learned about a culture or tradition.",
-     "Write 5 sentences about the event in the language you're learning."
-    ],
-    "deliverable": "The sheet (photo or scan) and your event photo",
-    "submit": "Your instructor's D2L dropbox",
-    "due": "",
-    "due_time": ""
-   },
-   "link": {
-    "label": "Open the Event Reflection sheet",
-    "url": "https://junnynoh-tech.github.io/language-lab-events/reflection/"
-   },
-   "flyer": "gvl-3.jpg",
-   "flyer_alt": "Lingo Café: Karaoke flyer: Wednesday, November 18, 12–1 p.m., Gainesville Language Lab, Nesbitt 4201. Sing in the language you're learning, or just come to listen.",
-   "key": "gvl-3",
-   "activities": [],
-   "rules": [],
-   "prizes": [],
-   "prizes_note": "",
-   "rubric": "",
-   "entry": null
-  },
-  {
-   "id": "2026-11-18-languages-holiday-style",
-   "status": "published",
-   "campus": "gvl",
-   "title": "Languages Around the World: Let's Learn and Celebrate, Holiday Style",
-   "title_alt": "Celebremos las fiestas",
-   "title_alt_lang": "es",
-   "date": "2026-11-18",
-   "start": "14:00",
-   "end": "17:00",
-   "location": "Cleveland Ballroom, Martha T. Nesbitt Building, Room 3110",
-   "summary": "Learn how the holidays are celebrated around the world, with traditions and greetings from many languages.",
-   "details": "",
-   "languages": [
-    "All languages"
-   ],
-   "hosts": [
-    "UNG Language Lab"
-   ],
-   "partners": [],
-   "extra_credit": {
-    "offered": true,
-    "note": "Extra credit is up to each instructor. Ask yours whether this event counts in your course."
-   },
-   "mini_project": {
-    "title": "Event Reflection",
-    "title_es": "Reflexión del evento",
-    "rev": 2,
-    "steps": [
-     "Stay at least 30 minutes. Proof: a photo of you at the event (your stamped passport works too), or a lab assistant's initials.",
-     "Write 3 words or phrases you heard, saw or sang, with their meaning.",
-     "Ask someone 2 questions in the language you're learning, and note the answers.",
-     "In English, write 2–3 sentences about one thing you learned about a culture or tradition.",
-     "Write 5 sentences about the event in the language you're learning."
-    ],
-    "deliverable": "The sheet (photo or scan) and your event photo",
-    "submit": "Your instructor's D2L dropbox",
-    "due": "",
-    "due_time": ""
-   },
-   "link": {
-    "label": "Open the Event Reflection sheet",
-    "url": "https://junnynoh-tech.github.io/language-lab-events/reflection/"
-   },
-   "flyer": "gvl-4.jpg",
-   "flyer_alt": "Languages Around the World for the Holidays flyer: November 18, 2–5 p.m., Nesbitt 3110, Cleveland Ballroom. Cultural booths, photo booth, food, holiday traditions and language learning activities.",
-   "key": "gvl-4",
-   "activities": [],
-   "rules": [],
-   "prizes": [],
-   "prizes_note": "",
-   "rubric": "",
-   "entry": null
-  },
-  {
-   "id": "2026-11-30-lingo-cafe-holiday-chill",
-   "status": "published",
-   "campus": "gvl",
-   "title": "Lingo Café: Holiday Chill",
-   "title_alt": "Fiestas tranquilas",
-   "title_alt_lang": "es",
-   "date": "2026-11-30",
-   "start": "12:00",
-   "end": "13:00",
-   "location": "Language Lab, Martha T. Nesbitt Building, Room 4201",
-   "summary": "Wind down before finals: relaxed conversation practice with a holiday twist.",
-   "details": "",
-   "languages": [
-    "All languages"
-   ],
-   "hosts": [
-    "UNG Language Lab"
-   ],
-   "partners": [
-    "German Club"
-   ],
-   "extra_credit": {
-    "offered": false,
-    "note": ""
-   },
-   "mini_project": null,
-   "link": null,
-   "flyer": "",
-   "flyer_alt": "",
-   "key": "gvl-5",
-   "activities": [],
-   "rules": [],
-   "prizes": [],
-   "prizes_note": "",
-   "rubric": "",
-   "entry": null
-  }
- ]
+  ],
+  "events": [
+    {
+      "id": "2026-10-28-lingo-cafe-candy",
+      "status": "published",
+      "campus": "gvl",
+      "title": "Lingo Café & Candies Around the World",
+      "title_alt": "Dulces del mundo",
+      "title_alt_lang": "es",
+      "date": "2026-10-28",
+      "start": "12:00",
+      "end": "13:00",
+      "location": "Language Lab, Martha T. Nesbitt Building, Room 4201",
+      "summary": "Practice your language over candy from around the world. Taste, compare, and talk with other students and Lab assistants.",
+      "details": "",
+      "languages": [
+        "All languages"
+      ],
+      "hosts": [
+        "UNG Language Lab"
+      ],
+      "partners": [
+        "Nighthawks Entertainment"
+      ],
+      "extra_credit": {
+        "offered": true,
+        "note": "Extra credit is up to each instructor. Ask yours whether this event counts in your course."
+      },
+      "mini_project": {
+        "title": "Taste & tell",
+        "title_es": "Prueba y cuenta",
+        "steps": [
+          "Try at least two candies from different countries.",
+          "Describe each one in Spanish: where it's from and what it's like (dulce, ácido, picante, salado).",
+          "Say which one was your favorite and why (porque…). SPAN 1002: tell it in the past (probé, me gustó)."
+        ],
+        "deliverable": "A short paragraph or a 1-minute video in Spanish.",
+        "submit": "Where and when to submit is posted in D2L.",
+        "due": ""
+      },
+      "link": null,
+      "flyer": "",
+      "flyer_alt": "",
+      "key": "gvl-1",
+      "activities": [],
+      "rules": [],
+      "prizes": [],
+      "prizes_note": "",
+      "rubric": "",
+      "entry": null
+    },
+    {
+      "id": "2026-11-04-dia-de-muertos",
+      "status": "published",
+      "campus": "gvl",
+      "title": "Día de Muertos",
+      "title_alt": "",
+      "title_alt_lang": "",
+      "date": "2026-11-04",
+      "start": "11:00",
+      "end": "13:00",
+      "location": "Language Lab, Martha T. Nesbitt Building, Room 4201",
+      "summary": "Celebrate Día de Muertos: the traditions, the altars, and the people we remember. Bring your mini-ofrenda for the competition.",
+      "details": "",
+      "languages": [
+        "Spanish"
+      ],
+      "hosts": [
+        "UNG Language Lab"
+      ],
+      "partners": [
+        "LSA"
+      ],
+      "extra_credit": {
+        "offered": true,
+        "note": "Extra credit is up to each instructor. Ask yours whether this event counts in your course."
+      },
+      "mini_project": {
+        "title": "Mini-ofrenda competition",
+        "title_es": "Concurso de mini-ofrendas",
+        "steps": [
+          "Build a small ofrenda (shoebox size or smaller) for a person, pet, or figure you want to remember.",
+          "Include at least 4 traditional elements and label them in Spanish: las velas, las flores de cempasúchil, el pan de muerto, el papel picado, las fotos.",
+          "Add a card in Spanish: who it honors and why (3–5 sentences)."
+        ],
+        "deliverable": "Bring your mini-ofrenda to the event on Nov 4 for the competition. Can't attend? Submit a photo of it with your card.",
+        "submit": "Where and when to submit is posted in D2L.",
+        "due": "2026-11-04",
+        "due_time": "10:30"
+      },
+      "link": null,
+      "flyer": "gvl-2.jpg",
+      "flyer_alt": "Wednesday, November 4th\n11AM - 1PM\nDía de muertos\nNesbitt 4201\nSponsored by Latino Student Association and Language Lab",
+      "key": "gvl-2",
+      "activities": [
+        {
+          "title": "Mini-ofrenda competition",
+          "text": "Bring a small ofrenda (base up to 12 × 12 in). Four judges score every entry; the top three win prizes."
+        }
+      ],
+      "rules": [],
+      "prizes": [
+        {
+          "place": "1st place",
+          "name": "LEGO Botanicals Rocking Plants",
+          "alt": "LEGO Botanicals Rocking Plants set (253 pieces): two smiling potted plants, one in a green pot and one in a pink pot.",
+          "image": "prizes/gvl-2-prize-1.jpg"
+        },
+        {
+          "place": "2nd place",
+          "name": "Hug-A-Lumps capybara plush",
+          "alt": "Hug-A-Lumps weighted plush: a soft tan capybara lying down with a sleepy smile.",
+          "image": "prizes/gvl-2-prize-2.jpg"
+        },
+        {
+          "place": "3rd place",
+          "name": "Hello Kitty Dreamy Starlight plush",
+          "alt": "Hello Kitty plush with a pink star bow and a blue starry dress.",
+          "image": "prizes/gvl-2-prize-3.jpg"
+        }
+      ],
+      "rubric": "rubrics/dia-de-muertos-mini-ofrenda-2026.json",
+      "entry": {
+        "label": "Enter the competition",
+        "url": "https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=jsXmuPrWSk-WjNS-ZY3-jvUu_wPvIVBGnzpm9KRbUDFUQU1HSVo4S1lRWkdSSzFGUkQzSklYVUhXNy4u",
+        "deadline": "2026-11-03",
+        "deadline_time": "23:59"
+      }
+    },
+    {
+      "id": "2026-11-18-lingo-cafe-karaoke",
+      "status": "published",
+      "campus": "gvl",
+      "title": "Lingo Café: Karaoke",
+      "title_alt": "Karaoke",
+      "title_alt_lang": "es",
+      "date": "2026-11-18",
+      "start": "12:00",
+      "end": "13:00",
+      "location": "Language Lab, Martha T. Nesbitt Building, Room 4201",
+      "summary": "Sing in the language you're learning, or just come to listen and chat. No experience needed.",
+      "details": "",
+      "languages": [
+        "All languages"
+      ],
+      "hosts": [
+        "UNG Language Lab"
+      ],
+      "partners": [
+        "Gracias"
+      ],
+      "extra_credit": {
+        "offered": true,
+        "note": "Extra credit is up to each instructor. Ask yours whether this event counts in your course."
+      },
+      "mini_project": {
+        "title": "Event Reflection",
+        "title_es": "Reflexión del evento",
+        "rev": 2,
+        "steps": [
+          "Stay at least 30 minutes. Proof: a photo of you at the event, or a lab assistant's initials.",
+          "Write 3 words or phrases you heard, saw or sang, with their meaning.",
+          "Ask someone 2 questions in the language you're learning, and note the answers.",
+          "In English, write 2–3 sentences about one thing you learned about a culture or tradition.",
+          "Write 5 sentences about the event in the language you're learning."
+        ],
+        "deliverable": "The sheet (photo or scan) and your event photo",
+        "submit": "Your instructor's D2L dropbox",
+        "due": "",
+        "due_time": ""
+      },
+      "link": {
+        "label": "Open the Event Reflection sheet",
+        "url": "https://junnynoh-tech.github.io/language-lab-events/reflection/"
+      },
+      "flyer": "gvl-3.jpg",
+      "flyer_alt": "Lingo Café: Karaoke flyer: Wednesday, November 18, 12–1 p.m., Gainesville Language Lab, Nesbitt 4201. Sing in the language you're learning, or just come to listen.",
+      "key": "gvl-3",
+      "activities": [],
+      "rules": [],
+      "prizes": [],
+      "prizes_note": "",
+      "rubric": "",
+      "entry": null
+    },
+    {
+      "id": "2026-11-18-languages-holiday-style",
+      "status": "published",
+      "campus": "gvl",
+      "title": "Languages Around the World: Let's Learn and Celebrate, Holiday Style",
+      "title_alt": "Celebremos las fiestas",
+      "title_alt_lang": "es",
+      "date": "2026-11-18",
+      "start": "14:00",
+      "end": "17:00",
+      "location": "Cleveland Ballroom, Martha T. Nesbitt Building, Room 3110",
+      "summary": "Learn how the holidays are celebrated around the world, with traditions and greetings from many languages.",
+      "details": "",
+      "languages": [
+        "All languages"
+      ],
+      "hosts": [
+        "UNG Language Lab"
+      ],
+      "partners": [],
+      "extra_credit": {
+        "offered": true,
+        "note": "Extra credit is up to each instructor. Ask yours whether this event counts in your course."
+      },
+      "mini_project": {
+        "title": "Event Reflection",
+        "title_es": "Reflexión del evento",
+        "rev": 2,
+        "steps": [
+          "Stay at least 30 minutes. Proof: a photo of you at the event (your stamped passport works too), or a lab assistant's initials.",
+          "Write 3 words or phrases you heard, saw or sang, with their meaning.",
+          "Ask someone 2 questions in the language you're learning, and note the answers.",
+          "In English, write 2–3 sentences about one thing you learned about a culture or tradition.",
+          "Write 5 sentences about the event in the language you're learning."
+        ],
+        "deliverable": "The sheet (photo or scan) and your event photo",
+        "submit": "Your instructor's D2L dropbox",
+        "due": "",
+        "due_time": ""
+      },
+      "link": {
+        "label": "Open the Event Reflection sheet",
+        "url": "https://junnynoh-tech.github.io/language-lab-events/reflection/"
+      },
+      "flyer": "gvl-4.jpg",
+      "flyer_alt": "Languages Around the World: Let's Learn and Celebrate, Holiday Style\nCelebremos las fiestas\n\nWhen\nWednesday, November 18\n2:00 PM – 5:00 PM\nWhere\nCleveland Ballroom, Martha T. Nesbitt Building, Room 3110\nCampus\nGainesville\nLearn how the holidays are celebrated around the world, with traditions and greetings from many languages.",
+      "key": "gvl-4",
+      "activities": [],
+      "rules": [],
+      "prizes": [],
+      "prizes_note": "",
+      "rubric": "",
+      "entry": null
+    },
+    {
+      "id": "2026-11-30-lingo-cafe-holiday-chill",
+      "status": "published",
+      "campus": "gvl",
+      "title": "Lingo Café: Holiday Chill",
+      "title_alt": "Fiestas tranquilas",
+      "title_alt_lang": "es",
+      "date": "2026-11-30",
+      "start": "12:00",
+      "end": "13:00",
+      "location": "Language Lab, Martha T. Nesbitt Building, Room 4201",
+      "summary": "Wind down before finals: relaxed conversation practice with a holiday twist.",
+      "details": "",
+      "languages": [
+        "All languages"
+      ],
+      "hosts": [
+        "UNG Language Lab"
+      ],
+      "partners": [
+        "German Club"
+      ],
+      "extra_credit": {
+        "offered": false,
+        "note": ""
+      },
+      "mini_project": null,
+      "link": null,
+      "flyer": "",
+      "flyer_alt": "",
+      "key": "gvl-5",
+      "activities": [],
+      "rules": [],
+      "prizes": [],
+      "prizes_note": "",
+      "rubric": "",
+      "entry": null
+    }
+  ]
 }

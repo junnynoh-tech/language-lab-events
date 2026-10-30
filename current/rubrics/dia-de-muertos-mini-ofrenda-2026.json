@@ -5,217 +5,269 @@
  "title": "Mini-Ofrenda Competition",
  "title_alt": "Concurso de mini-ofrendas",
  "title_alt_lang": "es",
- "summary": "Make a small ofrenda (a Day of the Dead altar) for someone you want to remember. Your own ideas, your own materials. Open to every UNG student; no Spanish needed.",
+ "summary": "Build a small ofrenda (altar) that honors someone who has died, using the traditional elements of Día de Muertos and your own creativity. Four judges score every entry with this rubric. The top three win prizes.",
  "facts": [
   {
-   "label": "Who",
-   "value": "Any UNG student, one entry each"
-  },
-  {
    "label": "Size",
-   "value": "Fits on a 12 × 12 inch base · any height"
+   "value": "Base no larger than 12 × 12 inches"
   },
   {
-   "label": "Drop off",
-   "value": "Wed, Nov 4, from 8:00 a.m. · Language Lab, Nesbitt 4201"
-  },
-  {
-   "label": "Pick up",
-   "value": "Wed, Nov 4, at 2:00 p.m."
+   "label": "Where",
+   "value": "Language Lab, Martha T. Nesbitt 4201 (Gainesville)"
   },
   {
    "label": "Judging",
-   "value": "Nov 4, during the Día de Muertos event (11:00–1:00)"
+   "value": "Wednesday, November 4, 2026, during the Día de Muertos event"
   },
   {
    "label": "Prizes",
-   "value": "1st, 2nd and 3rd place, announced soon"
+   "value": "1st: LEGO Botanicals Rocking Plants. 2nd: Hug-A-Lumps capybara plush. 3rd: Hello Kitty plush."
   }
  ],
  "requirements": [
   {
-   "id": "size",
-   "text": "Fits on a base no bigger than 12 × 12 inches (any height)."
+   "id": "r1",
+   "text": "Your ofrenda fits on a base no larger than 12 × 12 inches."
   },
   {
-   "id": "honoree",
-   "text": "Remembers someone who has died: a relative, friend, pet, or famous person."
+   "id": "r2",
+   "text": "It honors someone who has died: a family member, friend, pet, or a historical or public figure. Never a living person."
   },
   {
-   "id": "own",
-   "text": "Your own work, one entry per student. Homemade and store-bought pieces are both fine."
+   "id": "r3",
+   "text": "At least 4 elements carry a small label in Spanish (for example, “el agua: para la sed del alma”), plus a card in Spanish of 3–5 sentences: who it honors and why."
   },
   {
-   "id": "safe",
-   "text": "No real flames, alcohol or food that spoils. Use LED candles and fake or wrapped food."
+   "id": "r4",
+   "text": "No open flames. Use LED candles. Copal and incense stay unlit."
   },
   {
-   "id": "respect",
-   "text": "A remembrance, not Halloween: no zombies, witches or fake blood."
+   "id": "r5",
+   "text": "No alcohol, tobacco, or food that can spoil. Use replicas, sealed packages or pictures for drinks and favorite foods."
   },
   {
-   "id": "anon",
-   "text": "Put your name on the back or bottom only. Judges see an entry number."
+   "id": "r6",
+   "text": "Keep it a remembrance, not Halloween: no jack-o’-lanterns, witches, zombies, fake blood or costume stereotypes."
+  },
+  {
+   "id": "r7",
+   "text": "It is your own work. Store-bought pieces are fine; what you make yourself counts toward craftsmanship."
+  },
+  {
+   "id": "r8",
+   "text": "Put your name only on the back of the base. Judges see an entry number, not your name."
   }
  ],
- "disqualifiers": [],
+ "disqualifiers": [
+  "Open flame, alcohol, tobacco or spoiling food on the ofrenda.",
+  "Content that mocks the tradition or the person honored.",
+  "Work that is not the student’s own."
+ ],
  "scale": {
   "levels": [
    {
+    "value": 4,
+    "label": "Excellent",
+    "label_alt": "Excelente"
+   },
+   {
     "value": 3,
-    "label": "Wow",
-    "label_alt": "¡Increíble!"
+    "label": "Good",
+    "label_alt": "Bien logrado"
    },
    {
     "value": 2,
-    "label": "Solid",
-    "label_alt": "Bien"
+    "label": "Developing",
+    "label_alt": "En desarrollo"
    },
    {
     "value": 1,
-    "label": "Started",
-    "label_alt": "Empezado"
+    "label": "Beginning",
+    "label_alt": "Inicial"
    }
   ],
-  "points_rule": "Each judge scores each area 1–3. Your score is the average of the judges’ totals, out of 12."
+  "points_rule": "Each judge scores each area 1–4. Your score is the average of the judges’ totals."
  },
  "groups": [
   {
-   "id": "main",
-   "label": "What judges look for",
-   "label_alt": "Lo que buscan los jueces"
+   "id": "culture",
+   "label": "Tradition and meaning",
+   "label_alt": "Tradición y significado"
+  },
+  {
+   "id": "art",
+   "label": "Art and creativity",
+   "label_alt": "Arte y creatividad"
   }
  ],
  "criteria": [
   {
-   "id": "tradicion",
-   "group": "main",
-   "points": 3,
-   "name": "Tradition",
-   "name_alt": "Tradición",
-   "question": "Does it use ofrenda elements, in your own way?",
+   "id": "elementos",
+   "group": "culture",
+   "points": 25,
+   "name": "Traditional elements",
+   "name_alt": "Elementos tradicionales",
+   "question": "Are the essential elements there, and used the way the tradition uses them?",
    "levels": {
-    "3": "5 or more elements, each with a clear purpose.",
-    "2": "3–4 elements.",
-    "1": "1–2 elements."
+    "1": "Few or no traditional elements; reads as general decoration.",
+    "2": "2–3 traditional elements, or elements used in a way the tradition would not.",
+    "3": "4–5 traditional elements, used correctly. One of the four natural elements is missing or token.",
+    "4": "6 or more traditional elements, including the four natural elements: water (agua), earth (food, flowers), fire (candles) and wind (papel picado). Each is placed with purpose, e.g. marigold petals leading to the altar."
+   }
+  },
+  {
+   "id": "significado",
+   "group": "culture",
+   "points": 15,
+   "name": "Meaning, explained in Spanish",
+   "name_alt": "Significado en español",
+   "question": "Do the Spanish labels and card show the student understands why each element is there?",
+   "levels": {
+    "1": "Spanish labels or card missing.",
+    "2": "Labels give names only, or the card is very short.",
+    "3": "Labels and card are present and mostly explain meaning; some labels give only the name.",
+    "4": "Labels on 4+ elements give the name and its purpose in Spanish; the card (3–5 sentences) clearly says who is honored and why. Spanish is clear even with small errors."
    }
   },
   {
    "id": "homenaje",
-   "group": "main",
-   "points": 3,
-   "name": "Tribute",
-   "name_alt": "Homenaje",
-   "question": "Can we tell who it remembers, and something about them?",
+   "group": "culture",
+   "points": 15,
+   "name": "Personal tribute",
+   "name_alt": "Homenaje personal",
+   "question": "Do we come away knowing something about the person being remembered?",
    "levels": {
-    "3": "We learn who they were: photo or drawing, favorite things, personal details.",
-    "2": "We know who it is, with a detail or two.",
-    "1": "Not clear who it remembers."
+    "1": "No clear honoree.",
+    "2": "Honoree is named but the ofrenda could be for anyone.",
+    "3": "Honoree is clear, with a few personal details.",
+    "4": "A clear portrait of one person (or pet or figure): their photo or image, favorite foods or drinks (as replicas), objects tied to their life, details only they would have."
+   }
+  },
+  {
+   "id": "composicion",
+   "group": "art",
+   "points": 15,
+   "name": "Composition and design",
+   "name_alt": "Composición y diseño",
+   "question": "Does it work as a small altar: levels, balance, color, a focal point?",
+   "levels": {
+    "1": "No visible arrangement.",
+    "2": "Elements are present but crowded or scattered.",
+    "3": "Organized and balanced; levels or focal point present but less developed.",
+    "4": "Strong layout within the 12 × 12 base: levels (niveles) or tiers used with intention, balanced arrangement, a clear focal point on the honoree, a deliberate color palette."
    }
   },
   {
    "id": "creatividad",
-   "group": "main",
-   "points": 3,
-   "name": "Creativity",
-   "name_alt": "Creatividad",
-   "question": "Is it your own idea, made with care?",
+   "group": "art",
+   "points": 20,
+   "name": "Creativity and originality",
+   "name_alt": "Creatividad y originalidad",
+   "question": "Is there a fresh idea, an inventive material, or a personal way of telling the story?",
    "levels": {
-    "3": "Original idea, handmade touches, finished with care.",
-    "2": "Some personal touches; neat.",
-    "1": "Mostly plain or unfinished."
+    "1": "Copied or generic.",
+    "2": "Mostly a standard or kit-like ofrenda.",
+    "3": "Some original touches on a familiar layout.",
+    "4": "A memorable, original idea that still respects the tradition: inventive materials, a theme drawn from the honoree’s life, handmade miniatures, surprising details."
    }
   },
   {
-   "id": "explicacion",
-   "group": "main",
-   "points": 3,
-   "name": "Explanation",
-   "name_alt": "Explicación",
-   "question": "Does a small card tell us who it’s for and what the pieces mean?",
+   "id": "elaboracion",
+   "group": "art",
+   "points": 10,
+   "name": "Craftsmanship and care",
+   "name_alt": "Elaboración y cuidado",
+   "question": "Is it well made, sturdy, and finished with care?",
    "levels": {
-    "3": "Card + labels on several elements. Any language; a few Spanish words are a nice touch.",
-    "2": "A card or a few labels.",
-    "1": "No card or labels."
+    "1": "Unfinished or falling apart.",
+    "2": "Hasty or fragile in places.",
+    "3": "Well made, with minor rough spots.",
+    "4": "Carefully made and finished; stable; handmade pieces (papel picado, paper or tissue marigolds, miniature food) show real effort."
    }
   }
  ],
- "total_points": 12,
+ "total_points": 100,
  "tiebreakers": [
-  "Higher Tradition + Tribute.",
-  "Then higher Creativity.",
-  "Then the judges vote."
+  "Higher combined score on Traditional elements + Meaning in Spanish.",
+  "Then higher score on Personal tribute.",
+  "Then a show of hands by the four judges."
  ],
  "judging": {
   "judges": 4,
-  "how": "Four judges score every entry by its number, without seeing names. Your score is the average of their totals, out of 12. Top three win.",
+  "how": "Each judge scores every entry on their own, by entry number, from a phone. Each criterion gets a level from 1 to 4. An entry’s final score is the average of the judges’ totals. The three highest averages win 1st, 2nd and 3rd.",
   "blind": true
  },
  "essential_elements": [
   {
-   "es": "la foto",
-   "en": "photo",
-   "meaning": "Shows who you remember.",
-   "make": "Print one, or draw them."
-  },
-  {
-   "es": "las velas",
-   "en": "candles",
-   "meaning": "Light the way home.",
-   "make": "LED tea lights, or paper candles."
-  },
-  {
-   "es": "el cempasúchil",
-   "en": "marigolds",
-   "meaning": "Their color and scent guide the spirits.",
-   "make": "Orange tissue-paper flowers or petals."
-  },
-  {
-   "es": "el papel picado",
-   "en": "cut-paper banner",
-   "meaning": "Stands for wind and how delicate life is.",
-   "make": "Fold tissue paper, snip shapes, unfold."
-  },
-  {
    "es": "el agua",
    "en": "water",
-   "meaning": "Quenches thirst after the long journey.",
-   "make": "A small cup or bottle (can be empty)."
+   "meaning": "Quenches the thirst of the souls after their long journey; also a sign of purity.",
+   "make": ""
+  },
+  {
+   "es": "la sal",
+   "en": "salt",
+   "meaning": "Purification.",
+   "make": ""
+  },
+  {
+   "es": "las velas / veladoras",
+   "en": "candles",
+   "meaning": "Their light guides the souls back home. (Use LED candles in the Lab.)",
+   "make": ""
+  },
+  {
+   "es": "el copal",
+   "en": "copal resin",
+   "meaning": "An Indigenous incense whose smoke cleanses the space. (Keep it unlit.)",
+   "make": ""
+  },
+  {
+   "es": "la flor de cempasúchil",
+   "en": "marigold",
+   "meaning": "An Indigenous flower whose color and scent show the souls the way; petals often make a path.",
+   "make": ""
   },
   {
    "es": "el pan de muerto",
    "en": "bread of the dead",
-   "meaning": "A welcome to family and friends.",
-   "make": "Clay, paper, or a photo."
+   "meaning": "The bread offered as a welcome to family and friends.",
+   "make": ""
   },
   {
-   "es": "la calaverita",
-   "en": "skull",
-   "meaning": "Death remembered with a smile, not fear.",
-   "make": "Draw, color or shape one from clay; no sugar needed."
+   "es": "el papel picado",
+   "en": "cut-paper banners",
+   "meaning": "Represents the wind and the fragility of life.",
+   "make": ""
   },
   {
-   "es": "la comida favorita",
-   "en": "favorite food",
-   "meaning": "What they loved, offered to welcome them.",
-   "make": "Wrapped snacks, toy food, or a picture."
+   "es": "la foto o imagen",
+   "en": "photo or image",
+   "meaning": "Shows who is being remembered.",
+   "make": ""
+  },
+  {
+   "es": "la comida y bebida favorita",
+   "en": "favorite food and drink",
+   "meaning": "What the honoree loved, offered to welcome them (replicas in the Lab).",
+   "make": ""
   },
   {
    "es": "los objetos personales",
-   "en": "personal things",
-   "meaning": "A hobby, team, song or job that was theirs.",
-   "make": "Small objects, drawings, or printed images."
+   "en": "personal objects",
+   "meaning": "Things tied to the person’s life, work or hobbies.",
+   "make": ""
   },
   {
    "es": "los niveles",
    "en": "levels",
-   "meaning": "Steps between heaven and earth.",
-   "make": "Stack two or three small boxes."
+   "meaning": "Two levels for heaven and earth; three add the underworld; seven for the steps of the soul’s journey.",
+   "make": ""
   }
  ],
  "learn_more": [
   {
-   "label": "UNESCO: Mexico’s festivity dedicated to the dead",
+   "label": "UNESCO: Indigenous festivity dedicated to the dead (Mexico)",
    "url": "https://ich.unesco.org/en/RL/indigenous-festivity-dedicated-to-the-dead-00054"
   },
   {
@@ -223,9 +275,9 @@
    "url": "https://mexicocity.cdmx.gob.mx/day-of-the-dead-ofrendas/"
   },
   {
-   "label": "PBS: Beyond sugar skulls",
+   "label": "PBS: Beyond sugar skulls, the history and culture of Día de los Muertos",
    "url": "https://www.pbs.org/education/blogs/voices-in-education/beyond-sugar-skulls-the-history-and-culture-of-dia-de-los-muertos"
   }
  ],
- "notes_for_organizers": "Simplified for an extra-credit activity open to all students: 4 areas scored 1–3 (12 points), English-first with Spanish words optional. Elements are interpreted, not replicated; homemade versions are listed for each. Categories follow those common to Mexican altar contests (tradition, theme, creativity, presentation)."
+ "notes_for_organizers": "Criteria follow those used in Mexican altar contests (tradition, theme elements, creativity, craftsmanship; e.g. UPAEP and UAQ convocatorias), adapted for a 12 × 12 classroom entry and Spanish-language learning. Safety and respect rules reflect a campus setting."
 }
