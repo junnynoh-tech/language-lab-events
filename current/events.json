@@ -73,7 +73,8 @@
       "prizes": [],
       "prizes_note": "",
       "rubric": "",
-      "entry": null
+      "entry": null,
+      "theme": "confetti"
     },
     {
       "id": "2026-11-04-dia-de-muertos",
@@ -151,7 +152,40 @@
         "url": "https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=jsXmuPrWSk-WjNS-ZY3-jvUu_wPvIVBGnzpm9KRbUDFUQU1HSVo4S1lRWkdSSzFGUkQzSklYVUhXNy4u",
         "deadline": "2026-11-03",
         "deadline_time": "23:59"
-      }
+      },
+      "theme": "dia-de-muertos",
+      "music": [
+        {
+          "title": "Day of the Dead Music and Ambience",
+          "artist": "Macabre Mabel",
+          "url": "https://www.youtube.com/watch?v=StIGkh7lqfo",
+          "kind": "ambient"
+        },
+        {
+          "title": "Música instrumental para el Día de los Muertos",
+          "artist": "Dame Regional",
+          "url": "https://www.youtube.com/watch?v=tIgZqb2ONkU",
+          "kind": "instrumental"
+        },
+        {
+          "title": "La Llorona",
+          "artist": "Ángela Aguilar",
+          "url": "https://www.youtube.com/watch?v=h5z99EYHY4I",
+          "kind": "song"
+        },
+        {
+          "title": "Recuérdame (de Coco)",
+          "artist": "Carlos Rivera",
+          "url": "https://www.youtube.com/watch?v=4xvmRCvCnq4",
+          "kind": "song"
+        },
+        {
+          "title": "Remember Me (Lullaby) (from Coco)",
+          "artist": "Gael García Bernal",
+          "url": "https://www.youtube.com/watch?v=ImutnoiBixY",
+          "kind": "song"
+        }
+      ]
     },
     {
       "id": "2026-11-18-lingo-cafe-karaoke",
@@ -207,7 +241,34 @@
       "prizes": [],
       "prizes_note": "",
       "rubric": "",
-      "entry": null
+      "entry": null,
+      "theme": "karaoke",
+      "music": [
+        {
+          "title": "Vivir Mi Vida",
+          "artist": "Marc Anthony",
+          "url": "https://www.youtube.com/watch?v=YXnjy5YlDwk",
+          "kind": "Spanish"
+        },
+        {
+          "title": "La Bamba",
+          "artist": "Ritchie Valens",
+          "url": "https://www.youtube.com/watch?v=BycLmWI97Nc",
+          "kind": "Spanish"
+        },
+        {
+          "title": "Dernière danse",
+          "artist": "Indila",
+          "url": "https://www.youtube.com/watch?v=K5KAc5CoCuk",
+          "kind": "French"
+        },
+        {
+          "title": "Volare (Nel blu dipinto di blu)",
+          "artist": "Gipsy Kings",
+          "url": "https://www.youtube.com/watch?v=X8TOhb_4jU0",
+          "kind": "Italian"
+        }
+      ]
     },
     {
       "id": "2026-11-18-languages-holiday-style",
@@ -261,7 +322,34 @@
       "prizes": [],
       "prizes_note": "",
       "rubric": "",
-      "entry": null
+      "entry": null,
+      "theme": "winter-holidays",
+      "music": [
+        {
+          "title": "Feliz Navidad",
+          "artist": "José Feliciano",
+          "url": "https://www.youtube.com/watch?v=N8NcQzMQN_U",
+          "kind": "Spanish · English"
+        },
+        {
+          "title": "Mi Burrito Sabanero",
+          "artist": "Aventura",
+          "url": "https://www.youtube.com/watch?v=d57joTW4kmA",
+          "kind": "Spanish"
+        },
+        {
+          "title": "Petit Papa Noël",
+          "artist": "Tino Rossi",
+          "url": "https://www.youtube.com/watch?v=dXFlvs2ZVg8",
+          "kind": "French"
+        },
+        {
+          "title": "Mele Kalikimaka",
+          "artist": "Bing Crosby & The Andrews Sisters",
+          "url": "https://www.youtube.com/watch?v=gLh5JzyKQqU",
+          "kind": "Hawaiian · English"
+        }
+      ]
     },
     {
       "id": "2026-11-30-lingo-cafe-holiday-chill",
@@ -299,7 +387,28 @@
       "prizes": [],
       "prizes_note": "",
       "rubric": "",
-      "entry": null
+      "entry": null,
+      "theme": "lingo-cafe",
+      "music": [
+        {
+          "title": "Cozy Christmas Coffee Shop Ambience",
+          "artist": "Cozy Ambience",
+          "url": "https://www.youtube.com/watch?v=-wsAlCP6auY",
+          "kind": "ambient"
+        },
+        {
+          "title": "Cozy Coffee Shop Jazz & Bossa Nova",
+          "artist": "The Kae Siblings",
+          "url": "https://www.youtube.com/watch?v=zrNgpmEscwQ",
+          "kind": "ambient"
+        },
+        {
+          "title": "Feliz Navidad",
+          "artist": "José Feliciano",
+          "url": "https://www.youtube.com/watch?v=N8NcQzMQN_U",
+          "kind": "song"
+        }
+      ]
     }
   ]
 }
