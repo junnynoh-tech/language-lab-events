@@ -5,13 +5,15 @@
 # First run only: creates the public repo junnynoh-tech/language-lab-events and turns on Pages.
 set -e
 HERE="$(cd "$(dirname "$0")" && pwd)"; LABS="$(dirname "$HERE")"; HUB="$LABS/lab-assistant-training-d2l/lab-hub/events"
+[ -d "$HERE/.git" ] && { git -C "$HERE" pull -q --ff-only || { echo "GitHub has changes that conflict with this folder. Sort that out first."; exit 1; }; }   # bring in files changed on GitHub (e.g. a swapped flyer)
 cp "$HUB/visual/event-carousel.html" "$HUB/visual/event-details.html" "$HERE/visual/"
 cp "$HUB/current/events.json" "$HERE/current/"
 mkdir -p "$HERE/current/rubrics"; cp "$HUB/current/rubrics/"*.json "$HERE/current/rubrics/" 2>/dev/null || true
 cp "$LABS/class-pages/themes.json" "$HUB/current/themes.json"; cp "$LABS/class-pages/themes.json" "$HERE/current/themes.json"   # event backgrounds (one source: class-pages/themes.json)
 mkdir -p "$HERE/current/prizes"; cp "$HUB/current/prizes/"* "$HERE/current/prizes/" 2>/dev/null || true
 mkdir -p "$HERE/current/music"; cp "$HUB/current/music/"* "$HERE/current/music/" 2>/dev/null || true   # ambient tracks for the carousel turntable
-for f in "$LABS"/flyers-*/*.jpg "$LABS"/flyers-*/*.png; do [ -e "$f" ] && cp "$f" "$HERE/current/"; done
+for f in "$LABS"/flyers-*/*.{jpg,jpeg,png,webp,avif,gif,pdf,heic,heif,tif,tiff,bmp,JPG,JPEG,PNG,HEIC}; do [ -e "$f" ] && cp -p "$f" "$HERE/current/"; done
+python3 "$HERE/reconcile_flyers.py"   # any image type; newest file per flyer code wins (also one swapped in on GitHub); fixes every reference
 if ! python3 "$LABS/check_music.py" "$HUB/current/events.json"; then   # every event's YouTube links must still play
   [ -n "$SKIP_MUSIC_CHECK" ] || { echo "Fix the music links above in the Event Generator (or SKIP_MUSIC_CHECK=1 bash publish.sh)"; exit 1; }
 fi

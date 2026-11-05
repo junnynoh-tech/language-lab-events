@@ -258,6 +258,9 @@ const at = (d, t) => new Date(`${d}T${t || '00:00'}`);
 const fmtTime = t => { if (!t) return ''; const [h, m] = t.split(':').map(Number); return `${((h + 11) % 12) + 1}:${String(m).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`; };
 const fmtDate = d => at(d).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 const ordinal = n => n + ({ 1: 'st', 2: 'nd', 3: 'rd' }[n % 10 * (Math.floor(n / 10) % 10 !== 1)] || 'th');
+/* flyer missing under its saved name? try the same name in other image types, then drop the thumbnail */
+function flyerRetry(img) { const t = img._tries || (img._tries = ['.jpg', '.jpeg', '.png', '.webp', '.avif', '.gif'].map(x => img.src.replace(/\.[a-z0-9]+(\?.*)?$/i, x)).filter(u => u !== img.src));
+  const u = t.shift(); if (u) { img.src = u; img.closest('a')?.setAttribute('href', u); } else img.closest('.thumb').remove(); }
 const fileURL = (base, f) => PV ? (PV.files[f] || '') : base + f;
 const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
 /* deadlines: optional time; a date with no time means the end of that day. The planner preview can pretend it's another day. */
@@ -332,7 +335,7 @@ function render(e, R, base) {
     e.mini_project?.due && `<span><b>Turn in by</b> ${esc(byWhen(e.mini_project.due, e.mini_project.due_time))}</span>`].filter(Boolean).join('');
   const fly = e.flyer && !/\.pdf$/i.test(e.flyer) ? fileURL(base, e.flyer) : '';
   $('band').classList.toggle('has-thumb', !!fly);
-  $('band').innerHTML = (fly ? `<a class="thumb" href="${esc(fly)}" target="_blank" rel="noopener"><img src="${esc(fly)}" alt="Flyer: ${esc(e.flyer_alt || e.title)} (opens full size)" onerror="this.closest('.thumb').remove()"></a>` : '') + `<div><a class="back" id="back" href="event-carousel.html#ev-${encodeURIComponent(e.id)}"><span class="arr" aria-hidden="true">←</span>All events</a>
+  $('band').innerHTML = (fly ? `<a class="thumb" href="${esc(fly)}" target="_blank" rel="noopener"><img src="${esc(fly)}" alt="Flyer: ${esc(e.flyer_alt || e.title)} (opens full size)" onerror="flyerRetry(this)"></a>` : '') + `<div><a class="back" id="back" href="event-carousel.html#ev-${encodeURIComponent(e.id)}"><span class="arr" aria-hidden="true">←</span>All events</a>
       <h1>${esc(R?.title || e.title)}${(R?.title_alt || e.title_alt) ? `<span class="alt" lang="${esc(R?.title_alt_lang || e.title_alt_lang || 'es')}">${esc(R?.title_alt || e.title_alt)}</span>` : ''}</h1>
       <p class="when">${esc(fmtDate(e.date))} · ${esc(fmtTime(e.start))}${e.end ? '–' + esc(fmtTime(e.end)) : ''} · ${esc(e.location || '')}</p></div>
     <div class="acts">${entry}<button class="btn ghost" type="button" id="icsBtn">Add to calendar</button>
