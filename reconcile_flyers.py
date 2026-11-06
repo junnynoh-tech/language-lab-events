@@ -9,8 +9,10 @@ Run by publish.sh after the flyers are copied into current/. For every flyer bas
     otherwise publishing stops and says to run the file through the Event Generator (which converts anything).
   * Every reference to that base in events.json and class-pages/classes/*.json (bare "gvl-3.jpg" or a full
     .../current/gvl-3.jpg URL) is rewritten to the winning file name.
+  * An event whose "flyer" is empty but whose key has a file here (e.g. gvl-5.png uploaded on GitHub) gets
+    that file filled in, in both events.json copies, so the next publish doesn't blank it again.
 """
-import datetime, re, shutil, sys
+import datetime, json, re, shutil, sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -71,6 +73,22 @@ def main():
             if s2 != s:
                 ref.write_text(s2, encoding="utf-8")
                 print(f"{ref.relative_to(LABS)}: {base} -> {win.name}")
+        files[base] = [win]
+    fill_empty(files)
+
+
+def fill_empty(files):
+    for ref in REFS[:2]:   # the two events.json copies (Lab Hub, GitHub folder)
+        if not ref.exists():
+            continue
+        d = json.loads(ref.read_text(encoding="utf-8")); changed = False
+        for e in d.get("events", []):
+            ps = files.get(e.get("key") or "")
+            if ps and not (e.get("flyer") or "").strip():
+                e["flyer"] = ps[0].name; changed = True
+                print(f"{ref.relative_to(LABS)}: {e['key']} flyer was empty -> {ps[0].name}")
+        if changed:
+            ref.write_text(json.dumps(d, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
 if __name__ == "__main__":
