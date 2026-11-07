@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Lab Events Console</title>
+<!-- Visual console for the events site (2026-11-07). Holds NO data: everything is read from the GitHub repo when the page
+     opens, and Save writes one commit back through GitHub's API with a token kept only in this browser (CLAUDE.md rule 11).
+     Same files and rules as the Pages CMS editor: current/events.json + current/library/<tab>/*.json
+     (see language-lab-events/event_library.py). Event codes and flyer names are tidied in the same commit (tidy_site.py rules). -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
+<style>
+/* Canonical tokens (design-system skill, student theme), same as admin/index.html. Dark mode re-maps them. */
+:root {
+  --navy: #1A3A6B; --navy-dark: #132C52; --gold: #B08D3F; --offwhite: #F7F7F5; --white: #FFFFFF; --ink: #1F2937; --muted: #5A6472;
+  --bg: var(--offwhite); --surface: var(--white); --text: var(--ink); --sub: var(--muted); --line: #DCDDD8;
+  --accent: var(--navy); --accent-ink: var(--white); --rail: var(--white); --chip: #EEF0F3;
+  --ok: #1E6B45; --ok-bg: #E3F1E8; --warn: #8A4B08; --warn-bg: #FBEEDB; --bad: #A12A2A; --bad-bg: #F9E3E3; --shadow: 0 1px 2px rgba(20,30,50,.06), 0 8px 24px rgba(20,30,50,.06);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-mode="light"]) {
+  --bg: #0E1F3A; --surface: var(--navy-dark); --text: var(--offwhite); --sub: #C9CFD8; --line: #2B4670;
+  --accent: var(--offwhite); --accent-ink: var(--navy-dark); --rail: #102443; --chip: #1C3864;
+  --ok: #8FD9AE; --ok-bg: #173F33; --warn: #F2C47E; --warn-bg: #4A3415; --bad: #F4A3A3; --bad-bg: #4A1E26; --shadow: none; color-scheme: dark; } }
+:root[data-mode="dark"] {
+  --bg: #0E1F3A; --surface: var(--navy-dark); --text: var(--offwhite); --sub: #C9CFD8; --line: #2B4670;
+  --accent: var(--offwhite); --accent-ink: var(--navy-dark); --rail: #102443; --chip: #1C3864;
+  --ok: #8FD9AE; --ok-bg: #173F33; --warn: #F2C47E; --warn-bg: #4A3415; --bad: #F4A3A3; --bad-bg: #4A1E26; --shadow: none; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--text); font: 400 16px/1.5 "DM Sans", sans-serif; }
+a { color: inherit; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; border-radius: 4px; }
+h1[tabindex="-1"]:focus { outline: none; }
+.skip { position: absolute; left: 12px; top: -48px; background: var(--surface); padding: 8px 12px; border: 1px solid var(--line); border-radius: 6px; z-index: 20; }
+.skip:focus { top: 12px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.shell { display: grid; grid-template-columns: 264px 1fr; min-height: 100vh; }
+.rail { background: var(--rail); border-right: 1px solid var(--line); padding: 22px 14px; display: flex; flex-direction: column; gap: 20px; position: sticky; top: 0; height: 100vh; overflow: auto; }
+.brand { padding: 0 8px; }
+.brand small { display: block; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--sub); }
+.brand b { font: 700 23px/1.2 "Source Serif 4", serif; }
+nav h2 { font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--sub); margin: 0 8px 6px; }
+nav ul { list-style: none; margin: 0 0 14px; padding: 0; }
+nav button { width: 100%; display: flex; align-items: center; gap: 10px; padding: 8px; border: 0; background: none; border-radius: 8px; font-weight: 500; cursor: pointer; text-align: left; }
+nav button:hover { background: var(--chip); }
+nav button[aria-current="page"] { background: var(--accent); color: var(--accent-ink); }
+nav .n { margin-left: auto; font-size: 13px; color: var(--sub); }
+nav button[aria-current="page"] .n { color: inherit; opacity: .8; }
+.rail-foot { margin-top: auto; display: grid; gap: 8px; padding: 0 8px; }
+.conn { font-size: 14px; color: var(--sub); display: flex; gap: 8px; align-items: center; }
+.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--warn); flex: none; }
+.dot.on { background: var(--ok); }
+
+main { padding: 28px clamp(16px, 3.5vw, 48px) 64px; min-width: 0; }
+.head { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: end; justify-content: space-between; margin-bottom: 20px; }
+.eyebrow { font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--sub); margin: 0 0 4px; }
+h1 { font: 700 clamp(26px, 3vw, 34px)/1.15 "Source Serif 4", serif; margin: 0; }
+.lede { color: var(--sub); margin: 6px 0 0; max-width: 64ch; }
+h2.sec { font: 700 20px/1.3 "Source Serif 4", serif; margin: 28px 0 12px; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; padding: 9px 16px; border-radius: 10px; font-weight: 600; text-decoration: none; border: 1px solid var(--line); background: var(--surface); cursor: pointer; }
+.btn:hover { background: var(--chip); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.primary:hover { filter: brightness(1.12); background: var(--accent); }
+.btn.danger { color: var(--bad); }
+.btn[disabled] { opacity: .5; cursor: not-allowed; }
+.btn.sm { min-height: 34px; padding: 5px 12px; font-size: 14px; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; box-shadow: var(--shadow); }
+.stat b { display: block; font: 700 32px/1 "Source Serif 4", serif; margin-bottom: 6px; }
+.stat span { color: var(--sub); font-size: 15px; }
+
+.issues { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.issues li { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; }
+.tag { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: var(--chip); color: var(--text); white-space: nowrap; }
+.tag.ok { background: var(--ok-bg); color: var(--ok); }
+.tag.warn { background: var(--warn-bg); color: var(--warn); }
+.tag.bad { background: var(--bad-bg); color: var(--bad); }
+.empty { color: var(--sub); background: var(--surface); border: 1px dashed var(--line); border-radius: 12px; padding: 18px; }
+
+/* events */
+.evlist { display: grid; gap: 12px; }
+.ev { display: grid; grid-template-columns: 76px 92px 1fr auto; gap: 16px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 16px 12px 12px; box-shadow: var(--shadow); text-align: left; width: 100%; cursor: pointer; }
+.ev:hover { border-color: var(--sub); }
+.ev.past { opacity: .62; }
+.date { text-align: center; border-radius: 10px; background: var(--chip); padding: 8px 4px; }
+.date small { display: block; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--sub); }
+.date b { display: block; font: 700 28px/1 "Source Serif 4", serif; }
+.thumb { width: 92px; height: 92px; border-radius: 8px; background: var(--chip) center/cover no-repeat; display: grid; place-items: center; color: var(--sub); font-size: 12px; text-align: center; overflow: hidden; }
+.ev h3 { font: 600 18px/1.3 "Source Serif 4", serif; margin: 0 0 4px; }
+.ev .meta { color: var(--sub); font-size: 14px; margin-bottom: 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.code { font: 600 13px ui-monospace, Menlo, Consolas, monospace; background: var(--chip); padding: 2px 7px; border-radius: 6px; }
+
+/* library */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
+.item { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; box-shadow: var(--shadow); }
+.item .pic { aspect-ratio: 4 / 5; background: var(--chip) center/contain no-repeat; border-bottom: 1px solid var(--line); }
+.item .body { padding: 14px 16px; display: grid; gap: 6px; flex: 1; align-content: start; }
+.item h3 { font: 600 17px/1.3 "Source Serif 4", serif; margin: 0; }
+.item p { margin: 0; color: var(--sub); font-size: 14px; overflow-wrap: anywhere;  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.item .foot { padding: 10px 16px 14px; display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* editor panel */
+dialog { border: 0; padding: 0; margin: 0 0 0 auto; height: 100vh; max-height: 100vh; width: min(640px, 100vw); background: var(--bg); color: var(--text); box-shadow: -12px 0 40px rgba(0,0,0,.25); }
+dialog::backdrop { background: rgba(10,20,40,.45); }
+.pane { display: grid; grid-template-rows: auto 1fr auto; height: 100%; }
+.pane header { padding: 18px 22px; border-bottom: 1px solid var(--line); background: var(--surface); display: flex; gap: 12px; align-items: start; justify-content: space-between; }
+.pane header h2 { font: 700 22px/1.25 "Source Serif 4", serif; margin: 0; }
+.pane .scroll { overflow: auto; padding: 18px 22px 28px; }
+.pane footer { padding: 14px 22px; border-top: 1px solid var(--line); background: var(--surface); display: flex; gap: 10px; flex-wrap: wrap; justify-content: space-between; }
+.x { border: 0; background: none; font-size: 22px; line-height: 1; padding: 6px 10px; border-radius: 8px; cursor: pointer; }
+.x:hover { background: var(--chip); }
+fieldset { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px 16px; margin: 0 0 14px; background: var(--surface); }
+legend { font-weight: 700; padding: 0 6px; }
+.f { display: grid; gap: 4px; margin-bottom: 12px; }
+.f:last-child { margin-bottom: 0; }
+.f label { font-weight: 600; font-size: 15px; }
+.f .hint { color: var(--sub); font-size: 13px; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.three { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 12px; }
+input[type=text], input[type=url], input[type=date], input[type=password], select, textarea { width: 100%; min-height: 42px; padding: 8px 11px; border: 1px solid var(--line); border-radius: 9px; background: var(--bg); }
+textarea { min-height: 84px; resize: vertical; }
+input[readonly] { background: var(--chip); }
+.switch { display: flex; align-items: center; gap: 12px; font-weight: 600; cursor: pointer; margin-bottom: 12px; }
+.switch input { appearance: none; width: 46px; height: 26px; border-radius: 999px; background: var(--line); position: relative; cursor: pointer; flex: none; margin: 0; transition: background .15s; }
+.switch input::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: var(--white); transition: transform .15s; box-shadow: 0 1px 2px rgba(0,0,0,.3); }
+.switch input:checked { background: var(--ok); }
+.switch input:checked::after { transform: translateX(20px); }
+.off .dep select, .off .dep input { border-style: dashed; }
+.preview { display: grid; grid-template-columns: 120px 1fr; gap: 14px; align-items: center; margin-bottom: 14px; }
+.preview .thumb { width: 120px; height: 150px; background-size: contain; }
+.drop { border: 2px dashed var(--line); border-radius: 12px; padding: 16px; text-align: center; color: var(--sub); }
+.drop.over { border-color: var(--gold); background: var(--chip); }
+.toast { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 10px 18px; border-radius: 10px; font-weight: 600; z-index: 30; max-width: calc(100vw - 32px); box-shadow: 0 8px 24px rgba(0,0,0,.25); }
+.toast[hidden] { display: none; }
+.loading { color: var(--sub); padding: 40px 0; }
+.howto { counter-reset: s; list-style: none; padding: 0; display: grid; gap: 10px; max-width: 70ch; }
+.howto li { counter-increment: s; display: grid; grid-template-columns: 30px 1fr; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+.howto li::before { content: counter(s); display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--gold); font-weight: 600; font-size: 14px; }
+code { font: 500 14px ui-monospace, Menlo, Consolas, monospace; background: var(--chip); border-radius: 4px; padding: 1px 6px; }
+
+@media (max-width: 860px) {
+  .shell { grid-template-columns: 1fr; }
+  .rail { position: sticky; top: 0; z-index: 5; height: auto; border-right: 0; border-bottom: 1px solid var(--line); padding: 10px 16px 8px; gap: 8px; display: grid; grid-template-columns: 1fr auto; align-items: center; }
+  .brand b { font-size: 19px; }
+  .rail-foot { margin: 0; grid-column: 2; grid-row: 1; }
+  .rail-foot .conn, .rail-foot #modeBtn { display: none; }
+  nav { grid-column: 1 / -1; display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 0 16px 4px; }
+  nav h2 { display: none; } nav ul { display: contents; }
+  nav button { white-space: nowrap; border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; font-size: 15px; width: auto; }
+  .ev { grid-template-columns: 64px 1fr; } .ev .thumb { display: none; } .ev > :last-child { grid-column: 1 / -1; }
+  .two, .three { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: no-preference) { .view { animation: in .18s ease-out; } @keyframes in { from { opacity: 0; transform: translateY(4px); } } }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="shell">
+  <header class="rail">
+    <div class="brand"><small>Language Lab</small><b>Events console</b></div>
+    <nav aria-label="Console sections" id="nav"></nav>
+    <div class="rail-foot">
+      <div class="conn" id="conn"><span class="dot" aria-hidden="true"></span><span>Viewing only</span></div>
+      <button class="btn sm" type="button" id="modeBtn">Dark mode</button>
+      <a class="btn sm" href="./">Help page</a>
+    </div>
+  </header>
+  <main id="main" tabindex="-1"><p class="loading">Loading the events…</p></main>
+</div>
+<dialog id="dlg" aria-labelledby="dlgTitle"></dialog>
+<p class="toast" id="toast" role="status" aria-live="polite" hidden></p>
+
+<script>
+'use strict';
+/* ---------- where the data lives (nothing is stored in this file) ---------- */
+const OWNER = 'junnynoh-tech', REPO = 'language-lab-events', BRANCH = 'main';
+const API = `https://api.github.com/repos/${OWNER}/${REPO}`;
+const CMS = `https://app.pagescms.org/${OWNER}/${REPO}/${BRANCH}`;
+const SITE = `https://${OWNER}.github.io/${REPO}/`;
+const TOKEN_KEY = 'labConsoleToken';
+const EC_NOTE = 'Extra credit is up to each instructor. Ask yours whether this event counts in your course.';
+const KINDS = {
+  flyers: { label: 'Flyers', one: 'flyer', primary: 'title', blurb: 'Upload once; an event picks it. Each becomes a web image named after its event code.' },
+  forms: { label: 'Sign-up forms', one: 'form', primary: 'title', blurb: 'Links to sign-up or entry forms. Each event sets its own deadline.' },
+  'extra-credit': { label: 'Extra credit', one: 'extra-credit note', primary: 'title', blurb: 'What students are told about extra credit.' },
+  assignments: { label: 'Assignments', one: 'assignment', primary: 'name', blurb: 'Mini-projects and assignments. Reuse one across events; each event sets its own due date.' },
+  competitions: { label: 'Competitions', one: 'competition', primary: 'title', blurb: 'How it works, prizes, rules and judging.' },
+  music: { label: 'Music', one: 'track', primary: 'title', blurb: 'Free-to-use tracks (Public domain or Creative Commons) for the carousel turntable.' },
+};
+/* which event field points at each tab (used for "Used by" and safe deletes) */
+const USES = { flyers: e => [e.flyer_pick], music: e => e.music_pick || [], forms: e => [e.signup?.form], 'extra-credit': e => [e.credit?.option],
+  assignments: e => [e.assignment?.pick], competitions: e => [e.competition?.pick] };
+const LANGS = [['es', 'Spanish'], ['fr', 'French'], ['de', 'German'], ['it', 'Italian'], ['pt', 'Portuguese'], ['zh', 'Chinese'], ['ja', 'Japanese'], ['ko', 'Korean'], ['ar', 'Arabic'], ['ru', 'Russian']];
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const slug = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const clean = s => typeof s === 'string' ? s.trim().replace(/^.*?\/?current\//, '').replace(/^\/+/, '') : '';
+const fname = n => { n = String(n || '').trim().split('/').pop(); return n && !/\.json$/i.test(n) ? n + '.json' : n; };
+const at = (d, t) => new Date(`${d}T${t || '00:00'}`);
+const fmtTime = t => { if (!t) return ''; const [h, m] = t.split(':').map(Number); return `${((h + 11) % 12) + 1}:${String(m).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`; };
+const TIMES = (() => { const o = []; for (let h = 7; h < 22; h++) for (const m of [0, 15, 30, 45]) o.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`); return o; })();
+const today = new Date(); today.setHours(0, 0, 0, 0);
+
+/* ---------- state ---------- */
+let S = { head: '', tree: {}, events: null, lib: {}, themes: {}, rubrics: [], view: 'overview' };
+let token = ''; try { token = localStorage.getItem(TOKEN_KEY) || ''; } catch (e) {}
+
+function toast(msg, ms = 3200) { const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, ms); }
+function setMode(m) { document.documentElement.dataset.mode = m; $('modeBtn').textContent = m === 'dark' ? 'Light mode' : 'Dark mode'; try { localStorage.setItem('labConsoleMode', m); } catch (e) {} }
+(() => { let m = null; try { m = localStorage.getItem('labConsoleMode'); } catch (e) {} setMode(m || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')); })();
+$('modeBtn').onclick = () => setMode(document.documentElement.dataset.mode === 'dark' ? 'light' : 'dark');
+
+/* ---------- GitHub ---------- */
+async function gh(path, opt = {}) {
+  const r = await fetch(API + path, { ...opt, headers: { Accept: 'application/vnd.github+json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(opt.body ? { 'Content-Type': 'application/json' } : {}) } });
+  if (!r.ok) { const j = await r.json().catch(() => ({})); const err = new Error(j.message || r.statusText); err.status = r.status; throw err; }
+  return r.status === 204 ? null : r.json();
+}
+const raw = p => `https://raw.githubusercontent.com/${OWNER}/${REPO}/${S.head}/${p.split('/').map(encodeURIComponent).join('/')}`;
+const getJSON = p => fetch(raw(p)).then(r => r.ok ? r.json() : null).catch(() => null);
+const b64 = str => btoa(unescape(encodeURIComponent(str)));
+const bufB64 = buf => { let s = ''; const b = new Uint8Array(buf); for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(s); };
+const dump = o => JSON.stringify(o, null, 2) + '\n';
+
+async function load() {
+  $('main').innerHTML = '<p class="loading">Loading the events…</p>';
+  try {
+    const c = await gh(`/commits/${BRANCH}`); S.head = c.sha;
+    const t = await gh(`/git/trees/${S.head}?recursive=1`);
+    S.tree = Object.fromEntries(t.tree.filter(x => x.type === 'blob').map(x => [x.path, x.sha]));
+  } catch (e) {
+    $('main').innerHTML = `<div class="empty" role="alert"><b>GitHub didn't answer.</b> ${esc(e.status === 403 ? 'Too many looks without a key for now: connect your key (Settings) or try again in an hour.' : e.message)}</div>`; return;
+  }
+  const libPaths = Object.keys(S.tree).filter(p => /^current\/library\/[^/]+\/[^/]+\.json$/.test(p));
+  const [events, themes, ...items] = await Promise.all([getJSON('current/events.json'), getJSON('current/themes.json'), ...libPaths.map(getJSON)]);
+  S.events = events; S.themes = themes?.themes || {};
+  S.lib = Object.fromEntries(Object.keys(KINDS).map(k => [k, {}]));
+  libPaths.forEach((p, i) => { const [, , kind, name] = p.split('/'); if (S.lib[kind] && items[i]) S.lib[kind][name] = items[i]; });
+  const rub = Object.keys(S.tree).filter(p => /^current\/rubrics\/[^/]+\.json$/.test(p));
+  S.rubrics = await Promise.all(rub.map(async p => ({ value: p.replace('current/', ''), label: (await getJSON(p))?.title || p.split('/').pop() })));
+  if (!S.events) { $('main').innerHTML = '<div class="empty" role="alert">events.json could not be read.</div>'; return; }
+  codes(S.events);
+  connUI(); nav(); show(S.view, false);
+}
+
+/* one commit for every file a Save touches. files: { path: {text}|{b64}|{sha}|null } */
+async function commit(files, message) {
+  if (!token) { openSettings(); throw new Error('Connect your GitHub key first.'); }
+  const ref = await gh(`/git/ref/heads/${BRANCH}`), head = ref.object.sha;
+  if (head !== S.head) { // someone saved since this page loaded: stop if they touched the same files
+    const cmp = await gh(`/compare/${S.head}...${head}`);
+    const clash = (cmp.files || []).map(f => f.filename).filter(f => f in files);
+    if (clash.length) throw new Error(`Someone else just changed ${clash.join(', ')}. Press Reload, then make your change again.`);
+  }
+  const base = (await gh(`/git/commits/${head}`)).tree.sha;
+  const tree = [];
+  for (const [path, v] of Object.entries(files)) {
+    if (v === null) { if (S.tree[path]) tree.push({ path, mode: '100644', type: 'blob', sha: null }); continue; }
+    const sha = v.sha || (await gh('/git/blobs', { method: 'POST', body: JSON.stringify(v.b64 ? { content: v.b64, encoding: 'base64' } : { content: b64(v.text), encoding: 'base64' }) })).sha;
+    tree.push({ path, mode: '100644', type: 'blob', sha });
+  }
+  const nt = await gh('/git/trees', { method: 'POST', body: JSON.stringify({ base_tree: base, tree }) });
+  const nc = await gh('/git/commits', { method: 'POST', body: JSON.stringify({ message, tree: nt.sha, parents: [head] }) });
+  await gh(`/git/refs/heads/${BRANCH}`, { method: 'PATCH', body: JSON.stringify({ sha: nc.sha }) });
+  S.head = nc.sha;
+  for (const [path, v] of Object.entries(files)) { if (v === null) delete S.tree[path]; else S.tree[path] = v.sha || 'new'; }
+}
+
+/* ---------- the same rules as event_library.py / tidy_site.py ---------- */
+function codes(doc) {
+  const n = {}, k = e => [e.date || '', e.start || '', e.title || ''];
+  [...(doc.events || [])].sort((a, b) => { const x = k(a), y = k(b); for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] < y[i] ? -1 : 1; return 0; })
+    .forEach(e => { const c = e.campus || 'gvl'; n[c] = (n[c] || 0) + 1; e.key = `${c}-${n[c]}`; });
+  (doc.events || []).forEach(e => { if (!e.id) e.id = [e.date, slug(e.title)].filter(Boolean).join('-'); });
+}
+/* events.json + every flyer rename the new codes need, as commit files. Flyer files are moved (same content) to flyers/<code>.<ext>. */
+function eventFiles(doc) {
+  codes(doc); doc.library = 1;
+  const files = { 'current/events.json': { text: dump(doc) } }, taken = new Set(), moves = [];
+  [...doc.events].sort((a, b) => a.key < b.key ? -1 : 1).forEach(e => {
+    const pick = fname(e.flyer_pick); if (!pick || taken.has(pick)) return; taken.add(pick);
+    const fl = S.lib.flyers[pick]; if (!fl?.image) return;
+    const from = 'current/' + clean(fl.image), ext = (from.match(/\.[a-z0-9]+$/i) || ['.webp'])[0].toLowerCase(), to = `current/flyers/${e.key}${ext}`;
+    if (from === to || !S.tree[from] || S.tree[from] === 'new') return;
+    moves.push({ from, to, sha: S.tree[from], pick, fl });
+  });
+  const targets = new Set(moves.map(m => m.to));
+  /* a flyer no event picks any more, sitting where a moved one will land: step it aside under its own name */
+  Object.entries(S.lib.flyers).forEach(([n, fl]) => {
+    const p = 'current/' + clean(fl.image); if (taken.has(n) || !targets.has(p) || !S.tree[p]) return;
+    let to = `current/flyers/${slug(fl.title || n.replace(/\.json$/, '')) || 'flyer'}${(p.match(/\.[a-z0-9]+$/i) || ['.webp'])[0]}`, i = 2;
+    while (S.tree[to] || targets.has(to)) to = to.replace(/(-\d+)?(\.[a-z0-9]+)$/i, `-${i++}$2`);
+    moves.push({ from: p, to, sha: S.tree[p], pick: n, fl }); targets.add(to);
+  });
+  moves.forEach(m => { files[m.to] = { sha: m.sha }; if (!targets.has(m.from)) files[m.from] = null;
+    m.fl.image = m.to.replace('current/', ''); files[`current/library/flyers/${m.pick}`] = { text: dump(m.fl) }; });
+  return files;
+}
+const usedBy = (kind, name) => (S.events.events || []).filter(e => USES[kind](e).map(fname).includes(name));
+const item = (kind, name) => S.lib[kind]?.[fname(name)] || null;
+const on = o => o?.on === true;
+
+function issues() {
+  const out = [], upcoming = (S.events.events || []).filter(e => at(e.date) >= today);
+  upcoming.forEach(e => {
+    const L = `${e.key} · ${e.title}`;
+    if (!e.flyer_pick) out.push(['warn', L, 'No flyer picked', e]);
+    else if (!item('flyers', e.flyer_pick)) out.push(['bad', L, 'Its flyer was deleted', e]);
+    if (on(e.signup) && !item('forms', e.signup.form)) out.push(['bad', L, 'Sign-up is on but no form is picked', e]);
+    if (on(e.signup) && e.signup.deadline && e.signup.deadline > e.date) out.push(['warn', L, 'Sign-up deadline is after the event', e]);
+    if (on(e.assignment) && !item('assignments', e.assignment.pick)) out.push(['bad', L, 'Assignment is on but none is picked', e]);
+    if (on(e.competition) && !item('competitions', e.competition.pick)) out.push(['bad', L, 'Competition is on but none is picked', e]);
+    if (!e.summary) out.push(['warn', L, 'No short description', e]);
+  });
+  Object.entries(S.lib.flyers).forEach(([n, f]) => { if (!f.alt) out.push(['warn', `Flyer · ${f.title || n}`, 'No description for screen readers', null, ['flyers', n]]);
+    if (f.image && !/\.webp$/i.test(f.image)) out.push(['warn', `Flyer · ${f.title || n}`, 'Not converted to a web image yet (happens at the next tidy)', null, ['flyers', n]]); });
+  return out;
+}
+
+/* ---------- navigation ---------- */
+const VIEWS = [['overview', 'Overview'], ['events', 'Events'], ...Object.entries(KINDS).map(([k, v]) => [k, v.label]), ['settings', 'Settings']];
+function nav() {
+  const cnt = v => v === 'events' ? S.events.events.length : KINDS[v] ? Object.keys(S.lib[v]).length : '';
+  const li = v => `<li><button type="button" data-view="${v[0]}" ${S.view === v[0] ? 'aria-current="page"' : ''}>${esc(v[1])}<span class="n">${cnt(v[0])}</span></button></li>`;
+  $('nav').innerHTML = `<h2>Start</h2><ul>${VIEWS.slice(0, 2).map(li).join('')}</ul><h2>What events pick</h2><ul>${VIEWS.slice(2, -1).map(li).join('')}</ul><h2>Setup</h2><ul>${li(VIEWS.at(-1))}</ul>`;
+}
+$('nav').addEventListener('click', ev => { const b = ev.target.closest('[data-view]'); if (b) show(b.dataset.view); });
+function show(v, focus = true) {
+  S.view = v; nav();
+  const html = v === 'overview' ? vOverview() : v === 'events' ? vEvents() : v === 'settings' ? vSettings() : vLibrary(v);
+  $('main').innerHTML = `<div class="view">${html}</div>`;
+  if (v === 'settings') wireSettings();
+  try { history.replaceState(null, '', '#' + v); } catch (e) {}
+  if (focus) $('main').querySelector('h1')?.focus();
+}
+function header(eyebrow, title, lede, actions = '') {
+  return `<div class="head"><div><p class="eyebrow">${esc(eyebrow)}</p><h1 tabindex="-1">${esc(title)}</h1>${lede ? `<p class="lede">${esc(lede)}</p>` : ''}</div><div class="row">${actions}</div></div>`;
+}
+function connUI() { $('conn').innerHTML = token ? '<span class="dot on" aria-hidden="true"></span><span>Connected: you can save</span>' : '<span class="dot" aria-hidden="true"></span><span>Viewing only</span>'; }
+
+/* ---------- views ---------- */
+function flyerURL(name) { const f = item('flyers', name); return f?.image && S.tree['current/' + clean(f.image)] ? raw('current/' + clean(f.image)) : ''; }
+function evCard(e) {
+  const d = at(e.date), past = d < today, fly = flyerURL(e.flyer_pick), isImg = fly && !/\.(pdf|heic|heif|tiff?)$/i.test(fly);
+  const chips = [e.status === 'draft' ? '<span class="tag warn">Draft</span>' : past ? '<span class="tag">Past</span>' : '<span class="tag ok">Live</span>',
+    on(e.signup) && '<span class="tag">Sign-up</span>', on(e.credit) && '<span class="tag">Extra credit</span>',
+    on(e.assignment) && `<span class="tag">${esc(item('assignments', e.assignment.pick)?.kind || 'Assignment')}</span>`,
+    on(e.competition) && '<span class="tag">Competition</span>', (e.music_pick || []).length && '<span class="tag">♪ Music</span>'].filter(Boolean).join('');
+  return `<button type="button" class="ev${past ? ' past' : ''}" data-ev="${esc(e.id)}" aria-label="Edit ${esc(e.title)}, ${esc(d.toDateString())}">
+    <span class="date"><small>${d.toLocaleDateString('en-US', { month: 'short' })}</small><b>${d.getDate()}</b><small>${d.toLocaleDateString('en-US', { weekday: 'short' })}</small></span>
+    <span class="thumb" style="${isImg ? `background-image:url('${esc(fly)}')` : ''}">${isImg ? '' : fly ? 'PDF / photo' : 'No flyer'}</span>
+    <span><h3>${esc(e.title)}</h3><span class="meta"><span class="code">${esc(e.key)}</span> · ${esc(fmtTime(e.start))}–${esc(fmtTime(e.end))} · ${esc(campusName(e.campus))}</span><span class="chips">${chips}</span></span>
+    <span class="tag" aria-hidden="true">Edit →</span></button>`;
+}
+const campusName = c => (S.events.campuses || []).find(x => x.code === c)?.name || c || '';
+function sorted() { return [...S.events.events].sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start)); }
+function vOverview() {
+  const evs = sorted(), up = evs.filter(e => at(e.date) >= today), list = issues();
+  return header('Overview', 'Events at a glance', 'What students see now, and anything that needs a look.', `<a class="btn" href="${SITE}visual/event-carousel.html" target="_blank" rel="noopener">See the student page ↗</a><button class="btn primary" type="button" data-new-ev>New event</button>`)
+    + `<div class="stats"><div class="stat"><b>${up.filter(e => e.status !== 'draft').length}</b><span>Upcoming, showing</span></div><div class="stat"><b>${up.filter(e => e.status === 'draft').length}</b><span>Drafts</span></div><div class="stat"><b>${Object.values(S.lib).reduce((n, o) => n + Object.keys(o).length, 0)}</b><span>Things to pick from</span></div><div class="stat"><b>${list.length}</b><span>To check</span></div></div>`
+    + `<h2 class="sec">Needs a look</h2>` + (list.length ? `<ul class="issues">${list.map(([lv, what, msg, e, lib]) => `<li><span class="tag ${lv}">${lv === 'bad' ? 'Fix' : 'Check'}</span><span><b>${esc(what)}</b><br><span style="color:var(--sub)">${esc(msg)}</span></span><button class="btn sm" type="button" ${e ? `data-ev="${esc(e.id)}"` : `data-item="${esc(lib[0])}|${esc(lib[1])}"`}>Open</button></li>`).join('')}</ul>` : '<p class="empty">All clear.</p>')
+    + `<h2 class="sec">Coming up</h2>` + (up.length ? `<div class="evlist">${up.slice(0, 4).map(evCard).join('')}</div>` : '<p class="empty">No upcoming events. Add one with New event.</p>');
+}
+function vEvents() {
+  const evs = sorted(), up = evs.filter(e => at(e.date) >= today), past = evs.filter(e => at(e.date) < today);
+  return header('Events', 'Events', 'Codes are set for you in date order (the earliest is gvl-1). Open an event to pick what it uses.', '<button class="btn primary" type="button" data-new-ev>New event</button>')
+    + `<div class="evlist">${up.map(evCard).join('') || '<p class="empty">No upcoming events.</p>'}</div>`
+    + (past.length ? `<h2 class="sec">Past</h2><div class="evlist">${past.map(evCard).join('')}</div>` : '');
+}
+function libSummary(kind, o) {
+  if (kind === 'flyers') return o.alt || 'No description yet';
+  if (kind === 'forms') return o.url;
+  if (kind === 'extra-credit') return o.note;
+  if (kind === 'assignments') return `${o.kind || 'Assignment'} · “${o.title}” · ${(o.steps || []).length} steps`;
+  if (kind === 'competitions') return `${(o.prizes || []).length} prizes · ${(o.rules || []).length} rules${o.rubric ? ' · judged with a rubric' : ''}`;
+  if (kind === 'music') return `${o.artist || ''} · ${o.license || 'license?'}`;
+  return '';
+}
+function vLibrary(kind) {
+  const K = KINDS[kind], items = Object.entries(S.lib[kind]).sort((a, b) => String(a[1][K.primary]).localeCompare(String(b[1][K.primary])));
+  return header('What events pick', K.label, K.blurb, `<button class="btn primary" type="button" data-new-item="${kind}">New ${esc(K.one)}</button>`)
+    + (items.length ? `<div class="grid">${items.map(([n, o]) => {
+      const used = usedBy(kind, n), pic = kind === 'flyers' ? flyerURL(n) : '';
+      return `<article class="item">${kind === 'flyers' ? `<div class="pic" role="img" aria-label="${esc(o.alt || o.title)}" style="${pic && !/\.(pdf|heic|heif|tiff?)$/i.test(pic) ? `background-image:url('${esc(pic)}')` : ''}"></div>` : ''}
+        <div class="body"><h3>${esc(o[K.primary] || n)}</h3><p>${esc(libSummary(kind, o))}</p>
+        <div class="chips">${used.length ? used.map(e => `<span class="tag ok">${esc(e.key)}</span>`).join('') : '<span class="tag">Not used</span>'}</div></div>
+        <div class="foot"><button class="btn sm" type="button" data-item="${kind}|${esc(n)}">Edit</button></div></article>`; }).join('')}</div>`
+      : `<p class="empty">Nothing here yet. Press New ${esc(K.one)}.</p>`);
+}
+function vSettings() {
+  return header('Setup', 'Settings', 'Looking around needs nothing. To save from this console, connect a GitHub key once on this computer.')
+    + `<ol class="howto"><li><span>Open <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub → new fine-grained token ↗</a>. Name it “Lab console”.</span></li>
+      <li><span><b>Repository access:</b> Only select repositories → <code>${REPO}</code>.</span></li>
+      <li><span><b>Permissions:</b> Repository → <b>Contents: Read and write</b>. Nothing else.</span></li>
+      <li><span>Generate it, copy it, paste it below. It stays in this browser only and is never put in a file.</span></li></ol>
+      <fieldset style="max-width:620px"><legend>GitHub key</legend><div class="f"><label for="tok">Key</label><input type="password" id="tok" autocomplete="off" spellcheck="false" placeholder="github_pat_…" value="${token ? '••••••••' : ''}"></div>
+      <div class="row"><button class="btn primary" type="button" id="tokSave">Connect</button><button class="btn danger" type="button" id="tokClear" ${token ? '' : 'disabled'}>Disconnect</button></div><p class="hint" id="tokMsg" role="status"></p></fieldset>
+      <p class="lede">Helpers without GitHub can keep using the <a href="${CMS}/file/events" target="_blank" rel="noopener">website editor ↗</a>; it edits the same files.</p>`;
+}
+function wireSettings() {
+  $('tokSave').onclick = async () => {
+    const v = $('tok').value.trim(); if (!v || v.startsWith('•')) { $('tokMsg').textContent = 'Paste the key first.'; return; }
+    const old = token; token = v;
+    try { const r = await gh(''); if (!r.permissions?.push) throw new Error('This key can read but not save. Give it Contents: Read and write.');
+      try { localStorage.setItem(TOKEN_KEY, v); } catch (e) {} connUI(); $('tokMsg').textContent = 'Connected. You can save now.'; $('tokClear').disabled = false; }
+    catch (e) { token = old; $('tokMsg').textContent = e.message; }
+  };
+  $('tokClear').onclick = () => { token = ''; try { localStorage.removeItem(TOKEN_KEY); } catch (e) {} connUI(); show('settings'); toast('Disconnected. This browser no longer has the key.'); };
+}
+function openSettings() { $('dlg').open && $('dlg').close(); show('settings'); toast('Connect your GitHub key to save.'); }
+
+/* ---------- form helpers ---------- */
+const opt = (v, l, cur) => `<option value="${esc(v)}" ${String(cur ?? '') === String(v) ? 'selected' : ''}>${esc(l)}</option>`;
+const fld = (id, label, input, hint = '') => `<div class="f"><label for="${id}">${esc(label)}</label>${input}${hint ? `<span class="hint" id="${id}-h">${esc(hint)}</span>` : ''}</div>`;
+const txt = (id, v, extra = '') => `<input type="text" id="${id}" value="${esc(v ?? '')}" ${extra}>`;
+const area = (id, v, extra = '') => `<textarea id="${id}" ${extra}>${esc(v ?? '')}</textarea>`;
+const sel = (id, cur, opts, empty) => `<select id="${id}">${empty != null ? opt('', empty, cur) : ''}${opts.map(([v, l]) => opt(v, l, cur)).join('')}</select>`;
+const timeSel = (id, cur, empty) => sel(id, cur, TIMES.map(t => [t, fmtTime(t)]), empty);
+const libOpts = kind => Object.entries(S.lib[kind]).map(([n, o]) => [n, o[KINDS[kind].primary] || n]).sort((a, b) => a[1].localeCompare(b[1]));
+const sw = (id, label, checked) => `<label class="switch"><input type="checkbox" role="switch" id="${id}" ${checked ? 'checked' : ''}>${esc(label)}</label>`;
+const val = id => { const el = $(id); return el ? (el.type === 'checkbox' ? el.checked : el.value.trim()) : ''; };
+const lines = id => val(id).split('\n').map(s => s.trim()).filter(Boolean);
+function pane(title, sub, body, foot) {
+  const d = $('dlg');
+  d.innerHTML = `<form class="pane" method="dialog" novalidate><header><div><p class="eyebrow">${esc(sub)}</p><h2 id="dlgTitle">${esc(title)}</h2></div><button class="x" type="button" data-close aria-label="Close">✕</button></header><div class="scroll">${body}</div><footer>${foot}</footer></form>`;
+  d.querySelector('[data-close]').onclick = () => d.close();
+  if (!d.open) d.showModal();
+  d.querySelectorAll('.switch input').forEach(i => { const fs = i.closest('fieldset'); const u = () => fs?.classList.toggle('off', !i.checked); i.addEventListener('change', u); u(); });
+}
+async function saving(btn, fn) {
+  btn.disabled = true; const t = btn.textContent; btn.textContent = 'Saving…';
+  try { await fn(); $('dlg').close(); show(S.view, false); toast('Saved. The student pages update in about a minute.'); }
+  catch (e) { toast(e.message, 6000); }
+  finally { btn.disabled = false; btn.textContent = t; }
+}
+
+/* ---------- event editor ---------- */
+function editEvent(id) {
+  const isNew = !id, e = isNew ? { status: 'draft', campus: S.events.campuses?.[0]?.code || 'gvl', date: new Date().toISOString().slice(0, 10), start: '12:00', end: '13:00', languages: ['All languages'], hosts: ['UNG Language Lab'] }
+    : structuredClone(S.events.events.find(x => x.id === id));
+  const S1 = e.signup || {}, C = e.credit || {}, A = e.assignment || {}, K = e.competition || {};
+  const fly = flyerURL(e.flyer_pick);
+  const body = `
+    <fieldset><legend>The basics</legend>
+      ${fld('e-title', 'Event name', txt('e-title', e.title, 'required maxlength="80"'))}
+      <div class="two">${fld('e-status', 'Show it to students?', sel('e-status', e.status || 'published', [['published', 'Yes, show it'], ['draft', 'Not yet (draft)']]))}
+        ${fld('e-campus', 'Campus', sel('e-campus', e.campus, (S.events.campuses || []).map(c => [c.code, c.name])))}</div>
+      <div class="three">${fld('e-date', 'Date', `<input type="date" id="e-date" value="${esc(e.date)}" required>`)}${fld('e-start', 'Starts', timeSel('e-start', e.start))}${fld('e-end', 'Ends', timeSel('e-end', e.end))}</div>
+      ${fld('e-loc', 'Where', txt('e-loc', e.location), 'Building and room, the way students would say it.')}
+      ${fld('e-sum', 'Short description', area('e-sum', e.summary, 'maxlength="300"'), 'One or two sentences. Students read this first.')}
+      <div class="two">${fld('e-key', 'Event code', txt('e-key', isNew ? 'Set when you save' : e.key, 'readonly'), 'Set for you, in date order.')}${fld('e-id', 'Web address name', txt('e-id', e.id || 'Set when you save', 'readonly'))}</div>
+    </fieldset>
+    <fieldset><legend>Flyer and look</legend>
+      <div class="preview"><span class="thumb" id="e-flythumb" style="${fly ? `background-image:url('${esc(fly)}')` : ''}">${fly ? '' : 'No flyer'}</span>
+        <div>${fld('e-flyer', 'Flyer', sel('e-flyer', fname(e.flyer_pick), libOpts('flyers'), 'No flyer'), 'New flyer? Add it in Flyers, then pick it here.')}</div></div>
+      <div class="two">${fld('e-theme', 'Background', sel('e-theme', e.theme, Object.entries(S.themes).map(([k, v]) => [k, v.label || k]), 'Plain (no background)'))}
+        ${fld('e-music', 'Background music', sel('e-music', fname((e.music_pick || [])[0]), libOpts('music'), 'No music'))}</div>
+    </fieldset>
+    <fieldset><legend>Sign-up or entry form</legend>${sw('e-su-on', 'Students need to sign up', on(S1))}
+      <div class="dep">${fld('e-su-form', 'Which form', sel('e-su-form', fname(S1.form), libOpts('forms'), 'Pick a form'))}
+      <div class="two">${fld('e-su-dl', 'Last day to sign up', `<input type="date" id="e-su-dl" value="${esc(S1.deadline || '')}">`)}${fld('e-su-dt', 'Time on that day', timeSel('e-su-dt', S1.deadline_time, 'End of day'))}</div></div></fieldset>
+    <fieldset><legend>Extra credit</legend>${sw('e-ec-on', 'Students can earn extra credit', on(C))}
+      <div class="dep">${fld('e-ec', 'What students are told', sel('e-ec', fname(C.option), libOpts('extra-credit'), 'The lab-wide note'))}</div></fieldset>
+    <fieldset><legend>Assignment or mini-project</legend>${sw('e-as-on', 'Students turn something in', on(A))}
+      <div class="dep">${fld('e-as', 'Which one', sel('e-as', fname(A.pick), libOpts('assignments'), 'Pick one'))}
+      <div class="two">${fld('e-as-due', 'Due date for this event', `<input type="date" id="e-as-due" value="${esc(A.due || '')}">`)}${fld('e-as-dt', 'Due time', timeSel('e-as-dt', A.due_time, 'End of day'))}</div></div></fieldset>
+    <fieldset><legend>Competition</legend>${sw('e-co-on', 'This event has a competition', on(K))}
+      <div class="dep">${fld('e-co', 'Which competition', sel('e-co', fname(K.pick), libOpts('competitions'), 'Pick one'), 'Prizes, rules and judging come with it.')}</div></fieldset>
+    <fieldset><legend>More (optional)</legend>
+      <div class="two">${fld('e-alt', 'Name in another language', txt('e-alt', e.title_alt))}${fld('e-altl', 'That language', sel('e-altl', e.title_alt_lang, LANGS, 'Pick one'))}</div>
+      <div class="two">${fld('e-langs', 'Languages', area('e-langs', (e.languages || []).join('\n')), 'One per line.')}${fld('e-partners', 'Partners', area('e-partners', (e.partners || []).join('\n')), 'One per line.')}</div>
+      ${fld('e-hosts', 'Hosted by', area('e-hosts', (e.hosts || []).join('\n')), 'One per line.')}
+      ${fld('e-det', 'More details', area('e-det', e.details), 'Shown on the event’s own page.')}
+    </fieldset>`;
+  const foot = `<div class="row">${isNew ? '' : `<button class="btn danger" type="button" id="e-del">Delete event</button><a class="btn" href="${SITE}visual/event-details.html?ev=${encodeURIComponent(e.id)}" target="_blank" rel="noopener">Student page ↗</a>`}</div>
+    <div class="row"><button class="btn" type="button" data-close2>Cancel</button><button class="btn primary" type="button" id="e-save">${isNew ? 'Add event' : 'Save'}</button></div>`;
+  pane(isNew ? 'New event' : e.title, isNew ? 'Events' : `Event ${e.key}`, body, foot);
+  $('dlg').querySelector('[data-close2]').onclick = () => $('dlg').close();
+  $('e-flyer').onchange = () => { const u = flyerURL($('e-flyer').value), t = $('e-flythumb'); t.style.backgroundImage = u ? `url('${u}')` : ''; t.textContent = u ? '' : 'No flyer'; };
+  $('e-save').onclick = ev => {
+    if (!val('e-title') || !val('e-date') || !val('e-sum')) { toast('Fill in the name, date and short description.'); (!val('e-title') ? $('e-title') : !val('e-date') ? $('e-date') : $('e-sum')).focus(); return; }
+    if (val('e-end') <= val('e-start')) { toast('The event has to end after it starts.'); $('e-end').focus(); return; }
+    saving(ev.target, async () => {
+      const n = { ...e, title: val('e-title'), status: val('e-status'), campus: val('e-campus'), date: val('e-date'), start: val('e-start'), end: val('e-end'),
+        location: val('e-loc'), summary: val('e-sum'), flyer_pick: val('e-flyer'), theme: val('e-theme'), music_pick: val('e-music') ? [val('e-music')] : [],
+        signup: { on: val('e-su-on'), form: val('e-su-form'), deadline: val('e-su-dl'), deadline_time: val('e-su-dt') },
+        credit: { on: val('e-ec-on'), option: val('e-ec') },
+        assignment: { on: val('e-as-on'), pick: val('e-as'), due: val('e-as-due'), due_time: val('e-as-dt') },
+        competition: { on: val('e-co-on'), pick: val('e-co') },
+        title_alt: val('e-alt'), title_alt_lang: val('e-altl'), languages: lines('e-langs'), partners: lines('e-partners'), hosts: lines('e-hosts'), details: val('e-det') };
+      if (n.signup.on && !n.signup.form) throw new Error('Sign-up is on: pick a form, or switch it off.');
+      if (n.assignment.on && !n.assignment.pick) throw new Error('Assignment is on: pick one, or switch it off.');
+      if (n.competition.on && !n.competition.pick) throw new Error('Competition is on: pick one, or switch it off.');
+      if (!n.theme) delete n.theme;
+      const doc = structuredClone(S.events);
+      if (isNew) { delete n.id; doc.events.push(n); } else doc.events[doc.events.findIndex(x => x.id === e.id)] = n;
+      const files = eventFiles(doc);
+      await commit(files, `${isNew ? 'Add' : 'Update'} event: ${n.title}`);
+      S.events = doc;
+    });
+  };
+  if (!isNew) $('e-del').onclick = ev => {
+    if (!confirm(`Delete “${e.title}”? Later events on this campus move up one code.`)) return;
+    saving(ev.target, async () => { const doc = structuredClone(S.events); doc.events = doc.events.filter(x => x.id !== e.id);
+      await commit(eventFiles(doc), `Delete event: ${e.title}`); S.events = doc; });
+  };
+  $('e-title').focus();
+}
+
+/* ---------- library editors ---------- */
+const FORMS = {
+  flyers: o => fld('l-title', 'Flyer name', txt('l-title', o.title), 'For this list only, e.g. Karaoke flyer.')
+    + `<div class="f"><span style="font-weight:600">Flyer file</span><div class="drop" id="l-drop"><p style="margin:0 0 8px">Drop a picture or PDF here, or</p><label class="btn sm" for="l-file">Choose a file</label><input type="file" id="l-file" class="sr" accept="image/*,.heic,.heif,.pdf"><p class="hint" id="l-fileinfo" style="margin:8px 0 0">${o.image ? 'Current: ' + esc(o.image) : 'No file yet'}</p></div><span class="hint">Any picture or PDF. It becomes one web image (WebP), named after its event code.</span></div>`
+    + fld('l-alt', 'Describe the flyer', area('l-alt', o.alt, 'maxlength="400"'), 'For screen readers: what it says and shows, in a sentence or two.'),
+  forms: o => fld('l-title', 'Form name', txt('l-title', o.title), 'For this list only.') + fld('l-url', 'Link to the form', `<input type="url" id="l-url" value="${esc(o.url || '')}" placeholder="https://…">`) + fld('l-label', 'Button text', txt('l-label', o.label || 'Sign up')),
+  'extra-credit': o => fld('l-title', 'Name', txt('l-title', o.title), 'For this list only.') + fld('l-note', 'What students read', area('l-note', o.note ?? EC_NOTE)),
+  assignments: o => fld('l-name', 'Name in this list', txt('l-name', o.name), 'Only you see this.') + `<div class="two">${fld('l-kind', 'Type', sel('l-kind', o.kind || 'Assignment', [['Assignment', 'Assignment'], ['Mini-project', 'Mini-project']]))}${fld('l-titlees', 'Title in Spanish', txt('l-titlees', o.title_es))}</div>`
+    + fld('l-title', 'Title students see', txt('l-title', o.title)) + fld('l-steps', 'Steps', area('l-steps', (o.steps || []).join('\n'), 'rows="6"'), 'One step per line.')
+    + fld('l-stitles', 'Step headings (optional)', area('l-stitles', (o.step_titles || []).join('\n')), 'One per line, same order as the steps.')
+    + fld('l-deliv', 'What they turn in', area('l-deliv', o.deliverable)) + fld('l-submit', 'Where they turn it in', txt('l-submit', o.submit))
+    + `<div class="two">${fld('l-linkurl', 'Sheet or page link', `<input type="url" id="l-linkurl" value="${esc(o.link?.url || '')}" placeholder="https://…">`)}${fld('l-linklabel', 'Its button text', txt('l-linklabel', o.link?.label || 'Open the sheet'))}</div>`,
+  competitions: o => fld('l-title', 'Competition name', txt('l-title', o.title)) + fld('l-how', 'How it works', area('l-how', o.how), 'One or two sentences students read first.')
+    + fld('l-rules', 'Rules', area('l-rules', (o.rules || []).join('\n'), 'rows="5"'), 'One rule per line.') + fld('l-pnote', 'Prize note (optional)', area('l-pnote', o.prizes_note))
+    + fld('l-rubric', 'Judging rubric', sel('l-rubric', o.rubric, S.rubrics.map(r => [r.value, r.label]), 'No rubric'), 'Rubrics are built in the Event Generator.')
+    + `<div class="f"><span style="font-weight:600">Prizes</span><span class="hint">${(o.prizes || []).length ? (o.prizes || []).map(p => esc(`${p.place}: ${p.name}`)).join(' · ') : 'None yet'}</span></div>`,
+  music: o => `<div class="two">${fld('l-title', 'Song', txt('l-title', o.title))}${fld('l-artist', 'Artist', txt('l-artist', o.artist))}</div>`
+    + `<div class="two">${fld('l-license', 'License', txt('l-license', o.license), 'e.g. CC BY 3.0 or Public domain')}${fld('l-source', 'Where it came from', `<input type="url" id="l-source" value="${esc(o.source || '')}">`)}</div>`
+    + `<div class="f"><label for="l-mp3">Audio file (MP3)</label><input type="file" id="l-mp3" accept=".mp3,audio/mpeg"><span class="hint">${o.file ? 'Current: ' + esc(o.file) : 'No file yet'}. Under 15 MB.</span></div>`,
+};
+const READ = {
+  flyers: o => ({ ...o, title: val('l-title'), alt: val('l-alt') }),
+  forms: o => ({ ...o, title: val('l-title'), url: val('l-url'), label: val('l-label') }),
+  'extra-credit': o => ({ ...o, title: val('l-title'), note: val('l-note') }),
+  assignments: o => { const r = { ...o, name: val('l-name'), kind: val('l-kind'), title: val('l-title'), title_es: val('l-titlees'), steps: lines('l-steps'), step_titles: lines('l-stitles'), deliverable: val('l-deliv'), submit: val('l-submit') };
+    if (val('l-linkurl')) r.link = { url: val('l-linkurl'), label: val('l-linklabel') }; else delete r.link; return r; },
+  competitions: o => ({ ...o, title: val('l-title'), how: val('l-how'), rules: lines('l-rules'), prizes_note: val('l-pnote'), rubric: val('l-rubric') }),
+  music: o => ({ ...o, title: val('l-title'), artist: val('l-artist'), license: val('l-license'), source: val('l-source') }),
+};
+const NEED = { flyers: ['l-title', 'l-alt'], forms: ['l-title', 'l-url'], 'extra-credit': ['l-title', 'l-note'], assignments: ['l-name', 'l-title', 'l-steps'], competitions: ['l-title'], music: ['l-title', 'l-artist', 'l-license'] };
+
+/* any picture or PDF -> WebP (max 1600 px wide) in the browser; null if this browser can't read it (e.g. HEIC outside Safari) */
+async function toWebp(file) {
+  const MAXW = 1600;
+  let src;
+  try {
+    if (/pdf/i.test(file.type) || /\.pdf$/i.test(file.name)) {
+      const PDFJS = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';
+      if (!window.pdfjsLib) await new Promise((res, rej) => { const s = document.createElement('script'); s.src = PDFJS + 'pdf.min.js'; s.onload = res; s.onerror = rej; document.head.appendChild(s); });
+      pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS + 'pdf.worker.min.js';
+      const page = await (await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise).getPage(1);
+      const vp = page.getViewport({ scale: MAXW / page.getViewport({ scale: 1 }).width });
+      src = document.createElement('canvas'); src.width = vp.width; src.height = vp.height;
+      await page.render({ canvasContext: src.getContext('2d'), viewport: vp }).promise;
+    } else src = await createImageBitmap(file, { imageOrientation: 'from-image' });
+  } catch (e) { return null; }
+  const w = Math.min(MAXW, src.width), h = Math.round(src.height * w / src.width);
+  const c = document.createElement('canvas'); c.width = w; c.height = h; c.getContext('2d').drawImage(src, 0, 0, w, h);
+  const blob = await new Promise(r => c.toBlob(r, 'image/webp', 0.88));
+  return blob && blob.type === 'image/webp' ? blob : null;
+}
+
+function editItem(kind, name) {
+  const K = KINDS[kind], isNew = !name, o = isNew ? {} : structuredClone(S.lib[kind][name]), used = isNew ? [] : usedBy(kind, name);
+  let upload = null; // { path, b64 }
+  const cmsLink = isNew ? `${CMS}/collection/${kind}/new` : `${CMS}/collection/${kind}/edit/${encodeURIComponent(`current/library/${kind}/${name}`)}`;
+  const foot = `<div class="row">${isNew ? '' : `<button class="btn danger" type="button" id="l-del" ${used.length ? 'disabled title="Used by an event"' : ''}>Delete</button>`}<a class="btn" href="${cmsLink}" target="_blank" rel="noopener">${kind === 'competitions' ? 'Prizes and photos' : 'Open in the website editor'} ↗</a></div>
+    <div class="row"><button class="btn" type="button" data-close2>Cancel</button><button class="btn primary" type="button" id="l-save">${isNew ? 'Add' : 'Save'}</button></div>`;
+  pane(isNew ? `New ${K.one}` : (o[K.primary] || name), K.label, (used.length ? `<p class="lede" style="margin:0 0 14px">Used by ${used.map(e => `<span class="code">${esc(e.key)}</span>`).join(' ')}. Changes show on ${used.length === 1 ? 'that event' : 'all of them'}.</p>` : '') + FORMS[kind](o), foot);
+  $('dlg').querySelector('[data-close2]').onclick = () => $('dlg').close();
+  const pick = async file => {
+    if (!file) return;
+    const info = $('l-fileinfo'); info.textContent = 'Converting…';
+    const webp = await toWebp(file);
+    let base = 'new-' + (slug(val('l-title') || file.name.replace(/\.[^.]+$/, '')) || 'flyer'), i = 2; // never a live file's name; renamed to its code when picked
+    while (Object.keys(S.tree).some(p => p.startsWith(`current/flyers/${base}.`))) base = base.replace(/-\d+$/, '') + '-' + i++;
+    if (webp) { upload = { path: `current/flyers/${base}.webp`, b64: bufB64(await webp.arrayBuffer()) }; info.textContent = `Ready: ${file.name} → web image (${Math.round(webp.size / 1024)} KB). It is renamed to its event code when saved.`; }
+    else { upload = { path: `current/flyers/${base}${(file.name.match(/\.[^.]+$/) || [''])[0].toLowerCase()}`, b64: bufB64(await file.arrayBuffer()) }; info.textContent = `Ready: ${file.name}. This browser can't convert it; it will be converted on GitHub.`; }
+    if (!val('l-title')) $('l-title').value = file.name.replace(/\.[^.]+$/, '');
+  };
+  if (kind === 'flyers') {
+    $('l-file').onchange = ev => pick(ev.target.files[0]);
+    const d = $('l-drop'); ['dragenter', 'dragover'].forEach(t => d.addEventListener(t, ev => { ev.preventDefault(); d.classList.add('over'); }));
+    ['dragleave', 'drop'].forEach(t => d.addEventListener(t, ev => { ev.preventDefault(); d.classList.remove('over'); }));
+    d.addEventListener('drop', ev => pick(ev.dataTransfer.files[0]));
+  }
+  if (kind === 'music') $('l-mp3').onchange = async ev => { const f = ev.target.files[0]; if (!f) return;
+    if (f.size > 15 * 1048576) { toast('Keep tracks under 15 MB.'); ev.target.value = ''; return; }
+    upload = { path: `current/music/${slug(f.name.replace(/\.mp3$/i, ''))}.mp3`, b64: bufB64(await f.arrayBuffer()) }; };
+  $('l-save').onclick = ev => {
+    const miss = NEED[kind].find(id => !val(id)); if (miss) { toast('Fill in the highlighted box first.'); $(miss).focus(); $(miss).setAttribute('aria-invalid', 'true'); return; }
+    if (kind === 'flyers' && !o.image && !upload) { toast('Choose the flyer file.'); $('l-file').focus(); return; }
+    if (kind === 'music' && !o.file && !upload) { toast('Choose the MP3.'); $('l-mp3').focus(); return; }
+    if (kind === 'forms' && !/^https:\/\//.test(val('l-url'))) { toast('The link has to start with https://'); $('l-url').focus(); return; }
+    saving(ev.target, async () => {
+      const n = READ[kind](o), files = {};
+      const file = isNew ? (() => { let b = slug(n[K.primary]) || K.one, f = b + '.json', i = 2; while (S.lib[kind][f]) f = `${b}-${i++}.json`; return f; })() : name;
+      if (upload) { files[upload.path] = { b64: upload.b64 };
+        const prev = kind === 'flyers' ? o.image : o.file; if (prev && 'current/' + clean(prev) !== upload.path) files['current/' + clean(prev)] = null;
+        if (kind === 'flyers') n.image = upload.path.replace('current/', ''); else n.file = upload.path.replace('current/', ''); }
+      Object.keys(n).forEach(k => (n[k] === '' || (Array.isArray(n[k]) && !n[k].length)) && delete n[k]);
+      files[`current/library/${kind}/${file}`] = { text: dump(n) };
+      S.lib[kind][file] = n;
+      await commit(files, `${isNew ? 'Add' : 'Update'} ${K.one}: ${n[K.primary]}`);
+      if (kind === 'flyers' && upload && used.length) { // already picked: rename to the event code now
+        const t = await gh(`/git/trees/${S.head}?recursive=1`); S.tree = Object.fromEntries(t.tree.filter(x => x.type === 'blob').map(x => [x.path, x.sha]));
+        const doc = structuredClone(S.events), f2 = eventFiles(doc); if (Object.keys(f2).length > 1) await commit(f2, 'Tidy: flyer named after its event code');
+      }
+    });
+  };
+  if (!isNew && !used.length) $('l-del').onclick = ev => {
+    if (!confirm(`Delete “${o[K.primary] || name}”? No event uses it.`)) return;
+    saving(ev.target, async () => { const files = { [`current/library/${kind}/${name}`]: null };
+      const f = kind === 'flyers' ? o.image : kind === 'music' ? o.file : ''; if (f) files['current/' + clean(f)] = null;
+      await commit(files, `Delete ${K.one}: ${o[K.primary] || name}`); delete S.lib[kind][name]; });
+  };
+  (document.getElementById(NEED[kind][0]) || {}).focus?.();
+}
+
+/* ---------- clicks ---------- */
+document.addEventListener('click', ev => {
+  const t = ev.target.closest('[data-ev],[data-new-ev],[data-item],[data-new-item]'); if (!t) return;
+  if (t.dataset.ev) editEvent(t.dataset.ev);
+  else if ('newEv' in t.dataset) editEvent(null);
+  else if (t.dataset.item) { const [k, n] = t.dataset.item.split('|'); editItem(k, n); }
+  else if (t.dataset.newItem) editItem(t.dataset.newItem, null);
+});
+const h = location.hash.slice(1); if (VIEWS.some(v => v[0] === h)) S.view = h;
+load();
+</script>
+</body>
+</html>

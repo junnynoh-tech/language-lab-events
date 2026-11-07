@@ -71,14 +71,14 @@ def main(check=False):
     changes += [f"new event: id {e['id']}" for e in doc["events"] if e["id"] != ids[id(e)]]
 
     plans = []  # (entry file, entry, source path, target path, bytes)
+    taken = set()
     if doc.get("library"):
         lib = Library(CUR)
-        taken = set()
         for e in sorted(doc["events"], key=lambda e: e["key"]):
             pick = str(e.get("flyer_pick") or "").split("/")[-1]
             if not pick or pick in taken:
                 continue
-            taken.add(pick)
+            taken.add(pick if pick.endswith(".json") else pick + ".json")
             entry_file = lib.root / "flyers" / (pick if pick.endswith(".json") else pick + ".json")
             entry = lib.get("flyers", pick)
             if not entry or not entry.get("image"):
@@ -100,6 +100,23 @@ def main(check=False):
             plans.append((entry_file, entry, src, target, webp))
             changes.append(f"flyer {clean(entry['image'])} -> {target}")
 
+    # a flyer no event picks any more, sitting where a moved one will land: step it aside under its own name
+    if plans:
+        targets = {t for *_, t, _ in plans}
+        for entry_file in sorted((CUR / "library" / "flyers").glob("*.json")):
+            if entry_file.name in taken:
+                continue
+            entry = json.loads(entry_file.read_text(encoding="utf-8"))
+            src = CUR / clean(entry.get("image") or "")
+            if clean(entry.get("image") or "") not in targets or not src.is_file():
+                continue
+            stem = re.sub(r"[^a-z0-9]+", "-", unicodedata.normalize("NFD", (entry.get("title") or entry_file.stem).lower()).encode("ascii", "ignore").decode()).strip("-") or "flyer"
+            target, i = f"flyers/{stem}{src.suffix.lower()}", 2
+            while (CUR / target).exists() or target in targets:
+                target, i = f"flyers/{stem}-{i}{src.suffix.lower()}", i + 1
+            targets.add(target)
+            plans.append((entry_file, entry, src, target, src.read_bytes()))
+            changes.append(f"unused flyer {clean(entry['image'])} -> {target}")
     if check or not changes:
         print("\n".join(changes) or "Nothing to tidy.")
         return bool(changes)
