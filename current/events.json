@@ -48,33 +48,18 @@
       "partners": [
         "Nighthawks Entertainment"
       ],
-      "extra_credit": {
-        "offered": true,
-        "note": "Extra credit is up to each instructor. Ask yours whether this event counts in your course."
-      },
-      "mini_project": {
-        "title": "Taste & tell",
-        "title_es": "Prueba y cuenta",
-        "steps": [
-          "Try at least two candies from different countries.",
-          "Describe each one in Spanish: where it's from and what it's like (dulce, ácido, picante, salado).",
-          "Say which one was your favorite and why (porque…). SPAN 1002: tell it in the past (probé, me gustó)."
-        ],
-        "deliverable": "A short paragraph or a 1-minute video in Spanish.",
-        "submit": "Where and when to submit is posted in D2L.",
-        "due": ""
-      },
-      "link": null,
-      "flyer": "",
-      "flyer_alt": "",
+      "theme": "confetti",
       "key": "gvl-1",
-      "activities": [],
-      "rules": [],
-      "prizes": [],
-      "prizes_note": "",
-      "rubric": "",
-      "entry": null,
-      "theme": "confetti"
+      "credit": {
+        "on": true,
+        "option": "lab-wide-ask-your-instructor.json"
+      },
+      "assignment": {
+        "on": true,
+        "pick": "taste-tell.json",
+        "due": "",
+        "due_time": ""
+      }
     },
     {
       "id": "2026-11-04-dia-de-muertos",
@@ -98,76 +83,32 @@
       "partners": [
         "LSA"
       ],
-      "extra_credit": {
-        "offered": true,
-        "note": "Extra credit is up to each instructor. Ask yours whether this event counts in your course."
-      },
-      "mini_project": {
-        "title": "Mini-ofrenda competition",
-        "title_es": "Concurso de mini-ofrendas",
-        "steps": [
-          "Build a small ofrenda (shoebox size or smaller) for a person, pet, or figure you want to remember.",
-          "Include at least 4 traditional elements and label them in Spanish: las velas, las flores de cempasúchil, el pan de muerto, el papel picado, las fotos.",
-          "Add a card in Spanish: who it honors and why (3–5 sentences)."
-        ],
-        "deliverable": "Bring your mini-ofrenda to the event on Nov 4 for the competition. Can't attend? Submit a photo of it with your card.",
-        "submit": "Where and when to submit is posted in D2L.",
-        "due": "2026-11-04",
-        "due_time": "10:30",
-        "step_titles": [
-          "Pick someone",
-          "Make it",
-          "Explain it"
-        ]
-      },
-      "link": null,
-      "flyer": "gvl-2.jpg",
-      "flyer_alt": "Wednesday, November 4th\n11AM - 1PM\nDía de muertos\nNesbitt 4201\nSponsored by Latino Student Association and Language Lab",
+      "theme": "dia-de-muertos",
       "key": "gvl-2",
-      "activities": [
-        {
-          "title": "Mini-ofrenda competition",
-          "text": "Bring a small ofrenda (base up to 12 × 12 in). Four judges score every entry; the top three win prizes."
-        }
+      "flyer_pick": "dia-de-muertos.json",
+      "music_pick": [
+        "las-chiapanecas-marimba.json"
       ],
-      "rules": [],
-      "prizes": [
-        {
-          "place": "1st place",
-          "name": "LEGO Botanicals Rocking Plants",
-          "alt": "LEGO Botanicals Rocking Plants set (253 pieces): two smiling potted plants, one in a green pot and one in a pink pot.",
-          "image": "prizes/gvl-2-prize-1.jpg"
-        },
-        {
-          "place": "2nd place",
-          "name": "Hug-A-Lumps capybara plush",
-          "alt": "Hug-A-Lumps weighted plush: a soft tan capybara lying down with a sleepy smile.",
-          "image": "prizes/gvl-2-prize-2.jpg"
-        },
-        {
-          "place": "3rd place",
-          "name": "Hello Kitty Dreamy Starlight plush",
-          "alt": "Hello Kitty plush with a pink star bow and a blue starry dress.",
-          "image": "prizes/gvl-2-prize-3.jpg"
-        }
-      ],
-      "rubric": "rubrics/dia-de-muertos-mini-ofrenda-2026.json",
-      "entry": {
-        "label": "Enter the competition",
-        "url": "https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=jsXmuPrWSk-WjNS-ZY3-jvUu_wPvIVBGnzpm9KRbUDFUQU1HSVo4S1lRWkdSSzFGUkQzSklYVUhXNy4u",
+      "signup": {
+        "on": true,
+        "form": "mini-ofrenda-entry-form.json",
         "deadline": "2026-11-04",
         "deadline_time": "10:30"
       },
-      "theme": "dia-de-muertos",
-      "music": [
-        {
-          "title": "Las Chiapanecas (marimba)",
-          "artist": "Alejandro Nuricumbo, courtesy of Museo de la Marimba Chiapas",
-          "file": "music/ddm-chiapanecas.mp3",
-          "license": "Public domain",
-          "source": "https://commons.wikimedia.org/wiki/File:Chiapanecas_marimba.ogg"
-        }
-      ]
+      "credit": {
+        "on": true,
+        "option": "lab-wide-ask-your-instructor.json"
+      },
+      "assignment": {
+        "on": true,
+        "pick": "mini-ofrenda-competition.json",
+        "due": "2026-11-04",
+        "due_time": "10:30"
+      },
+      "competition": {
+        "on": true,
+        "pick": "mini-ofrenda-competition.json"
+      }
     },
     {
       "id": "2026-11-18-lingo-cafe-karaoke",
@@ -191,49 +132,22 @@
       "partners": [
         "Gracias"
       ],
-      "extra_credit": {
-        "offered": true,
-        "note": "Extra credit is up to each instructor. Ask yours whether this event counts in your course."
+      "theme": "karaoke",
+      "key": "gvl-3",
+      "flyer_pick": "lingo-cafe-karaoke.json",
+      "music_pick": [
+        "casa-bossa-nova.json"
+      ],
+      "credit": {
+        "on": true,
+        "option": "lab-wide-ask-your-instructor.json"
       },
-      "mini_project": {
-        "title": "Event Reflection",
-        "title_es": "Reflexión del evento",
-        "rev": 2,
-        "steps": [
-          "Stay at least 30 minutes. Proof: a photo of you at the event, or a lab assistant's initials.",
-          "Write 3 words or phrases you heard, saw or sang, with their meaning.",
-          "Ask someone 2 questions in the language you're learning, and note the answers.",
-          "In English, write 2–3 sentences about one thing you learned about a culture or tradition.",
-          "Write 5 sentences about the event in the language you're learning."
-        ],
-        "deliverable": "The sheet (photo or scan) and your event photo",
-        "submit": "Your instructor's D2L dropbox",
+      "assignment": {
+        "on": true,
+        "pick": "event-reflection.json",
         "due": "",
         "due_time": ""
-      },
-      "link": {
-        "label": "Open the Event Reflection sheet",
-        "url": "https://junnynoh-tech.github.io/language-lab-events/reflection/"
-      },
-      "flyer": "gvl-3.png",
-      "flyer_alt": "Lingo Café: Karaoke flyer: Wednesday, November 18, 12–1 p.m., Gainesville Language Lab, Nesbitt 4201. Sing in the language you're learning, or just come to listen.",
-      "key": "gvl-3",
-      "activities": [],
-      "rules": [],
-      "prizes": [],
-      "prizes_note": "",
-      "rubric": "",
-      "entry": null,
-      "theme": "karaoke",
-      "music": [
-        {
-          "title": "Casa Bossa Nova",
-          "artist": "Kevin MacLeod (incompetech.com)",
-          "file": "music/cafe-casa-bossa-nova.mp3",
-          "license": "CC BY 3.0",
-          "source": "https://commons.wikimedia.org/wiki/File:Casa_Bossa_Nova_(ISRC_USUAN1600012).mp3"
-        }
-      ]
+      }
     },
     {
       "id": "2026-11-18-languages-holiday-style",
@@ -255,49 +169,22 @@
         "UNG Language Lab"
       ],
       "partners": [],
-      "extra_credit": {
-        "offered": true,
-        "note": "Extra credit is up to each instructor. Ask yours whether this event counts in your course."
+      "theme": "winter-holidays",
+      "key": "gvl-4",
+      "flyer_pick": "languages-around-the-world-let-s-learn-and-celebrate-holiday-style.json",
+      "music_pick": [
+        "jingle-bells-calm.json"
+      ],
+      "credit": {
+        "on": true,
+        "option": "lab-wide-ask-your-instructor.json"
       },
-      "mini_project": {
-        "title": "Event Reflection",
-        "title_es": "Reflexión del evento",
-        "rev": 2,
-        "steps": [
-          "Stay at least 30 minutes. Proof: a photo of you at the event (your stamped passport works too), or a lab assistant's initials.",
-          "Write 3 words or phrases you heard, saw or sang, with their meaning.",
-          "Ask someone 2 questions in the language you're learning, and note the answers.",
-          "In English, write 2–3 sentences about one thing you learned about a culture or tradition.",
-          "Write 5 sentences about the event in the language you're learning."
-        ],
-        "deliverable": "The sheet (photo or scan) and your event photo",
-        "submit": "Your instructor's D2L dropbox",
+      "assignment": {
+        "on": true,
+        "pick": "event-reflection-with-passport.json",
         "due": "",
         "due_time": ""
-      },
-      "link": {
-        "label": "Open the Event Reflection sheet",
-        "url": "https://junnynoh-tech.github.io/language-lab-events/reflection/"
-      },
-      "flyer": "gvl-4.jpg",
-      "flyer_alt": "Languages Around the World: Let's Learn and Celebrate, Holiday Style\nCelebremos las fiestas\n\nWhen\nWednesday, November 18\n2:00 PM – 5:00 PM\nWhere\nCleveland Ballroom, Martha T. Nesbitt Building, Room 3110\nCampus\nGainesville\nLearn how the holidays are celebrated around the world, with traditions and greetings from many languages.",
-      "key": "gvl-4",
-      "activities": [],
-      "rules": [],
-      "prizes": [],
-      "prizes_note": "",
-      "rubric": "",
-      "entry": null,
-      "theme": "winter-holidays",
-      "music": [
-        {
-          "title": "Jingle Bells (Calm)",
-          "artist": "Kevin MacLeod (incompetech.com)",
-          "file": "music/holidays-jingle-bells-calm.mp3",
-          "license": "CC BY 3.0",
-          "source": "https://commons.wikimedia.org/wiki/File:Jingle_Bells_(Calm)_(Kevin_MacLeod)_(ISRC_USUAN1100188).oga"
-        }
-      ]
+      }
     },
     {
       "id": "2026-11-30-lingo-cafe-holiday-chill",
@@ -321,31 +208,13 @@
       "partners": [
         "German Club"
       ],
-      "extra_credit": {
-        "offered": false,
-        "note": ""
-      },
-      "mini_project": null,
-      "link": null,
-      "flyer": "gvl-5.png",
-      "flyer_alt": "",
-      "key": "gvl-5",
-      "activities": [],
-      "rules": [],
-      "prizes": [],
-      "prizes_note": "",
-      "rubric": "",
-      "entry": null,
       "theme": "lingo-cafe",
-      "music": [
-        {
-          "title": "Silent Night",
-          "artist": "Kevin MacLeod (incompetech.com)",
-          "file": "music/chill-silent-night.mp3",
-          "license": "CC BY 3.0",
-          "source": "https://commons.wikimedia.org/wiki/File:Silent_Night_(Kevin_MacLeod)_(ISRC_USUAN1100075).oga"
-        }
+      "key": "gvl-5",
+      "flyer_pick": "lingo-cafe-holiday-chill.json",
+      "music_pick": [
+        "silent-night.json"
       ]
     }
-  ]
+  ],
+  "library": 1
 }

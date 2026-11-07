@@ -43,6 +43,10 @@ def main():
         gh_changed, local_changed = g != last, l != last
         if last is None:  # first run: no record yet; treat GitHub as the newer side only if told
             gh_changed, local_changed = keep == "github", keep != "github"
+        if name == "events.json" and local_changed and not gh_changed and keep != "local":
+            if json.loads(gh.read_text(encoding="utf-8")).get("library") and not json.loads(local.read_text(encoding="utf-8")).get("library"):
+                sys.exit("The Lab Hub events.json is in the old format (an Event Generator export?). Since 2026-11-07 events are\n"
+                         "edited in the website editor; publishing this would wipe their picks. Re-import from GitHub, or KEEP=github.")
         if gh_changed and local_changed and keep not in ("github", "local"):
             sys.exit(f"{name} was changed on the website AND on this computer since the last publish.\n"
                      f"  Keep the website version:  KEEP=github bash publish.sh\n"

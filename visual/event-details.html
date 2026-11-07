@@ -333,7 +333,7 @@ function render(e, R, base) {
   const entry = !e.entry?.url ? '' : closed ? `<span class="btn ghost" aria-disabled="true" style="opacity:.7;cursor:default">Entries closed</span>` : `<a class="btn gold" href="${esc(e.entry.url)}" target="_blank" rel="noopener">${esc(e.entry.label || 'Enter')}</a>`;
   const byLine = [e.entry?.url && e.entry.deadline && `<span><b>${closed ? 'Entries closed' : 'Enter by'}</b> ${esc(byWhen(e.entry.deadline, e.entry.deadline_time))}</span>`,
     e.mini_project?.due && `<span><b>Turn in by</b> ${esc(byWhen(e.mini_project.due, e.mini_project.due_time))}</span>`].filter(Boolean).join('');
-  const flyName = (n => n && !/\.[a-z0-9]{2,5}$/i.test(n) ? n + '.png' : n)((e.flyer || e.key || '').trim());   // empty flyer: the key; no extension: add one (flyerRetry walks the other types)
+  const flyName = (n => n && !/\.[a-z0-9]{2,5}$/i.test(n) ? n + '.png' : n)((e.flyer || (e.key ? 'flyers/' + e.key + '.webp' : '')).trim());   // empty flyer: the key; no extension: add one (flyerRetry walks the other types)
   const fly = flyName && !/\.pdf$/i.test(flyName) ? fileURL(base, flyName) : '';
   $('band').classList.toggle('has-thumb', !!fly);
   $('band').innerHTML = (fly ? `<a class="thumb" href="${esc(fly)}" target="_blank" rel="noopener"><img src="${esc(fly)}" alt="Flyer: ${esc(e.flyer_alt || e.title)} (opens full size)" onerror="flyerRetry(this)"></a>` : '') + `<div><a class="back" id="back" href="event-carousel.html#ev-${encodeURIComponent(e.id)}"><span class="arr" aria-hidden="true">←</span>All events</a>
@@ -444,6 +444,47 @@ $('tabs').addEventListener('keydown', ev => {
 });
 $('viewAll').onclick = () => { if (drawerOpen()) setDrawer(false, false); viewAll = !viewAll; $('viewAll').setAttribute('aria-pressed', viewAll); $('viewAll').textContent = viewAll ? 'One at a time' : 'View all'; $('shell').classList.toggle('all', viewAll); show(current, false); $('live').textContent = viewAll ? 'Showing every section' : 'Showing one section'; };
 
+/* ---------- event library (2026-11-07) ----------
+   In the website editor an event PICKS things made in their own tabs: a flyer, music, a sign-up form, extra credit,
+   an assignment or mini-project, a competition (prizes, rules, rubric). Each is current/library/<kind>/<name>.json.
+   This fills the event's older fields from its picks, so the rest of the page reads events the same way as before.
+   Event codes: per campus, by date and start time, the earliest is gvl-1. Same rules as event_library.py; this block
+   is identical in event-carousel.html and event-details.html. Files without "library" (the Event Generator's preview)
+   carry everything inline and are left as they are. */
+const EC_NOTE = 'Extra credit is up to each instructor. Ask yours whether this event counts in your course.';
+function eventCodes(doc) {
+  const n = {}, k = e => [e.date || '', e.start || '', e.title || ''];
+  [...(doc?.events || [])].sort((a, b) => { const x = k(a), y = k(b); for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] < y[i] ? -1 : 1; return 0; })
+    .forEach(e => { const c = e.campus || 'gvl'; n[c] = (n[c] || 0) + 1; e.key = `${c}-${n[c]}`; });
+}
+async function resolveLibrary(doc, base) {
+  eventCodes(doc);
+  if (!doc?.library) return;
+  const cache = {}, on = o => o?.on === true, clean = s => typeof s === 'string' ? s.trim().replace(/^.*?\/?current\//, '').replace(/^\/+/, '') : '';
+  const get = (kind, name) => {
+    name = String(name || '').trim().split('/').pop(); if (!name) return null;
+    if (!/\.json$/i.test(name)) name += '.json';
+    const k = kind + '/' + name;
+    if (PV) return PV.library?.[k] || null;
+    return cache[k] ||= fetch(base + 'library/' + k, { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
+  };
+  await Promise.all((doc.events || []).map(async e => {
+    const S = e.signup || {}, C = e.credit || {}, A = e.assignment || {}, K = e.competition || {};
+    const [fly, form, ec, task, comp, music] = await Promise.all([get('flyers', e.flyer_pick), on(S) && get('forms', S.form),
+      on(C) && get('extra-credit', C.option), on(A) && get('assignments', A.pick), on(K) && get('competitions', K.pick),
+      Promise.all((e.music_pick || []).map(m => get('music', m)))]);
+    e.flyer = clean(fly?.image); e.flyer_alt = fly?.alt || '';
+    e.music = music.filter(Boolean).map(m => ({ ...m, file: clean(m.file) }));
+    e.entry = form?.url ? { url: form.url, label: form.label || 'Sign up', deadline: S.deadline || '', deadline_time: S.deadline_time || '' } : null;
+    e.extra_credit = { offered: on(C), note: on(C) ? (ec?.note || EC_NOTE) : '' };
+    e.mini_project = task ? { kind: task.kind, title: task.title, title_es: task.title_es, steps: task.steps || [], step_titles: task.step_titles || [],
+      deliverable: task.deliverable || '', submit: task.submit || '', due: A.due || '', due_time: A.due_time || '' } : null;
+    e.link = task?.link?.url ? { label: task.link.label || 'Open', url: task.link.url } : null;
+    e.prizes = (comp?.prizes || []).map(p => ({ ...p, image: clean(p.image) }));
+    e.prizes_note = comp?.prizes_note || ''; e.rules = comp?.rules || []; e.rubric = clean(comp?.rubric);
+    e.activities = comp?.how ? [{ title: comp.title || '', text: comp.how }] : [];
+  }));
+}
 /* ---------- tidy: accept what the Pages CMS editor saves (2026-11-06) ----------
    Uploads may come back as "/current/x.png" or "current/prizes/x.jpg"; a new event may have no id; empty list rows. */
 function tidyEvents(doc) {
@@ -452,7 +493,7 @@ function tidyEvents(doc) {
   const filled = x => x != null && (typeof x === 'object' ? Object.values(x).some(filled) : String(x).trim() !== '' && x !== false);
   (doc?.events || []).forEach(e => {
     if (!e.id) e.id = [e.date, slug(e.title)].filter(Boolean).join('-');
-    if (e.flyer) e.flyer = file(e.flyer).split('/').pop();
+    if (e.flyer) e.flyer = file(e.flyer); // may sit in flyers/
     if (e.rubric) e.rubric = file(e.rubric);
     for (const k of ['prizes', 'activities', 'rules', 'music', 'languages', 'hosts', 'partners']) if (Array.isArray(e[k])) e[k] = e[k].filter(filled);
     (e.prizes || []).forEach(p => { if (p.image) p.image = file(p.image); });
@@ -465,6 +506,7 @@ function tidyEvents(doc) {
 (async () => {
   let D = PV ? PV.doc : null, base = '';
   if (!D) for (const p of DATA_PATHS) { try { const r = await fetch(p, { cache: 'no-store' }); if (r.ok) { D = await r.json(); base = p.replace(/events\.json$/, ''); break; } } catch (x) {} }
+  await resolveLibrary(D, base);
   tidyEvents(D);
   const id = PV?.ev || params.get('ev');
   const e = D?.events?.find(x => x.id === id || x.key === id);

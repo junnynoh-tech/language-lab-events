@@ -1,35 +1,31 @@
 #!/usr/bin/env bash
 # Publish the Language Lab events site to GitHub Pages.   bash labs/language-lab-events/publish.sh
-# 1. sync: the student pages, events.json and rubrics from the Lab Hub copy (what the Event Generator exports),
-#          and the flyers from labs/flyers-*/;  2. build every class page (labs/class-pages/build.py);  3. commit + push.
-# First run only: creates the public repo junnynoh-tech/language-lab-events and turns on Pages.
+# Since 2026-11-07 the website editor (Pages CMS) is where events, flyers, forms, tasks, competitions and music are edited.
+# 1. pull GitHub's edits; sync_sources.py copies them back to the Lab Hub copy (stops if both sides changed)
+# 2. student pages + rubrics + prizes + themes go out from this computer; library/ and flyers/ come back from GitHub
+# 3. tidy_site.py: event codes by date (earliest = gvl-1), every flyer -> flyers/<code>.webp
+# 4. music check, class pages, commit + push
 set -e
 HERE="$(cd "$(dirname "$0")" && pwd)"; LABS="$(dirname "$HERE")"; HUB="$LABS/lab-assistant-training-d2l/lab-hub/events"
-[ -d "$HERE/.git" ] && { git -C "$HERE" pull -q --ff-only || { echo "GitHub has changes that conflict with this folder. Sort that out first."; exit 1; }; }   # bring in files changed on GitHub (e.g. a swapped flyer)
-python3 "$HERE/sync_sources.py"   # edits made on the website (Pages CMS) come back first; stops if both sides changed
+[ -d "$HERE/.git" ] && { git -C "$HERE" pull -q --ff-only || { echo "GitHub has changes that conflict with this folder. Sort that out first."; exit 1; }; }
+python3 "$HERE/sync_sources.py"
 cp "$HUB/visual/event-carousel.html" "$HUB/visual/event-details.html" "$HERE/visual/"
 cp "$HUB/current/events.json" "$HERE/current/"
 mkdir -p "$HERE/current/rubrics"; cp "$HUB/current/rubrics/"*.json "$HERE/current/rubrics/" 2>/dev/null || true
-cp "$LABS/class-pages/themes.json" "$HUB/current/themes.json"; cp "$LABS/class-pages/themes.json" "$HERE/current/themes.json"   # event backgrounds (one source: class-pages/themes.json)
-mkdir -p "$HERE/current/prizes"; cp "$HUB/current/prizes/"* "$HERE/current/prizes/" 2>/dev/null || true
-mkdir -p "$HERE/current/music"; cp "$HUB/current/music/"* "$HERE/current/music/" 2>/dev/null || true   # ambient tracks for the carousel turntable
-for f in "$LABS"/flyers-*/*.{jpg,jpeg,png,webp,avif,gif,pdf,heic,heif,tif,tiff,bmp,JPG,JPEG,PNG,HEIC}; do [ -e "$f" ] && cp -p "$f" "$HERE/current/"; done
-python3 "$HERE/reconcile_flyers.py"   # any image type; newest file per flyer code wins (also one swapped in on GitHub); fixes every reference
-if ! python3 "$LABS/check_music.py" "$HUB/current/events.json"; then   # every event's YouTube links must still play
-  [ -n "$SKIP_MUSIC_CHECK" ] || { echo "Fix the music links above in the Event Generator (or SKIP_MUSIC_CHECK=1 bash publish.sh)"; exit 1; }
+cp "$LABS/class-pages/themes.json" "$HUB/current/themes.json"; cp "$LABS/class-pages/themes.json" "$HERE/current/themes.json"
+mkdir -p "$HERE/current/prizes"; cp -n "$HUB/current/prizes/"* "$HERE/current/prizes/" 2>/dev/null || true
+mkdir -p "$HERE/current/music"; cp -n "$HUB/current/music/"* "$HERE/current/music/" 2>/dev/null || true
+python3 "$HERE/tidy_site.py"
+# GitHub's copy is the source for these: bring them back to the Lab Hub (D2L) copy
+cp "$HERE/current/events.json" "$HUB/current/events.json"
+for d in library flyers prizes music; do rm -rf "$HUB/current/$d"; cp -r "$HERE/current/$d" "$HUB/current/$d"; done
+if ! python3 "$LABS/check_music.py" "$HERE/current/events.json"; then
+  [ -n "$SKIP_MUSIC_CHECK" ] || { echo "Fix the music above in the website editor's Music tab (or SKIP_MUSIC_CHECK=1 bash publish.sh)"; exit 1; }
 fi
 python3 "$LABS/class-pages/build.py"
 cd "$HERE"
-GH=~/.local/bin/gh
-if [ ! -d .git ]; then
-  git init -q -b main; git add -A
-  git -c user.name="junnynoh-tech" -c user.email="junnynoh-tech@users.noreply.github.com" commit -q -m "Language Lab events site"
-  $GH repo create junnynoh-tech/language-lab-events --public --source . --push --description "UNG Language Lab events: student pages and extra-credit handouts"
-  $GH api -X POST repos/junnynoh-tech/language-lab-events/pages -f "source[branch]=main" -f "source[path]=/" >/dev/null
-else
-  git add -A
-  git -c user.name="junnynoh-tech" -c user.email="junnynoh-tech@users.noreply.github.com" commit -q -m "Update events" || echo "Nothing new to publish."
-  git push -q
-fi
-python3 "$HERE/sync_sources.py" --mark   # remember what is live, so the next publish can tell who changed what
+git add -A
+git -c user.name="junnynoh-tech" -c user.email="junnynoh-tech@users.noreply.github.com" commit -q -m "Update events" || echo "Nothing new to publish."
+git push -q
+python3 "$HERE/sync_sources.py" --mark
 echo "Live in about a minute: https://junnynoh-tech.github.io/language-lab-events/"

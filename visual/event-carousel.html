@@ -405,7 +405,7 @@ function when(e) {
 const campusName = code => (DATA.campuses || []).find(c => c.code === code)?.name || code;
 
 /* ---------- flyers: any file type, so a flyer swapped on GitHub still shows ----------
-   Tries the name in events.json, then the same base (or the event's key, if "flyer" is empty or has no extension)
+   Tries the flyer's own name, then the same base, then the event's code (flyers/gvl-N.*, then gvl-N.* from before 2026-11-07)
    with every web type in lower and upper case (.png/.PNG, .jpg/.JPG/.jpeg …). All checks run at once; the first in order wins.
    PDF vs. image is decided by the file the server actually sends, not by the name. */
 const FLYER_EXTS = ['.png', '.jpg', '.jpeg', '.webp', '.avif', '.gif', '.pdf', '.svg', '.heic'];
@@ -413,11 +413,12 @@ const flyerTries = (name, key) => {
   const base = name ? name.replace(/\.[a-z0-9]{2,5}$/i, '') : (key || '');
   if (!base) return [];
   const exts = FLYER_EXTS.flatMap(x => [x, x.toUpperCase()]);
-  return [...new Set([name, ...exts.map(x => base + x), ...(key && key !== base ? exts.map(x => key + x) : [])].filter(Boolean))];
+  return [...new Set([name, ...exts.map(x => base + x), ...(key ? exts.map(x => 'flyers/' + key + x) : []), ...(key && key !== base ? exts.map(x => key + x) : [])].filter(Boolean))];
 };
 async function resolveFlyer(name, key) {
   if (PV) return PV.files[name] ? { url: PV.files[name], pdf: /\.pdf$/i.test(name) } : null;
-  const tries = flyerTries(name, key);
+  if (name) { try { const r = await fetch(BASE + name, { method: 'HEAD', cache: 'no-store' }); if (r.ok) return { url: BASE + name, pdf: /pdf/i.test(r.headers.get('content-type') || '') || /\.pdf$/i.test(name) }; } catch (x) { return { url: BASE + name, pdf: /\.pdf$/i.test(name) }; } }
+  const tries = flyerTries(name, key);   // only when the saved name is missing: look for it under other types
   if (!tries.length) return null;
   const heads = tries.map(n => fetch(BASE + n, { method: 'HEAD', cache: 'no-store' }).then(r => r.ok ? r : null, () => undefined));
   for (let i = 0; i < tries.length; i++) {
@@ -744,6 +745,47 @@ let tx = null;
 $('slides').addEventListener('touchstart', ev => { tx = ev.touches[0].clientX; }, { passive: true });
 $('slides').addEventListener('touchend', ev => { if (tx == null) return; const dx = ev.changedTouches[0].clientX - tx; if (Math.abs(dx) > 50) go(idx + (dx < 0 ? 1 : -1)); tx = null; });
 
+/* ---------- event library (2026-11-07) ----------
+   In the website editor an event PICKS things made in their own tabs: a flyer, music, a sign-up form, extra credit,
+   an assignment or mini-project, a competition (prizes, rules, rubric). Each is current/library/<kind>/<name>.json.
+   This fills the event's older fields from its picks, so the rest of the page reads events the same way as before.
+   Event codes: per campus, by date and start time, the earliest is gvl-1. Same rules as event_library.py; this block
+   is identical in event-carousel.html and event-details.html. Files without "library" (the Event Generator's preview)
+   carry everything inline and are left as they are. */
+const EC_NOTE = 'Extra credit is up to each instructor. Ask yours whether this event counts in your course.';
+function eventCodes(doc) {
+  const n = {}, k = e => [e.date || '', e.start || '', e.title || ''];
+  [...(doc?.events || [])].sort((a, b) => { const x = k(a), y = k(b); for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] < y[i] ? -1 : 1; return 0; })
+    .forEach(e => { const c = e.campus || 'gvl'; n[c] = (n[c] || 0) + 1; e.key = `${c}-${n[c]}`; });
+}
+async function resolveLibrary(doc, base) {
+  eventCodes(doc);
+  if (!doc?.library) return;
+  const cache = {}, on = o => o?.on === true, clean = s => typeof s === 'string' ? s.trim().replace(/^.*?\/?current\//, '').replace(/^\/+/, '') : '';
+  const get = (kind, name) => {
+    name = String(name || '').trim().split('/').pop(); if (!name) return null;
+    if (!/\.json$/i.test(name)) name += '.json';
+    const k = kind + '/' + name;
+    if (PV) return PV.library?.[k] || null;
+    return cache[k] ||= fetch(base + 'library/' + k, { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
+  };
+  await Promise.all((doc.events || []).map(async e => {
+    const S = e.signup || {}, C = e.credit || {}, A = e.assignment || {}, K = e.competition || {};
+    const [fly, form, ec, task, comp, music] = await Promise.all([get('flyers', e.flyer_pick), on(S) && get('forms', S.form),
+      on(C) && get('extra-credit', C.option), on(A) && get('assignments', A.pick), on(K) && get('competitions', K.pick),
+      Promise.all((e.music_pick || []).map(m => get('music', m)))]);
+    e.flyer = clean(fly?.image); e.flyer_alt = fly?.alt || '';
+    e.music = music.filter(Boolean).map(m => ({ ...m, file: clean(m.file) }));
+    e.entry = form?.url ? { url: form.url, label: form.label || 'Sign up', deadline: S.deadline || '', deadline_time: S.deadline_time || '' } : null;
+    e.extra_credit = { offered: on(C), note: on(C) ? (ec?.note || EC_NOTE) : '' };
+    e.mini_project = task ? { kind: task.kind, title: task.title, title_es: task.title_es, steps: task.steps || [], step_titles: task.step_titles || [],
+      deliverable: task.deliverable || '', submit: task.submit || '', due: A.due || '', due_time: A.due_time || '' } : null;
+    e.link = task?.link?.url ? { label: task.link.label || 'Open', url: task.link.url } : null;
+    e.prizes = (comp?.prizes || []).map(p => ({ ...p, image: clean(p.image) }));
+    e.prizes_note = comp?.prizes_note || ''; e.rules = comp?.rules || []; e.rubric = clean(comp?.rubric);
+    e.activities = comp?.how ? [{ title: comp.title || '', text: comp.how }] : [];
+  }));
+}
 /* ---------- tidy: accept what the Pages CMS editor saves (2026-11-06) ----------
    Uploads may come back as "/current/x.png" or "current/prizes/x.jpg"; a new event may have no id; empty list rows. */
 function tidyEvents(doc) {
@@ -752,7 +794,7 @@ function tidyEvents(doc) {
   const filled = x => x != null && (typeof x === 'object' ? Object.values(x).some(filled) : String(x).trim() !== '' && x !== false);
   (doc?.events || []).forEach(e => {
     if (!e.id) e.id = [e.date, slug(e.title)].filter(Boolean).join('-');
-    if (e.flyer) e.flyer = file(e.flyer).split('/').pop();
+    if (e.flyer) e.flyer = file(e.flyer); // may sit in flyers/
     if (e.rubric) e.rubric = file(e.rubric);
     for (const k of ['prizes', 'activities', 'rules', 'music', 'languages', 'hosts', 'partners']) if (Array.isArray(e[k])) e[k] = e[k].filter(filled);
     (e.prizes || []).forEach(p => { if (p.image) p.image = file(p.image); });
@@ -767,6 +809,7 @@ function tidyEvents(doc) {
   else for (const p of DATA_PATHS) {
     try { const r = await fetch(p, { cache: 'no-store' }); if (r.ok) { DATA = await r.json(); BASE = p.replace(/events\.json$/, ''); break; } } catch (e) {}
   }
+  await resolveLibrary(DATA, BASE);
   tidyEvents(DATA);
   if (!DATA) { $('slides').innerHTML = `<div class="empty"><h2>Events could not be loaded</h2><p>The events list is missing. Please let the Language Lab know.</p></div>`; $('rail-wrap').hidden = true; return; }
   ALL = (DATA.events || []).filter(e => e.status !== 'draft' && endOf(e) >= NOW)

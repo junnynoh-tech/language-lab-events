@@ -1,0 +1,25 @@
+{
+  "title": "Mini-ofrenda competition",
+  "how": "Bring a small ofrenda (base up to 12 × 12 in). Four judges score every entry; the top three win prizes.",
+  "prizes": [
+    {
+      "place": "1st place",
+      "name": "LEGO Botanicals Rocking Plants",
+      "alt": "LEGO Botanicals Rocking Plants set (253 pieces): two smiling potted plants, one in a green pot and one in a pink pot.",
+      "image": "prizes/gvl-2-prize-1.jpg"
+    },
+    {
+      "place": "2nd place",
+      "name": "Hug-A-Lumps capybara plush",
+      "alt": "Hug-A-Lumps weighted plush: a soft tan capybara lying down with a sleepy smile.",
+      "image": "prizes/gvl-2-prize-2.jpg"
+    },
+    {
+      "place": "3rd place",
+      "name": "Hello Kitty Dreamy Starlight plush",
+      "alt": "Hello Kitty plush with a pink star bow and a blue starry dress.",
+      "image": "prizes/gvl-2-prize-3.jpg"
+    }
+  ],
+  "rubric": "rubrics/dia-de-muertos-mini-ofrenda-2026.json"
+}
