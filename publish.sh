@@ -6,6 +6,7 @@
 set -e
 HERE="$(cd "$(dirname "$0")" && pwd)"; LABS="$(dirname "$HERE")"; HUB="$LABS/lab-assistant-training-d2l/lab-hub/events"
 [ -d "$HERE/.git" ] && { git -C "$HERE" pull -q --ff-only || { echo "GitHub has changes that conflict with this folder. Sort that out first."; exit 1; }; }   # bring in files changed on GitHub (e.g. a swapped flyer)
+python3 "$HERE/sync_sources.py"   # edits made on the website (Pages CMS) come back first; stops if both sides changed
 cp "$HUB/visual/event-carousel.html" "$HUB/visual/event-details.html" "$HERE/visual/"
 cp "$HUB/current/events.json" "$HERE/current/"
 mkdir -p "$HERE/current/rubrics"; cp "$HUB/current/rubrics/"*.json "$HERE/current/rubrics/" 2>/dev/null || true
@@ -30,4 +31,5 @@ else
   git -c user.name="junnynoh-tech" -c user.email="junnynoh-tech@users.noreply.github.com" commit -q -m "Update events" || echo "Nothing new to publish."
   git push -q
 fi
+python3 "$HERE/sync_sources.py" --mark   # remember what is live, so the next publish can tell who changed what
 echo "Live in about a minute: https://junnynoh-tech.github.io/language-lab-events/"

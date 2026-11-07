@@ -744,12 +744,30 @@ let tx = null;
 $('slides').addEventListener('touchstart', ev => { tx = ev.touches[0].clientX; }, { passive: true });
 $('slides').addEventListener('touchend', ev => { if (tx == null) return; const dx = ev.changedTouches[0].clientX - tx; if (Math.abs(dx) > 50) go(idx + (dx < 0 ? 1 : -1)); tx = null; });
 
+/* ---------- tidy: accept what the Pages CMS editor saves (2026-11-06) ----------
+   Uploads may come back as "/current/x.png" or "current/prizes/x.jpg"; a new event may have no id; empty list rows. */
+function tidyEvents(doc) {
+  const file = s => typeof s === 'string' ? s.trim().replace(/^.*?\/?current\//, '').replace(/^\/+/, '') : s;
+  const slug = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const filled = x => x != null && (typeof x === 'object' ? Object.values(x).some(filled) : String(x).trim() !== '' && x !== false);
+  (doc?.events || []).forEach(e => {
+    if (!e.id) e.id = [e.date, slug(e.title)].filter(Boolean).join('-');
+    if (e.flyer) e.flyer = file(e.flyer).split('/').pop();
+    if (e.rubric) e.rubric = file(e.rubric);
+    for (const k of ['prizes', 'activities', 'rules', 'music', 'languages', 'hosts', 'partners']) if (Array.isArray(e[k])) e[k] = e[k].filter(filled);
+    (e.prizes || []).forEach(p => { if (p.image) p.image = file(p.image); });
+    (e.music || []).forEach(m => { if (m.file) m.file = file(m.file); });
+    if (e.mini_project && !e.mini_project.title && !(e.mini_project.steps || []).length) e.mini_project = null;
+  });
+  return doc;
+}
 /* ---------- load ---------- */
 (async () => {
   if (PV) DATA = PV.doc;
   else for (const p of DATA_PATHS) {
     try { const r = await fetch(p, { cache: 'no-store' }); if (r.ok) { DATA = await r.json(); BASE = p.replace(/events\.json$/, ''); break; } } catch (e) {}
   }
+  tidyEvents(DATA);
   if (!DATA) { $('slides').innerHTML = `<div class="empty"><h2>Events could not be loaded</h2><p>The events list is missing. Please let the Language Lab know.</p></div>`; $('rail-wrap').hidden = true; return; }
   ALL = (DATA.events || []).filter(e => e.status !== 'draft' && endOf(e) >= NOW)
     .sort((a, b) => at(a.date, a.start) - at(b.date, b.start));

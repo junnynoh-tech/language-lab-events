@@ -77,12 +77,17 @@ def main():
     fill_empty(files)
 
 
-def fill_empty(files):
+def fill_empty(files):   # also tidies upload paths
     for ref in REFS[:2]:   # the two events.json copies (Lab Hub, GitHub folder)
         if not ref.exists():
             continue
         d = json.loads(ref.read_text(encoding="utf-8")); changed = False
         for e in d.get("events", []):
+            # uploads from the website editor come back as "/gvl-6.png" or "/prizes/x.jpg": keep bare names
+            clean = lambda v: re.sub(r"^/+|^.*?/?current/", "", v.strip()) if isinstance(v, str) else v
+            for obj, k in [(e, "flyer")] + [(p, "image") for p in e.get("prizes") or []] + [(m, "file") for m in e.get("music") or []]:
+                if obj.get(k) and clean(obj[k]) != obj[k]:
+                    obj[k] = clean(obj[k]); changed = True
             ps = files.get(e.get("key") or "")
             if ps and not (e.get("flyer") or "").strip():
                 e["flyer"] = ps[0].name; changed = True

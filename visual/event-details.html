@@ -444,9 +444,28 @@ $('tabs').addEventListener('keydown', ev => {
 });
 $('viewAll').onclick = () => { if (drawerOpen()) setDrawer(false, false); viewAll = !viewAll; $('viewAll').setAttribute('aria-pressed', viewAll); $('viewAll').textContent = viewAll ? 'One at a time' : 'View all'; $('shell').classList.toggle('all', viewAll); show(current, false); $('live').textContent = viewAll ? 'Showing every section' : 'Showing one section'; };
 
+/* ---------- tidy: accept what the Pages CMS editor saves (2026-11-06) ----------
+   Uploads may come back as "/current/x.png" or "current/prizes/x.jpg"; a new event may have no id; empty list rows. */
+function tidyEvents(doc) {
+  const file = s => typeof s === 'string' ? s.trim().replace(/^.*?\/?current\//, '').replace(/^\/+/, '') : s;
+  const slug = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const filled = x => x != null && (typeof x === 'object' ? Object.values(x).some(filled) : String(x).trim() !== '' && x !== false);
+  (doc?.events || []).forEach(e => {
+    if (!e.id) e.id = [e.date, slug(e.title)].filter(Boolean).join('-');
+    if (e.flyer) e.flyer = file(e.flyer).split('/').pop();
+    if (e.rubric) e.rubric = file(e.rubric);
+    for (const k of ['prizes', 'activities', 'rules', 'music', 'languages', 'hosts', 'partners']) if (Array.isArray(e[k])) e[k] = e[k].filter(filled);
+    (e.prizes || []).forEach(p => { if (p.image) p.image = file(p.image); });
+    (e.music || []).forEach(m => { if (m.file) m.file = file(m.file); });
+    if (e.mini_project && !e.mini_project.title && !(e.mini_project.steps || []).length) e.mini_project = null;
+  });
+  return doc;
+}
+
 (async () => {
   let D = PV ? PV.doc : null, base = '';
   if (!D) for (const p of DATA_PATHS) { try { const r = await fetch(p, { cache: 'no-store' }); if (r.ok) { D = await r.json(); base = p.replace(/events\.json$/, ''); break; } } catch (x) {} }
+  tidyEvents(D);
   const id = PV?.ev || params.get('ev');
   const e = D?.events?.find(x => x.id === id || x.key === id);
   if (!e) { $('band').innerHTML = '<div><a class="back" href="event-carousel.html"><span class="arr" aria-hidden="true">←</span>All events</a><h1>Event not found</h1></div>'; $('main').innerHTML = `<div class="panel empty"><p>This event may have ended. <a href="event-carousel.html">See upcoming events</a>.</p></div>`; return; }
