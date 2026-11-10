@@ -85,6 +85,12 @@ h2.sec { font: 700 20px/1.3 "Source Serif 4", serif; margin: 28px 0 12px; }
 .tag.ok { background: var(--ok-bg); color: var(--ok); }
 .tag.warn { background: var(--warn-bg); color: var(--warn); }
 .tag.bad { background: var(--bad-bg); color: var(--bad); }
+.banner { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; padding: 14px 16px; border-radius: 12px; margin: 0 0 18px; border: 1px solid var(--line); }
+.banner span { flex: 1 1 260px; }
+.banner.new { background: var(--warn-bg); color: var(--warn); border-color: var(--warn); }
+.banner.warn { background: var(--bad-bg); color: var(--bad); border-color: var(--bad); }
+.banner .btn { color: var(--text); }
+.banner .btn.primary { color: var(--accent-ink); }
 .empty { color: var(--sub); background: var(--surface); border: 1px dashed var(--line); border-radius: 12px; padding: 18px; }
 
 /* events */
@@ -254,6 +260,7 @@ async function load() {
   if (!S.events) { $('main').innerHTML = '<div class="empty" role="alert">events.json could not be read.</div>'; return; }
   codes(S.events);
   await loadRequests();
+  { const pend = (S.reqs || []).filter(r => r.data.status === 'pending'); seenReq = new Set(pend.map(r => r.id)); document.title = (pend.length ? `(${pend.length}) ` : '') + 'Lab Events Console'; }
   connUI(); nav(); show(S.view, false);
 }
 
@@ -340,7 +347,7 @@ function nav() {
   const li = v => `<li><button type="button" data-view="${v[0]}" ${S.view === v[0] ? 'aria-current="page"' : ''}>${esc(v[1])}<span class="n">${cnt(v[0])}</span></button></li>`;
   $('nav').innerHTML = `<h2>Start</h2><ul>${VIEWS.slice(0, 3).map(li).join('')}</ul><h2>What events pick</h2><ul>${VIEWS.slice(3, -1).map(li).join('')}</ul><h2>Setup</h2><ul>${li(VIEWS.at(-1))}</ul>`;
 }
-$('nav').addEventListener('click', ev => { const b = ev.target.closest('[data-view]'); if (b) show(b.dataset.view); });
+document.addEventListener('click', ev => { const b = ev.target.closest('[data-view]'); if (b) show(b.dataset.view); });
 let show = function (v, focus = true) {
   S.view = v; nav();
   const html = v === 'overview' ? vOverview() : v === 'events' ? vEvents() : v === 'requests' ? vRequests() : v === 'settings' ? vSettings() : vLibrary(v);
@@ -373,8 +380,9 @@ function sorted() { return [...S.events.events].sort((a, b) => (a.date + a.start
 function vOverview() {
   const evs = sorted(), up = evs.filter(e => at(e.date) >= today), list = issues(), pend = (S.reqs || []).filter(r => r.data.status === 'pending');
   return header('Overview', 'Events at a glance', 'What students see now, and anything that needs a look.', `<a class="btn" href="${SITE}visual/event-carousel.html" target="_blank" rel="noopener">See the student page ↗</a><button class="btn primary" type="button" data-new-ev>New event</button>`)
+    + reqBanner()
     + `<div class="stats"><div class="stat"><b>${up.filter(e => e.status !== 'draft').length}</b><span>Upcoming, showing</span></div><div class="stat"><b>${up.filter(e => e.status === 'draft').length}</b><span>Drafts</span></div><div class="stat"><b>${Object.values(S.lib).reduce((n, o) => n + Object.keys(o).length, 0)}</b><span>Things to pick from</span></div><div class="stat"><b>${list.length}</b><span>To check</span></div></div>`
-    + (pend.length ? `<h2 class="sec">New requests</h2><ul class="issues">${pend.map(r => `<li><span class="tag warn">Request</span><span><b>${esc(r.data.event.title)}</b><br><span style="color:var(--sub)">${esc(r.data.organizer.organization)} · ${esc(at(r.data.event.date).toDateString())}</span></span><button class="btn sm" type="button" data-req="${esc(r.id)}">Review</button></li>`).join('')}</ul>` : '')
+    + (pend.length ? `<h2 class="sec" id="newreq">New requests</h2><ul class="issues">${pend.map(r => `<li><span class="tag warn">Request</span><span><b>${esc(r.data.event.title)}</b><br><span style="color:var(--sub)">${esc(r.data.organizer.organization)} · ${esc(at(r.data.event.date).toDateString())}</span></span><button class="btn sm" type="button" data-req="${esc(r.id)}">Review</button></li>`).join('')}</ul>` : '')
     + `<h2 class="sec">Needs a look</h2>` + (list.length ? `<ul class="issues">${list.map(([lv, what, msg, e, lib]) => `<li><span class="tag ${lv}">${lv === 'bad' ? 'Fix' : 'Check'}</span><span><b>${esc(what)}</b><br><span style="color:var(--sub)">${esc(msg)}</span></span><button class="btn sm" type="button" ${e ? `data-ev="${esc(e.id)}"` : `data-item="${esc(lib[0])}|${esc(lib[1])}"`}>Open</button></li>`).join('')}</ul>` : '<p class="empty">All clear.</p>')
     + `<h2 class="sec">Coming up</h2>` + (up.length ? `<div class="evlist">${up.slice(0, 4).map(evCard).join('')}</div>` : '<p class="empty">No upcoming events. Add one with New event.</p>');
 }
@@ -408,7 +416,7 @@ function vSettings() {
   return header('Setup', 'Settings', 'Looking around needs nothing. To save from this console, connect a GitHub key once on this computer.')
     + `<ol class="howto"><li><span>Open <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub → new fine-grained token ↗</a>. Name it “Lab console”.</span></li>
       <li><span><b>Repository access:</b> Only select repositories → <code>${REPO}</code> and <code>${REQ_REPO}</code> (requests).</span></li>
-      <li><span><b>Permissions:</b> Repository → <b>Contents: Read and write</b>. Nothing else.</span></li>
+      <li><span><b>Permissions:</b> Repository → <b>Contents: Read and write</b>, and <b>Issues: Read and write</b> (closes the request emails when you decide). Nothing else.</span></li>
       <li><span>Generate it, copy it, paste it below. It stays in this browser only and is never put in a file.</span></li></ol>
       <fieldset style="max-width:620px"><legend>GitHub key</legend><div class="f"><label for="tok">Key</label><input type="password" id="tok" autocomplete="off" spellcheck="false" placeholder="github_pat_…" value="${token ? '••••••••' : ''}"></div>
       <div class="row"><button class="btn primary" type="button" id="tokSave">Connect</button><button class="btn danger" type="button" id="tokClear" ${token ? '' : 'disabled'}>Disconnect</button></div><p class="hint" id="tokMsg" role="status"></p></fieldset>
@@ -634,12 +642,31 @@ function editItem(kind, name) {
 }
 
 
+function reqBanner() {
+  const pend = (S.reqs || []).filter(r => r.data.status === 'pending');
+  if (S.reqErr) return `<div class="banner warn" role="status"><b>Requests can’t be shown.</b> <span>${esc(S.reqErr)}</span><button class="btn sm" type="button" data-view="settings">Open Settings</button></div>`;
+  return pend.length ? `<div class="banner new" role="status"><b>${pend.length} new request${pend.length > 1 ? 's' : ''}</b> <span>${pend.map(r => esc(`${r.data.event.title} (${r.data.organizer.organization})`)).join(', ')}</span><button class="btn sm primary" type="button" data-view="requests">Review</button></div>` : '';
+}
+/* new requests show up without reloading: check every 2 minutes, badge the tab title, say so once */
+let seenReq = null;
+async function pollRequests() {
+  if (!token) return;
+  await loadRequests();
+  const pend = (S.reqs || []).filter(r => r.data.status === 'pending');
+  document.title = (pend.length ? `(${pend.length}) ` : '') + 'Lab Events Console';
+  const ids = new Set(pend.map(r => r.id));
+  if (seenReq) { const fresh = pend.filter(r => !seenReq.has(r.id)); if (fresh.length) { toast(`New request: ${fresh[0].data.event.title} (${fresh[0].data.organizer.organization})`, 8000); if (!$('dlg').open) show(S.view, false); } }
+  seenReq = ids; nav();
+}
+setInterval(pollRequests, 120000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) pollRequests(); });
+
 /* ---------- requests from organizations (private repo lab-event-requests, written by the Cloudflare Worker) ---------- */
 const ROOM = 'Language Lab, Martha T. Nesbitt Building, Room 4201';
 const fromB64 = s => decodeURIComponent(escape(atob(s.replace(/\n/g, ''))));
 async function loadRequests() {
   S.reqs = null; S.reqErr = '';
-  if (!token) { S.reqErr = 'Connect your GitHub key (Settings) to see requests. They are private.'; return; }
+  if (!token) { S.reqErr = 'Connect your GitHub key in Settings to see requests. They are private.'; return; }
   try {
     const t = await gh(`/git/trees/${BRANCH}?recursive=1`, {}, REQ_REPO);
     const files = Object.fromEntries(t.tree.filter(x => x.type === 'blob').map(x => [x.path, x.sha]));
@@ -649,7 +676,7 @@ async function loadRequests() {
     S.reqs.sort((a, b) => (a.data.status === 'pending' ? 0 : 1) - (b.data.status === 'pending' ? 0 : 1) || a.data.event.date.localeCompare(b.data.event.date));
   } catch (e) {
     if (e.status === 409) S.reqs = []; // no requests yet (empty repo)
-    else S.reqErr = e.status === 404 ? 'Your key can’t see the requests. Add the lab-event-requests repository to it (Settings).' : e.message;
+    else S.reqErr = e.status === 404 || e.status === 403 ? 'Your GitHub key can’t open the private requests list. Edit the key on GitHub and add the lab-event-requests repository (Contents: Read and write), then reload.' : e.message;
   }
 }
 const clashes = r => (S.events.events || []).filter(x => x.date === r.event.date && /4201/.test(x.location || '') && x.status !== 'draft' && x.start < r.event.end && r.event.start < x.end);
@@ -710,6 +737,7 @@ async function reviewRequest(id) {
     const nd = { ...d, status, admin: { ...(d.admin || {}), decided_at: new Date().toISOString(), note: val('r-note'), ...extra } };
     await commit({ [r.path]: { text: dump(nd) } }, `${status === 'approved' ? 'Approve' : 'Decline'}: ${e.title}`, REQ_REPO);
     r.data = nd;
+    if (d.issue) gh(`/issues/${d.issue}`, { method: 'PATCH', body: JSON.stringify({ state: 'closed', state_reason: status === 'approved' ? 'completed' : 'not_planned' }) }, REQ_REPO).catch(() => {}); // the email notification thread
   };
   $('r-decline').onclick = ev => { if (!confirm(`Decline “${e.title}”? Your email to ${d.organizer.email} opens next.`)) return;
     saving(ev.target, async () => { await decide('declined'); location.href = mail(`Your Language Lab event request: ${e.title}`, `Hello ${d.organizer.name},\n\nThank you for your request. Unfortunately we can't host "${e.title}" in the Language Lab as requested.${val('r-note') ? '\n\n' + val('r-note') : ''}\n\nUNG Language Lab`); }); };
