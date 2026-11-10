@@ -277,7 +277,7 @@ function go(i, focus = true) {
   cur = i; document.querySelectorAll('.step').forEach((s, k) => s.hidden = k !== i); stepNav();
   $('back').style.visibility = i === 0 ? 'hidden' : 'visible';
   $('next').textContent = i === STEPS.length - 1 ? 'Send request' : 'Next →';
-  if (i === STEPS.length - 1) { review(); turnstile(); }
+  if (i === STEPS.length - 1) { review(); startHumanCheck(); }
   if (focus) { document.querySelectorAll('.step')[i].querySelector('h2').focus(); window.scrollTo({ top: 0 }); }
 }
 $('steps').addEventListener('click', ev => { const b = ev.target.closest('[data-go]'); if (!b) return; const to = +b.dataset.go;
@@ -430,10 +430,10 @@ function review() {
   $('review').innerHTML = rows.map(([k, x]) => `<dt>${esc(k)}</dt><dd>${esc(x)}</dd>`).join('');
 }
 let tsLoaded = false;
-function turnstile() {
+function startHumanCheck() { // never name anything "turnstile" here: it would hide Cloudflare's window.turnstile
   if (!CFG.worker_url || !CFG.turnstile_sitekey) { $('sendMsg').className = 'note warn'; $('sendMsg').textContent = 'Requests open soon. The form can’t send yet; please email the Lab for now.'; $('next').disabled = true; return; }
   if (tsLoaded) return; tsLoaded = true;
-  /* the box must not be id="turnstile": a page element with that id shadows window.turnstile and the check never draws */
+  /* the box is not id="turnstile" for the same reason */
   window.onTsReady = () => window.turnstile.render('#ts-box', { sitekey: CFG.turnstile_sitekey, callback: t => { tsToken = t; $('sendMsg').textContent = ''; $('sendMsg').className = 'note'; },
     'expired-callback': () => tsToken = '', 'error-callback': () => { $('sendMsg').className = 'note bad'; $('sendMsg').textContent = 'The “I’m human” check couldn’t load. Refresh the page and try again.'; } });
   const s = document.createElement('script'); s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTsReady&render=explicit'; document.head.appendChild(s);
