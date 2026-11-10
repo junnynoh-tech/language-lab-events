@@ -231,10 +231,15 @@ $('modeBtn').onclick = () => setMode(document.documentElement.dataset.mode === '
 
 /* ---------- GitHub ---------- */
 async function gh(path, opt = {}, repo = REPO) {
+  if (!opt.method && token && gh.bad && repo === REPO) return gh.anon(path); // a dead key still lets you look around
   const r = await fetch(apiOf(repo) + path, { ...opt, headers: { Accept: 'application/vnd.github+json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(opt.body ? { 'Content-Type': 'application/json' } : {}) } });
-  if (!r.ok) { const j = await r.json().catch(() => ({})); const err = new Error(j.message || r.statusText); err.status = r.status; throw err; }
+  if (!r.ok) { const j = await r.json().catch(() => ({}));
+    if (r.status === 401 && !opt.method && repo === REPO) { gh.bad = true; connUI(); return gh.anon(path); }
+    const msg = r.status === 401 ? 'GitHub doesn’t accept your saved key any more (it expired or was regenerated). Open Settings, press Disconnect, and paste the key again.' : (j.message || r.statusText);
+    const err = new Error(msg); err.status = r.status; throw err; }
   return r.status === 204 ? null : r.json();
 }
+gh.anon = async path => { const r = await fetch(API + path, { headers: { Accept: 'application/vnd.github+json' } }); if (!r.ok) { const e = new Error(r.statusText); e.status = r.status; throw e; } return r.json(); };
 const raw = p => `https://raw.githubusercontent.com/${OWNER}/${REPO}/${S.head}/${p.split('/').map(encodeURIComponent).join('/')}`;
 const getJSON = p => fetch(raw(p)).then(r => r.ok ? r.json() : null).catch(() => null);
 const b64 = str => btoa(unescape(encodeURIComponent(str)));
@@ -281,9 +286,11 @@ async function commit(files, message, repo = REPO) {
     const sha = v.sha || (await G('/git/blobs', { method: 'POST', body: JSON.stringify(v.b64 ? { content: v.b64, encoding: 'base64' } : { content: b64(v.text), encoding: 'base64' }) })).sha;
     tree.push({ path, mode: '100644', type: 'blob', sha }); made[path] = sha;
   }
-  const nt = await G('/git/trees', { method: 'POST', body: JSON.stringify({ base_tree: base, tree }) });
-  const nc = await G('/git/commits', { method: 'POST', body: JSON.stringify({ message, tree: nt.sha, parents: [head] }) });
-  await G(`/git/refs/heads/${BRANCH}`, { method: 'PATCH', body: JSON.stringify({ sha: nc.sha }) });
+  const retry = async fn => { for (let k = 0; ; k++) { try { return await fn(); } catch (e) {
+    if (k >= 5 || !/bad ?object|BadObjectState|not found|409|422/i.test(e.message + ' ' + e.status)) throw e; await new Promise(r => setTimeout(r, 1200 * (k + 1))); } } };
+  const nt = await retry(() => G('/git/trees', { method: 'POST', body: JSON.stringify({ base_tree: base, tree }) }));
+  const nc = await retry(() => G('/git/commits', { method: 'POST', body: JSON.stringify({ message, tree: nt.sha, parents: [head] }) }));
+  await retry(() => G(`/git/refs/heads/${BRANCH}`, { method: 'PATCH', body: JSON.stringify({ sha: nc.sha }) }));
   if (!pub) return;
   S.head = nc.sha;
   for (const [path, v] of Object.entries(files)) { if (v === null) delete S.tree[path]; else S.tree[path] = made[path]; }
@@ -294,7 +301,7 @@ function codes(doc) {
   const n = {}, k = e => [e.date || '', e.start || '', e.title || ''];
   [...(doc.events || [])].sort((a, b) => { const x = k(a), y = k(b); for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] < y[i] ? -1 : 1; return 0; })
     .forEach(e => { const c = e.campus || 'gvl'; n[c] = (n[c] || 0) + 1; e.key = `${c}-${n[c]}`; });
-  (doc.events || []).forEach(e => { if (!e.id) e.id = [e.date, slug(e.title)].filter(Boolean).join('-'); });
+  const ids = new Set(); (doc.events || []).forEach(e => { let id = e.id || [e.date, slug(e.title)].filter(Boolean).join('-'), base = id, i = 2; while (ids.has(id)) id = `${base}-${i++}`; e.id = id; ids.add(id); }); // ids stay unique, so one delete never removes two
 }
 /* events.json + every flyer rename the new codes need, as commit files. Flyer files are moved (same content) to flyers/<code>.<ext>. */
 function eventFiles(doc) {
@@ -359,7 +366,7 @@ let show = function (v, focus = true) {
 function header(eyebrow, title, lede, actions = '') {
   return `<div class="head"><div><p class="eyebrow">${esc(eyebrow)}</p><h1 tabindex="-1">${esc(title)}</h1>${lede ? `<p class="lede">${esc(lede)}</p>` : ''}</div><div class="row">${actions}</div></div>`;
 }
-function connUI() { $('conn').innerHTML = token ? '<span class="dot on" aria-hidden="true"></span><span>Connected: you can save</span>' : '<span class="dot" aria-hidden="true"></span><span>Viewing only</span>'; }
+function connUI() { $('conn').innerHTML = gh.bad ? '<span class="dot" aria-hidden="true"></span><span>Key not accepted: Settings</span>' : token ? '<span class="dot on" aria-hidden="true"></span><span>Connected: you can save</span>' : '<span class="dot" aria-hidden="true"></span><span>Viewing only</span>'; }
 
 /* ---------- views ---------- */
 function flyerURL(name) { const f = item('flyers', name); return f?.image && S.tree['current/' + clean(f.image)] ? raw('current/' + clean(f.image)) : ''; }
@@ -526,7 +533,7 @@ function editEvent(id) {
   };
   if (!isNew) $('e-del').onclick = ev => {
     if (!confirm(`Delete “${e.title}”? Later events on this campus move up one code.`)) return;
-    saving(ev.target, async () => { const doc = structuredClone(S.events); doc.events = doc.events.filter(x => x.id !== e.id);
+    saving(ev.target, async () => { const doc = structuredClone(S.events), at_ = doc.events.findIndex(x => x.id === e.id && x.key === e.key); if (at_ < 0) throw new Error('That event changed. Press Reload.'); doc.events.splice(at_, 1);
       await commit(eventFiles(doc), `Delete event: ${e.title}`); S.events = doc; });
   };
   $('e-title').focus();
@@ -675,7 +682,7 @@ async function loadRequests() {
     S.reqs.sort((a, b) => (a.data.status === 'pending' ? 0 : 1) - (b.data.status === 'pending' ? 0 : 1) || a.data.event.date.localeCompare(b.data.event.date));
   } catch (e) {
     if (e.status === 409) S.reqs = []; // no requests yet (empty repo)
-    else S.reqErr = e.status === 404 || e.status === 403 ? 'Your GitHub key can’t open the private requests list. Edit the key on GitHub and add the lab-event-requests repository (Contents: Read and write), then reload.' : e.message;
+    else S.reqErr = e.status === 401 ? e.message : e.status === 404 || e.status === 403 ? 'Your GitHub key can’t open the private requests list. Edit the key on GitHub and add the lab-event-requests repository (Contents: Read and write), then reload.' : e.message;
   }
 }
 const clashes = r => (S.events.events || []).filter(x => x.date === r.event.date && /4201/.test(x.location || '') && x.status !== 'draft' && x.start < r.event.end && r.event.start < x.end);
@@ -744,6 +751,8 @@ async function reviewRequest(id) {
     if (val('r-end') <= val('r-start')) { toast('The event has to end after it starts.'); return; }
     if (clashes({ event: { date: val('r-date'), start: val('r-start'), end: val('r-end') } }).length && !confirm('Another event is in the Lab then. Approve anyway?')) return;
     saving(ev.target, async () => {
+      const already = S.events.events.find(x => x.title === val('r-title') && x.date === val('r-date'));
+      if (already) { await decide('approved', { event_id: already.id, event_key: already.key }); toast('That event was already added; the request is now marked approved.', 6000); return; }
       const base = slug(val('r-title')) || 'event', uniq = (kind, b) => { let n = b + '.json', i = 2; while (S.lib[kind][n]) n = `${b}-${i++}.json`; return n; };
       const add = {}, n = { title: val('r-title'), status: val('r-status'), campus: 'gvl', date: val('r-date'), start: val('r-start'), end: val('r-end'), location: ROOM,
         summary: val('r-sum'), details: val('r-det') || e.details || '', languages: e.languages || [], hosts: [d.organizer.organization], partners: e.partners || [],

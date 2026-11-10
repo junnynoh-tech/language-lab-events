@@ -176,6 +176,8 @@ dl.review dd { margin: 0; overflow-wrap: anywhere; }
         <div class="card">
           <div class="drop" id="drop"><img class="pv" id="pv" alt="" hidden><p style="margin:0 0 10px" id="dropMsg">Drop your flyer here, or</p><label class="btn" for="flyerFile">Choose a file</label><input type="file" id="flyerFile" class="sr" accept="image/*,.heic,.heif,.pdf"><p class="hint" id="flyerInfo" role="status" style="margin:10px 0 0"></p></div>
           <div class="f" style="margin-top:16px"><label for="f-alt">Describe the flyer</label><textarea id="f-alt" maxlength="400" aria-describedby="f-alt-h"></textarea><span class="hint" id="f-alt-h">What it says and shows, in a sentence or two. Screen readers read this aloud to students who can’t see it.</span></div>
+          <div id="wideBox" hidden><p class="note warn" style="margin:14px 0 10px"><b>This flyer is wide, like a slide.</b> On the events page it shows small and hard to read. A tall flyer (portrait, like a poster or letter page) works best: in PowerPoint, Design → Slide Size → Custom → Portrait.</p>
+            <label class="check" style="margin-bottom:12px"><input type="checkbox" id="f-wideok"><span>Use this wide flyer anyway</span></label></div>
           <label class="check"><input type="checkbox" id="f-later"><span>Our flyer isn’t ready yet. We’ll email it to the Lab.</span></label>
         </div>
       </section>
@@ -299,7 +301,8 @@ function check(i, show = false) {
     need('e-end', v('e-end') > v('e-start'), 'The event has to end after it starts.', show), need('e-sum', !!v('e-sum'), 'Add a short description.', show));
   if (id === 'flyer') { const later = $('f-later').checked; r.push(need('flyerFile', later || !!flyer, 'Add your flyer, or tick “not ready yet”.', show));
     if (show && !later && !flyer) $('flyerInfo').textContent = 'Add your flyer, or tick “not ready yet”.';
-    r.push(need('f-alt', later || !!v('f-alt'), 'Describe the flyer in a sentence or two.', show)); }
+    r.push(need('f-alt', later || !!v('f-alt'), 'Describe the flyer in a sentence or two.', show));
+    r.push(need('f-wideok', later || !flyer?.wide || $('f-wideok').checked, 'Upload a tall flyer, or tick “Use this wide flyer anyway”.', show)); }
   if (id === 'music' && music.kind === 'library') r.push(need('m-pick', !!v('m-pick'), 'Pick a track, or choose another option.', show));
   if (id === 'music' && music.kind === 'commons') { const ok = !!music.mp3; if (show && !ok) { $('m-result').className = 'note bad'; $('m-result').textContent = 'Pick a track from the list, or paste a Commons link and press Check.'; } r.push(ok); }
   if (id === 'extras' && $('s-need').checked) r.push(need('s-url', /^https:\/\/\S+$/.test(v('s-url')), 'Paste the full link, starting with https://', show));
@@ -332,7 +335,7 @@ async function toWebp(file) {
     } else src = await createImageBitmap(file, { imageOrientation: 'from-image' });
   } catch (e) { return null; }
   const w = Math.min(MAXW, src.width), h = Math.round(src.height * w / src.width), c = document.createElement('canvas'); c.width = w; c.height = h; c.getContext('2d').drawImage(src, 0, 0, w, h);
-  const blob = await new Promise(r => c.toBlob(r, 'image/webp', 0.88)); return blob?.type === 'image/webp' ? blob : null;
+  const blob = await new Promise(r => c.toBlob(r, 'image/webp', 0.88)); if (blob) blob.ratio = w / h; return blob?.type === 'image/webp' ? blob : null;
 }
 const b64 = async blob => { const b = new Uint8Array(await blob.arrayBuffer()); let s = ''; for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(s); };
 async function takeFlyer(file) {
@@ -341,10 +344,11 @@ async function takeFlyer(file) {
   info.textContent = 'Getting it ready…';
   const webp = await toWebp(file);
   if (webp) { flyer = { ext: 'webp', b64: await b64(webp), name: file.name }; $('pv').src = URL.createObjectURL(webp); $('pv').hidden = false; $('pv').alt = 'Preview of your flyer';
-    info.textContent = `Ready: ${file.name} (${Math.round(webp.size / 1024)} KB).`; }
+    info.textContent = `Ready: ${file.name} (${Math.round(webp.size / 1024)} KB).`; flyer.wide = webp.ratio >= 1.5; }
   else { if (file.size > 8 * 1048576) { info.textContent = 'This browser can’t shrink that file and it’s over 8 MB. Save it as a JPG or PNG first.'; return; }
     flyer = { ext: (file.name.split('.').pop() || 'jpg').toLowerCase(), b64: await b64(file), name: file.name }; $('pv').hidden = true; info.textContent = `Ready: ${file.name}. The Lab will convert it.`; }
   $('dropMsg').textContent = 'Want a different one? Drop it here, or'; need('flyerFile', true, '', false);
+  $('wideBox').hidden = !flyer.wide; $('f-wideok').checked = false;
 }
 $('flyerFile').onchange = e => takeFlyer(e.target.files[0]);
 const drop = $('drop'); ['dragenter', 'dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); }));

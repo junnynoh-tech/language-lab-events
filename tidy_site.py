@@ -63,10 +63,15 @@ def main(check=False):
     before = {id(e): e.get("key") for e in doc.get("events") or []}
     ids = {id(e): e.get("id") for e in doc.get("events") or []}
     codes(doc)
-    for e in doc.get("events") or []:  # a new event gets its web address name once, from its date and name (same as the pages)
+    seen = set()
+    for e in doc.get("events") or []:  # a new event gets its web address name once, from its date and name (same as the pages); ids stay unique
         if not e.get("id"):
             slug = re.sub(r"[^a-z0-9]+", "-", unicodedata.normalize("NFD", (e.get("title") or "").lower()).encode("ascii", "ignore").decode()).strip("-")
             e["id"] = "-".join(x for x in (e.get("date"), slug) if x)
+        base, i = e["id"], 2
+        while e["id"] in seen:
+            e["id"], i = f"{base}-{i}", i + 1
+        seen.add(e["id"])
     changes = [f"code {before[id(e)] or '(none)'} -> {e['key']}: {e.get('title')}" for e in doc["events"] if before[id(e)] != e["key"]]
     changes += [f"new event: id {e['id']}" for e in doc["events"] if e["id"] != ids[id(e)]]
 

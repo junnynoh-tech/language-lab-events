@@ -133,7 +133,7 @@
         "Gracias"
       ],
       "theme": "karaoke",
-      "key": "gvl-5",
+      "key": "gvl-4",
       "flyer_pick": "lingo-cafe-karaoke.json",
       "music_pick": [
         "casa-bossa-nova.json"
@@ -170,7 +170,7 @@
       ],
       "partners": [],
       "theme": "winter-holidays",
-      "key": "gvl-6",
+      "key": "gvl-5",
       "flyer_pick": "languages-around-the-world-let-s-learn-and-celebrate-holiday-style.json",
       "music_pick": [
         "jingle-bells-calm.json"
@@ -209,7 +209,7 @@
         "German Club"
       ],
       "theme": "lingo-cafe",
-      "key": "gvl-7",
+      "key": "gvl-6",
       "flyer_pick": "lingo-cafe-holiday-chill.json",
       "music_pick": [
         "silent-night.json"
@@ -253,47 +253,8 @@
       },
       "flyer_pick": "taste-of-korean-coffee-and-well-being-tea-event.json",
       "key": "gvl-3",
-      "id": "2026-11-12-taste-of-korean-coffee-and-well-being-tea-event"
-    },
-    {
-      "title": "Taste of Korean Coffee and Well-being Tea Event",
-      "status": "published",
-      "campus": "gvl",
-      "date": "2026-11-12",
-      "start": "09:30",
-      "end": "12:30",
-      "location": "Language Lab, Martha T. Nesbitt Building, Room 4201",
-      "summary": "Participants can enjoy the unique flavors of Korean coffee, while those seeking a different kind of warmth can experience traditional Korean well-being teas. Come sip, relax, and enjoy a little taste of Korea with us!",
-      "details": "",
-      "languages": [
-        "All languages"
-      ],
-      "hosts": [
-        "Korean Program"
-      ],
-      "partners": [
-        "Center for Global Engagement"
-      ],
-      "title_alt": "한국 커피와 전통차 체험 행사",
-      "title_alt_lang": "ko",
-      "music_pick": [
-        "casa-bossa-nova.json"
-      ],
-      "signup": {
-        "on": false
-      },
-      "credit": {
-        "on": false
-      },
-      "assignment": {
-        "on": false
-      },
-      "competition": {
-        "on": false
-      },
-      "flyer_pick": "taste-of-korean-coffee-and-well-being-tea-event-2.json",
-      "key": "gvl-4",
-      "id": "2026-11-12-taste-of-korean-coffee-and-well-being-tea-event"
+      "id": "2026-11-12-taste-of-korean-coffee-and-well-being-tea-event",
+      "theme": "korean-tea-house"
     }
   ],
   "library": 1
