@@ -1,0 +1,5 @@
+{
+  "note": "Where the request form sends to. Filled in after the Cloudflare setup (labs/event-requests/SETUP.md). Empty = the form shows but can't send yet.",
+  "worker_url": "",
+  "turnstile_sitekey": ""
+}

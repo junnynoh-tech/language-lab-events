@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Request an Event</title>
+<meta name="description" content="Ask to hold your organization's event in the UNG Language Lab (Nesbitt 4201).">
+<!-- Public request form for organizations (2026-11-09). Holds no data: it reads the lab's backgrounds, music and events
+     from this site, checks music on Wikimedia Commons, and sends the request to a Cloudflare Worker that saves it in the
+     PRIVATE repo lab-event-requests (labs/event-requests/worker.js). The Lab approves it in admin/console.html → Requests. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #1A3A6B; --navy-dark: #132C52; --gold: #B08D3F; --offwhite: #F7F7F5; --white: #FFFFFF; --ink: #1F2937; --muted: #5A6472;
+  --bg: var(--offwhite); --surface: var(--white); --text: var(--ink); --sub: var(--muted); --line: #DCDDD8; --field: #FBFBFA;
+  --accent: var(--navy); --accent-ink: var(--white); --chip: #EEF0F3;
+  --ok: #1E6B45; --ok-bg: #E3F1E8; --warn: #8A4B08; --warn-bg: #FBEEDB; --bad: #A12A2A; --bad-bg: #F9E3E3; --shadow: 0 1px 2px rgba(20,30,50,.06), 0 10px 30px rgba(20,30,50,.07);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-mode="light"]) {
+  --bg: #0E1F3A; --surface: var(--navy-dark); --text: var(--offwhite); --sub: #C9CFD8; --line: #2B4670; --field: #0E1F3A;
+  --accent: var(--offwhite); --accent-ink: var(--navy-dark); --chip: #1C3864;
+  --ok: #8FD9AE; --ok-bg: #173F33; --warn: #F2C47E; --warn-bg: #4A3415; --bad: #F4A3A3; --bad-bg: #4A1E26; --shadow: none; color-scheme: dark; } }
+:root[data-mode="dark"] {
+  --bg: #0E1F3A; --surface: var(--navy-dark); --text: var(--offwhite); --sub: #C9CFD8; --line: #2B4670; --field: #0E1F3A;
+  --accent: var(--offwhite); --accent-ink: var(--navy-dark); --chip: #1C3864;
+  --ok: #8FD9AE; --ok-bg: #173F33; --warn: #F2C47E; --warn-bg: #4A3415; --bad: #F4A3A3; --bad-bg: #4A1E26; --shadow: none; color-scheme: dark; }
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--text); font: 400 17px/1.55 "DM Sans", sans-serif; }
+a { color: inherit; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; border-radius: 4px; }
+h2[tabindex="-1"]:focus { outline: none; }
+.skip { position: absolute; left: 12px; top: -48px; background: var(--surface); padding: 8px 12px; border: 1px solid var(--line); border-radius: 6px; z-index: 9; }
+.skip:focus { top: 12px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.shell { display: grid; grid-template-columns: 300px minmax(0, 1fr); min-height: 100vh; }
+.side { min-width: 0; background: var(--surface); border-right: 1px solid var(--line); padding: 28px 22px; position: sticky; top: 0; height: 100vh; overflow: auto; display: flex; flex-direction: column; gap: 22px; }
+.brand small { display: block; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--sub); }
+.brand h1 { display: block; font: 700 25px/1.2 "Source Serif 4", serif; margin: 0; }
+.brand p { margin: 8px 0 0; color: var(--sub); font-size: 15px; }
+ol.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+ol.steps button { position: relative; width: 100%; display: grid; grid-template-columns: 30px 1fr; gap: 10px; align-items: center; text-align: left; border: 0; background: none; padding: 8px; border-radius: 10px; cursor: pointer; }
+ol.steps button:hover { background: var(--chip); }
+ol.steps .num { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--gold); display: grid; place-items: center; font-weight: 600; font-size: 14px; }
+ol.steps button[aria-current="step"] { background: var(--accent); color: var(--accent-ink); }
+ol.steps button[aria-current="step"] .num { border-color: currentColor; }
+ol.steps button[aria-current="step"] small { opacity: 1; }
+ol.steps button.done .num { background: var(--ok); border-color: var(--ok); color: var(--white); }
+ol.steps small { display: block; font-size: 13px; opacity: .8; }
+.side-foot { margin-top: auto; display: grid; gap: 8px; font-size: 14px; color: var(--sub); }
+
+main { padding: 36px clamp(16px, 4vw, 64px) 72px; max-width: 860px; }
+.eyebrow { font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--sub); margin: 0 0 6px; }
+h2 { font: 700 clamp(27px, 3.2vw, 36px)/1.15 "Source Serif 4", serif; margin: 0 0 8px; }
+.lede { color: var(--sub); margin: 0 0 26px; max-width: 62ch; }
+.step[hidden] { display: none; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 22px; box-shadow: var(--shadow); margin-bottom: 18px; }
+.f { display: grid; gap: 5px; margin-bottom: 16px; }
+.f:last-child { margin-bottom: 0; }
+.f > label, .f > .lab { font-weight: 600; }
+.f .opt { font-weight: 400; color: var(--sub); }
+.hint { color: var(--sub); font-size: 14px; }
+.err { color: var(--bad); font-size: 14px; font-weight: 600; }
+.err:empty { display: none; }
+input[type=text], input[type=email], input[type=url], input[type=date], select, textarea { width: 100%; min-height: 46px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--field); }
+textarea { min-height: 96px; resize: vertical; }
+[aria-invalid="true"] { border-color: var(--bad) !important; box-shadow: 0 0 0 1px var(--bad); }
+input[readonly] { background: var(--chip); }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.three { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 14px; }
+.lock { display: flex; gap: 12px; align-items: center; padding: 12px 14px; border-radius: 10px; background: var(--chip); }
+.lock svg { width: 20px; height: 20px; flex: none; }
+.note { padding: 12px 14px; border-radius: 10px; border-left: 3px solid var(--gold); background: var(--surface); margin: 0 0 16px; }
+.note.ok { background: var(--ok-bg); border-color: var(--ok); color: var(--ok); }
+.note.warn { background: var(--warn-bg); border-color: var(--warn); color: var(--warn); }
+.note.bad { background: var(--bad-bg); border-color: var(--bad); color: var(--bad); }
+.note:empty { display: none; }
+.choices { display: grid; gap: 10px; }
+.choice { display: grid; grid-template-columns: 22px 1fr; gap: 12px; align-items: start; padding: 14px 16px; border: 1.5px solid var(--line); border-radius: 12px; cursor: pointer; background: var(--surface); }
+.choice:has(input:checked) { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.choice input { margin: 4px 0 0; width: 18px; height: 18px; accent-color: var(--navy); }
+.choice b { display: block; }
+.choice span { color: var(--sub); font-size: 15px; }
+.themes { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.theme { position: relative; border: 1.5px solid var(--line); border-radius: 12px; overflow: hidden; cursor: pointer; background: var(--surface); }
+.theme:has(input:checked) { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+.theme input { position: absolute; opacity: 0; }
+.theme:has(input:focus-visible) { outline: 3px solid var(--gold); outline-offset: 2px; }
+.theme .sw { height: 54px; display: flex; }
+.theme .sw i { flex: 1; }
+.theme b { display: block; padding: 8px 10px; font-size: 15px; font-weight: 600; }
+.drop { border: 2px dashed var(--line); border-radius: 14px; padding: 22px; text-align: center; background: var(--surface); }
+.drop.over { border-color: var(--gold); background: var(--chip); }
+.drop .pv { max-width: 220px; max-height: 280px; border-radius: 8px; margin: 0 auto 12px; display: block; box-shadow: var(--shadow); }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; padding: 10px 20px; border-radius: 11px; font-weight: 600; text-decoration: none; border: 1px solid var(--line); background: var(--surface); cursor: pointer; }
+.btn:hover { background: var(--chip); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.primary:hover { filter: brightness(1.12); background: var(--accent); }
+.btn[disabled] { opacity: .55; cursor: not-allowed; }
+.btn.sm { min-height: 36px; padding: 6px 12px; font-size: 15px; }
+.nav { display: flex; justify-content: space-between; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
+.check { display: flex; gap: 10px; align-items: start; cursor: pointer; }
+.check input { width: 18px; height: 18px; margin-top: 4px; accent-color: var(--navy); flex: none; }
+.tracks { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 8px; max-height: 360px; overflow: auto; }
+.tracks li { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.tracks small { display: block; color: var(--sub); }
+audio { width: 100%; margin-top: 10px; }
+dl.review { display: grid; grid-template-columns: 180px 1fr; gap: 10px 16px; margin: 0; }
+dl.review dt { font-weight: 600; color: var(--sub); }
+dl.review dd { margin: 0; overflow-wrap: anywhere; }
+.done-box { text-align: center; padding: 40px 20px; }
+.done-box b { display: block; font: 700 30px/1.2 "Source Serif 4", serif; margin-bottom: 8px; }
+@media (max-width: 880px) {
+  .shell { grid-template-columns: 1fr; }
+  .side { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); padding: 16px; gap: 12px; }
+  ol.steps { display: flex; overflow-x: auto; gap: 6px; scrollbar-width: none; }
+  ol.steps button { grid-template-columns: 26px auto; white-space: nowrap; border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px 4px 4px; }
+  ol.steps small, .side-foot, .brand p { display: none; }
+  .two, .three { grid-template-columns: 1fr; }
+  dl.review { grid-template-columns: 1fr; gap: 2px; } dl.review dd { margin-bottom: 10px; }
+  main { padding-top: 24px; }
+}
+@media (prefers-reduced-motion: no-preference) { .step:not([hidden]) { animation: in .2s ease-out; } @keyframes in { from { opacity: 0; transform: translateY(5px); } } }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the form</a>
+<div class="shell">
+  <aside class="side" aria-label="Request steps">
+    <div class="brand"><small>UNG Language Lab</small><h1>Request an event</h1><p>Hold your organization’s event in the Language Lab. Six short steps; the Lab reviews every request.</p></div>
+    <ol class="steps" id="steps"></ol>
+    <div class="side-foot"><button class="btn sm" type="button" id="modeBtn">Dark mode</button><a href="../">See the Lab’s events</a></div>
+  </aside>
+  <main id="main" tabindex="-1">
+    <form id="form" novalidate>
+
+      <section class="step" data-step="you" aria-labelledby="h-you">
+        <p class="eyebrow">Step 1 of 7</p><h2 id="h-you" tabindex="-1">About you</h2>
+        <p class="lede">So the Lab can reach you about this request. We use your name and email only for that.</p>
+        <div class="card">
+          <div class="two"><div class="f"><label for="o-name">Your name</label><input type="text" id="o-name" autocomplete="name" required></div>
+            <div class="f"><label for="o-email">Email</label><input type="email" id="o-email" autocomplete="email" required></div></div>
+          <div class="two"><div class="f"><label for="o-org">Organization</label><input type="text" id="o-org" autocomplete="organization" required placeholder="e.g. Latino Student Association"></div>
+            <div class="f"><label for="o-role">Your role <span class="opt">(optional)</span></label><input type="text" id="o-role" placeholder="e.g. President"></div></div>
+        </div>
+      </section>
+
+      <section class="step" data-step="event" aria-labelledby="h-event" hidden>
+        <p class="eyebrow">Step 2 of 7</p><h2 id="h-event" tabindex="-1">The event</h2>
+        <p class="lede">What students will see on the Lab’s events page.</p>
+        <div class="card">
+          <div class="f"><label for="e-title">Event name</label><input type="text" id="e-title" maxlength="80" required></div>
+          <div class="two"><div class="f"><label for="e-alt">Name in another language <span class="opt">(optional)</span></label><input type="text" id="e-alt" maxlength="80"></div>
+            <div class="f"><label for="e-altl">That language</label><select id="e-altl"><option value="">Pick one</option></select></div></div>
+          <div class="three"><div class="f"><label for="e-date">Date</label><input type="date" id="e-date" required></div>
+            <div class="f"><label for="e-start">Starts</label><select id="e-start" required></select></div>
+            <div class="f"><label for="e-end">Ends</label><select id="e-end" required></select></div></div>
+          <p class="note" id="clash" role="status"></p>
+          <div class="f"><span class="lab">Where</span><div class="lock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Language Lab, Martha T. Nesbitt Building, Room 4201 (Gainesville)</span></div></div>
+          <div class="f"><label for="e-sum">Short description</label><textarea id="e-sum" maxlength="300" required aria-describedby="e-sum-h"></textarea><span class="hint" id="e-sum-h">One or two sentences. Students read this first.</span></div>
+          <div class="f"><label for="e-det">More details <span class="opt">(optional)</span></label><textarea id="e-det" maxlength="2000"></textarea></div>
+          <div class="two"><div class="f"><label for="e-langs">Languages</label><input type="text" id="e-langs" value="All languages" aria-describedby="e-langs-h"><span class="hint" id="e-langs-h">Separate with commas, e.g. Spanish, French.</span></div>
+            <div class="f"><label for="e-partners">Partner groups <span class="opt">(optional)</span></label><input type="text" id="e-partners" aria-describedby="e-partners-h"><span class="hint" id="e-partners-h">Separate with commas.</span></div></div>
+          <div class="f"><label for="e-expected">About how many people? <span class="opt">(optional)</span></label><select id="e-expected"><option value="">Not sure</option><option>Under 15</option><option>15–30</option><option>30–50</option><option>Over 50</option></select></div>
+        </div>
+      </section>
+
+      <section class="step" data-step="flyer" aria-labelledby="h-flyer" hidden>
+        <p class="eyebrow">Step 3 of 7</p><h2 id="h-flyer" tabindex="-1">Flyer</h2>
+        <p class="lede">Any picture or PDF. Phone photos are fine. We turn it into a web image for the events page.</p>
+        <div class="card">
+          <div class="drop" id="drop"><img class="pv" id="pv" alt="" hidden><p style="margin:0 0 10px" id="dropMsg">Drop your flyer here, or</p><label class="btn" for="flyerFile">Choose a file</label><input type="file" id="flyerFile" class="sr" accept="image/*,.heic,.heif,.pdf"><p class="hint" id="flyerInfo" role="status" style="margin:10px 0 0"></p></div>
+          <div class="f" style="margin-top:16px"><label for="f-alt">Describe the flyer</label><textarea id="f-alt" maxlength="400" aria-describedby="f-alt-h"></textarea><span class="hint" id="f-alt-h">What it says and shows, in a sentence or two. Screen readers read this aloud to students who can’t see it.</span></div>
+          <label class="check"><input type="checkbox" id="f-later"><span>Our flyer isn’t ready yet. We’ll email it to the Lab.</span></label>
+        </div>
+      </section>
+
+      <section class="step" data-step="look" aria-labelledby="h-look" hidden>
+        <p class="eyebrow">Step 4 of 7</p><h2 id="h-look" tabindex="-1">Background</h2>
+        <p class="lede">Each event gets a moving background behind its flyer. Pick one, or describe an idea and the Lab will see what it can make.</p>
+        <div class="card"><fieldset style="border:0;padding:0;margin:0"><legend class="sr">Background</legend><div class="themes" id="themes"></div></fieldset>
+          <div class="f" style="margin-top:16px"><label for="bg-idea">Or suggest your own idea <span class="opt">(optional)</span></label><textarea id="bg-idea" maxlength="500" placeholder="e.g. Lanterns and cherry blossoms for a Lunar New Year event"></textarea></div></div>
+      </section>
+
+      <section class="step" data-step="music" aria-labelledby="h-music" hidden>
+        <p class="eyebrow">Step 5 of 7</p><h2 id="h-music" tabindex="-1">Background music</h2>
+        <p class="lede">Students can play one calm track on the events page. It has to be free to use, so we only take tracks the Lab can check.</p>
+        <div class="card"><fieldset style="border:0;padding:0;margin:0"><legend class="sr">Music choice</legend><div class="choices">
+          <label class="choice"><input type="radio" name="mk" value="library"><span><b>Pick one of ours</b><span>Tracks the Lab already uses.</span></span></label>
+          <label class="choice"><input type="radio" name="mk" value="commons"><span><b>Find a free track</b><span>Browse free music on Wikimedia Commons, or paste a Commons link. We check the license for you.</span></span></label>
+          <label class="choice"><input type="radio" name="mk" value="none" checked><span><b>No music, or let the Lab choose</b><span>Tell us the mood if you like.</span></span></label></div></fieldset></div>
+        <div class="card" id="m-library" hidden><div class="f"><label for="m-pick">Our tracks</label><select id="m-pick"><option value="">Pick a track</option></select></div><audio id="m-libplay" controls preload="none" hidden></audio></div>
+        <div class="card" id="m-commons" hidden>
+          <div class="f"><label for="m-genre">Browse by style</label><select id="m-genre"><option value="">Pick a style</option></select><span class="hint">Free music by Kevin MacLeod (incompetech.com), kept on <a href="https://commons.wikimedia.org/wiki/Category:Audio_files_from_Incompetech_by_genre" target="_blank" rel="noopener">Wikimedia Commons ↗</a>.</span></div>
+          <ul class="tracks" id="m-list" aria-label="Tracks in this style"></ul>
+          <div class="f" style="margin-top:16px"><label for="m-link">Or paste a Wikimedia Commons link</label><div class="row" style="display:flex;gap:8px"><input type="url" id="m-link" placeholder="https://commons.wikimedia.org/wiki/File:…"><button class="btn" type="button" id="m-check">Check</button></div></div>
+          <p class="note" id="m-result" role="status" aria-live="polite"></p><audio id="m-play" controls preload="none" hidden></audio>
+        </div>
+        <div class="card" id="m-none"><div class="f"><label for="m-idea">Mood or style <span class="opt">(optional)</span></label><input type="text" id="m-idea" maxlength="300" placeholder="e.g. Upbeat Latin, or calm piano"></div></div>
+      </section>
+
+      <section class="step" data-step="extras" aria-labelledby="h-extras" hidden>
+        <p class="eyebrow">Step 6 of 7</p><h2 id="h-extras" tabindex="-1">Sign-up and extras</h2>
+        <p class="lede">Only if they apply.</p>
+        <div class="card"><label class="check" style="margin-bottom:14px"><input type="checkbox" id="s-need"><span><b>Students need to sign up or enter</b></span></label>
+          <div id="s-fields" hidden><div class="f"><label for="s-url">Link to your sign-up form</label><input type="url" id="s-url" placeholder="https://forms.office.com/…"></div>
+            <div class="two"><div class="f"><label for="s-dl">Last day to sign up <span class="opt">(optional)</span></label><input type="date" id="s-dl"></div><div class="f"><label for="s-dt">Time on that day</label><select id="s-dt"><option value="">End of day</option></select></div></div></div></div>
+        <div class="card"><div class="f"><label for="x-comp">Competition or prizes? <span class="opt">(optional)</span></label><textarea id="x-comp" maxlength="1000" placeholder="What’s the competition, how is it judged, what are the prizes?"></textarea></div>
+          <div class="f"><label for="x-notes">Anything else for the Lab? <span class="opt">(optional)</span></label><textarea id="x-notes" maxlength="1500" placeholder="Setup needs, food, tables, a projector…"></textarea></div></div>
+      </section>
+
+      <section class="step" data-step="send" aria-labelledby="h-send" hidden>
+        <p class="eyebrow">Step 7 of 7</p><h2 id="h-send" tabindex="-1">Check and send</h2>
+        <p class="lede">The Lab reviews every request and emails you. Nothing shows on the events page until it’s approved.</p>
+        <div class="card"><dl class="review" id="review"></dl></div>
+        <div class="card"><div id="turnstile"></div><p class="note" id="sendMsg" role="alert"></p></div>
+      </section>
+
+      <div class="nav" id="navBtns"><button class="btn" type="button" id="back">← Back</button><button class="btn primary" type="button" id="next">Next →</button></div>
+    </form>
+    <div class="card done-box" id="done" hidden tabindex="-1"><b>Request sent. Thank you!</b><p class="lede" style="margin:0 auto 16px">The Lab will email you at <span id="doneEmail"></span>. Your request number is <code id="doneId"></code>.</p><a class="btn" href="../">See the Lab’s events</a></div>
+  </main>
+</div>
+<script>
+'use strict';
+const ROOM = 'Language Lab, Martha T. Nesbitt Building, Room 4201';
+const GH = 'https://api.github.com/repos/junnynoh-tech/language-lab-events';
+const RAW = 'https://raw.githubusercontent.com/junnynoh-tech/language-lab-events/main/';
+const COMMONS = 'https://commons.wikimedia.org/w/api.php';
+const OK_LICENSE = /^(public domain|pd|cc0|cc-?zero|cc[- ]by(-sa)?([- ][\d.]+)?)$/i; // free to play on our page with credit
+const STEPS = [['you', 'About you', 'Name and organization'], ['event', 'The event', 'Name, date, time'], ['flyer', 'Flyer', 'Picture or PDF'], ['look', 'Background', 'Pick or suggest'],
+  ['music', 'Music', 'Free tracks only'], ['extras', 'Sign-up and extras', 'If they apply'], ['send', 'Check and send', 'Review your request']];
+const LANGS = [['es', 'Spanish'], ['fr', 'French'], ['de', 'German'], ['it', 'Italian'], ['pt', 'Portuguese'], ['zh', 'Chinese'], ['ja', 'Japanese'], ['ko', 'Korean'], ['ar', 'Arabic'], ['ru', 'Russian']];
+const GENRES = ['Latin', 'World', 'Holiday', 'Lounge/relax', 'Jazz', 'Classical', 'African', 'Pop', 'Contemporary', 'Polka', 'Reggae', 'Ska'];
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const strip = h => { const d = document.createElement('div'); d.innerHTML = h || ''; return d.textContent.replace(/\s+/g, ' ').trim(); };
+const fmtTime = t => { if (!t) return ''; const [h, m] = t.split(':').map(Number); return `${((h + 11) % 12) + 1}:${String(m).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`; };
+const TIMES = (() => { const o = []; for (let h = 7; h < 22; h++) for (const m of [0, 15, 30, 45]) o.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`); return o; })();
+let CFG = {}, EVENTS = [], THEMES = {}, LIB = {}, cur = 0, flyer = null, music = { kind: 'none' }, tsToken = '';
+
+function setMode(m) { document.documentElement.dataset.mode = m; $('modeBtn').textContent = m === 'dark' ? 'Light mode' : 'Dark mode'; try { localStorage.setItem('labRequestMode', m); } catch (e) {} }
+(() => { let m = null; try { m = localStorage.getItem('labRequestMode'); } catch (e) {} setMode(m || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')); })();
+$('modeBtn').onclick = () => setMode(document.documentElement.dataset.mode === 'dark' ? 'light' : 'dark');
+
+/* ---------- fill the lists ---------- */
+const opts = (sel, list) => sel.insertAdjacentHTML('beforeend', list.map(([v, l]) => `<option value="${esc(v)}">${esc(l)}</option>`).join(''));
+opts($('e-altl'), LANGS); opts($('e-start'), TIMES.map(t => [t, fmtTime(t)])); opts($('e-end'), TIMES.map(t => [t, fmtTime(t)])); opts($('s-dt'), TIMES.map(t => [t, fmtTime(t)]));
+$('e-start').value = '12:00'; $('e-end').value = '13:00';
+opts($('m-genre'), GENRES.map(g => [g, g]));
+$('e-date').min = new Date(Date.now() + 864e5).toISOString().slice(0, 10);
+(async () => {
+  const [cfg, ev, th] = await Promise.all(['config.json', '../current/events.json', '../current/themes.json'].map(p => fetch(p, { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)));
+  CFG = cfg || {}; EVENTS = ev?.events || []; THEMES = th?.themes || {};
+  $('themes').innerHTML = `<label class="theme"><input type="radio" name="theme" value="" checked><span class="sw" style="background:var(--chip)"></span><b>Plain, or the Lab picks</b></label>`
+    + Object.entries(THEMES).filter(([k, t]) => !/draft/i.test(t.label || '')).map(([k, t]) => `<label class="theme"><input type="radio" name="theme" value="${esc(k)}"><span class="sw" aria-hidden="true">${(t.colors || [t.accent]).slice(0, 5).map(c => `<i style="background:${esc(c)}"></i>`).join('')}</span><b>${esc(t.label || k)}</b></label>`).join('');
+  try { // our music: one listing call, then the small files
+    const tree = await fetch(`${GH}/git/trees/main?recursive=1`).then(r => r.json());
+    const paths = (tree.tree || []).map(x => x.path).filter(p => /^current\/library\/music\/[^/]+\.json$/.test(p));
+    const items = await Promise.all(paths.map(p => fetch(RAW + p).then(r => r.json()).catch(() => null)));
+    paths.forEach((p, i) => { if (items[i]) LIB[p.split('/').pop()] = items[i]; });
+  } catch (e) {}
+  opts($('m-pick'), Object.entries(LIB).map(([n, m]) => [n, `${m.title} · ${m.artist}`]));
+  if (!Object.keys(LIB).length) $('m-pick').closest('.f').insertAdjacentHTML('beforeend', '<span class="hint">Our list couldn’t load. Try “Find a free track”.</span>');
+})();
+
+/* ---------- steps ---------- */
+function stepNav() {
+  $('steps').innerHTML = STEPS.map(([id, t, s], i) => `<li><button type="button" data-go="${i}" ${i === cur ? 'aria-current="step"' : ''} class="${i < cur ? 'done' : ''}"><span class="num" aria-hidden="true">${i < cur ? '✓' : i + 1}</span><span>${esc(t)}<small>${esc(s)}</small></span><span class="sr">${i < cur ? ' (done)' : ''}</span></button></li>`).join('');
+}
+function go(i, focus = true) {
+  cur = i; document.querySelectorAll('.step').forEach((s, k) => s.hidden = k !== i); stepNav();
+  $('back').style.visibility = i === 0 ? 'hidden' : 'visible';
+  $('next').textContent = i === STEPS.length - 1 ? 'Send request' : 'Next →';
+  if (i === STEPS.length - 1) { review(); turnstile(); }
+  if (focus) { document.querySelectorAll('.step')[i].querySelector('h2').focus(); window.scrollTo({ top: 0 }); }
+}
+$('steps').addEventListener('click', ev => { const b = ev.target.closest('[data-go]'); if (!b) return; const to = +b.dataset.go;
+  for (let k = cur; k < to; k++) if (!check(k)) { go(k); check(k, true); return; } go(to); });
+$('back').onclick = () => go(Math.max(0, cur - 1));
+$('next').onclick = () => { if (!check(cur, true)) return; if (cur < STEPS.length - 1) go(cur + 1); else send(); };
+
+/* ---------- checks ---------- */
+const v = id => ($(id)?.value || '').trim();
+function need(id, ok, msg, show) {
+  const el = $(id); el.setAttribute('aria-invalid', ok ? 'false' : 'true');
+  let e = el.parentElement.querySelector('.err'); if (!e) { e = document.createElement('span'); e.className = 'err'; e.id = id + '-err'; el.parentElement.appendChild(e); el.setAttribute('aria-describedby', [el.getAttribute('aria-describedby'), e.id].filter(Boolean).join(' ')); }
+  e.textContent = ok || !show ? '' : msg; return ok;
+}
+function check(i, show = false) {
+  const id = STEPS[i][0], r = [];
+  if (id === 'you') r.push(need('o-name', !!v('o-name'), 'Add your name.', show), need('o-email', /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v('o-email')), 'Add a working email.', show), need('o-org', !!v('o-org'), 'Add your organization.', show));
+  if (id === 'event') r.push(need('e-title', !!v('e-title'), 'Add the event name.', show), need('e-date', !!v('e-date') && v('e-date') >= $('e-date').min, 'Pick a date from tomorrow on.', show),
+    need('e-end', v('e-end') > v('e-start'), 'The event has to end after it starts.', show), need('e-sum', !!v('e-sum'), 'Add a short description.', show));
+  if (id === 'flyer') { const later = $('f-later').checked; r.push(need('flyerFile', later || !!flyer, 'Add your flyer, or tick “not ready yet”.', show));
+    if (show && !later && !flyer) $('flyerInfo').textContent = 'Add your flyer, or tick “not ready yet”.';
+    r.push(need('f-alt', later || !!v('f-alt'), 'Describe the flyer in a sentence or two.', show)); }
+  if (id === 'music' && music.kind === 'library') r.push(need('m-pick', !!v('m-pick'), 'Pick a track, or choose another option.', show));
+  if (id === 'music' && music.kind === 'commons') { const ok = !!music.mp3; if (show && !ok) { $('m-result').className = 'note bad'; $('m-result').textContent = 'Pick a track from the list, or paste a Commons link and press Check.'; } r.push(ok); }
+  if (id === 'extras' && $('s-need').checked) r.push(need('s-url', /^https:\/\/\S+$/.test(v('s-url')), 'Paste the full link, starting with https://', show));
+  const ok = r.every(Boolean);
+  if (!ok && show) document.querySelector('.step:not([hidden]) [aria-invalid="true"]')?.focus();
+  return ok;
+}
+
+/* the lab is one room: warn if the time overlaps an event already on the calendar */
+function clash() {
+  const d = v('e-date'), s = v('e-start'), e = v('e-end'), box = $('clash');
+  if (!d) { box.textContent = ''; box.className = 'note'; return; }
+  const hit = EVENTS.filter(x => x.date === d && x.status !== 'draft' && /4201/.test(x.location || '') && x.start < e && s < x.end);
+  box.className = 'note ' + (hit.length ? 'warn' : 'ok');
+  box.textContent = hit.length ? `The Lab already has “${hit[0].title}” then (${fmtTime(hit[0].start)}–${fmtTime(hit[0].end)}). You can still ask, but another time is more likely to work.` : 'Nothing else is on the Lab’s calendar at that time.';
+}
+['e-date', 'e-start', 'e-end'].forEach(id => $(id).addEventListener('change', clash));
+
+/* ---------- flyer: any picture or PDF -> WebP in the browser ---------- */
+async function toWebp(file) {
+  const MAXW = 1600; let src;
+  try {
+    if (/pdf/i.test(file.type) || /\.pdf$/i.test(file.name)) {
+      const P = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';
+      if (!window.pdfjsLib) await new Promise((res, rej) => { const s = document.createElement('script'); s.src = P + 'pdf.min.js'; s.onload = res; s.onerror = rej; document.head.appendChild(s); });
+      pdfjsLib.GlobalWorkerOptions.workerSrc = P + 'pdf.worker.min.js';
+      const page = await (await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise).getPage(1);
+      const vp = page.getViewport({ scale: MAXW / page.getViewport({ scale: 1 }).width });
+      src = document.createElement('canvas'); src.width = vp.width; src.height = vp.height; await page.render({ canvasContext: src.getContext('2d'), viewport: vp }).promise;
+    } else src = await createImageBitmap(file, { imageOrientation: 'from-image' });
+  } catch (e) { return null; }
+  const w = Math.min(MAXW, src.width), h = Math.round(src.height * w / src.width), c = document.createElement('canvas'); c.width = w; c.height = h; c.getContext('2d').drawImage(src, 0, 0, w, h);
+  const blob = await new Promise(r => c.toBlob(r, 'image/webp', 0.88)); return blob?.type === 'image/webp' ? blob : null;
+}
+const b64 = async blob => { const b = new Uint8Array(await blob.arrayBuffer()); let s = ''; for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(s); };
+async function takeFlyer(file) {
+  if (!file) return; const info = $('flyerInfo');
+  if (file.size > 25 * 1048576) { info.textContent = 'That file is over 25 MB. Try a smaller one.'; return; }
+  info.textContent = 'Getting it ready…';
+  const webp = await toWebp(file);
+  if (webp) { flyer = { ext: 'webp', b64: await b64(webp), name: file.name }; $('pv').src = URL.createObjectURL(webp); $('pv').hidden = false; $('pv').alt = 'Preview of your flyer';
+    info.textContent = `Ready: ${file.name} (${Math.round(webp.size / 1024)} KB).`; }
+  else { if (file.size > 8 * 1048576) { info.textContent = 'This browser can’t shrink that file and it’s over 8 MB. Save it as a JPG or PNG first.'; return; }
+    flyer = { ext: (file.name.split('.').pop() || 'jpg').toLowerCase(), b64: await b64(file), name: file.name }; $('pv').hidden = true; info.textContent = `Ready: ${file.name}. The Lab will convert it.`; }
+  $('dropMsg').textContent = 'Want a different one? Drop it here, or'; need('flyerFile', true, '', false);
+}
+$('flyerFile').onchange = e => takeFlyer(e.target.files[0]);
+const drop = $('drop'); ['dragenter', 'dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); })); drop.addEventListener('drop', e => takeFlyer(e.dataTransfer.files[0]));
+
+/* ---------- music ---------- */
+document.querySelectorAll('input[name=mk]').forEach(r => r.addEventListener('change', () => {
+  const k = document.querySelector('input[name=mk]:checked').value;
+  ['library', 'commons', 'none'].forEach(x => $('m-' + x).hidden = x !== k);
+  music = k === 'commons' ? { kind: 'commons' } : { kind: k };
+}));
+$('m-pick').onchange = () => { const m = LIB[v('m-pick')], a = $('m-libplay'); if (m?.file) { a.src = '../current/' + m.file.replace(/^.*?current\//, ''); a.hidden = false; } else a.hidden = true; };
+/* the checker: free license + plays in every browser (MP3, or Commons' own MP3 copy of an OGG/FLAC/WAV) + credit we can show */
+async function commonsInfo(titles) {
+  const q = new URLSearchParams({ action: 'query', titles: titles.join('|'), prop: 'imageinfo|videoinfo', iiprop: 'url|mime|size|extmetadata', iiextmetadatafilter: 'LicenseShortName|License|Artist|ObjectName', viprop: 'derivatives', format: 'json', origin: '*' });
+  const d = await fetch(`${COMMONS}?${q}`).then(r => r.json());
+  return Object.values(d.query?.pages || {}).map(judge);
+}
+function judge(p) {
+  const ii = p.imageinfo?.[0], md = ii?.extmetadata || {}, lic = strip(md.LicenseShortName?.value) || '', title = (p.title || '').replace(/^File:/, '').replace(/\.[a-z0-9]+$/i, '');
+  const r = { title: title.replace(/\s*\(ISRC[^)]*\)\s*$/, ''), page: ii?.descriptionurl || '', license: lic, artist: strip(md.Artist?.value).slice(0, 200), duration: Math.round(+(ii?.duration || p.videoinfo?.[0]?.duration || 0)), problems: [] };
+  if (!ii) { r.problems.push('That file isn’t on Wikimedia Commons.'); return r; }
+  if (!/^audio\/|^application\/ogg$|^video\/ogg$/.test(ii.mime)) r.problems.push('It isn’t an audio file.');
+  if (!OK_LICENSE.test(lic.replace(/\s+/g, ' ').trim())) r.problems.push(`Its license (${lic || 'unknown'}) doesn’t let us play it freely. We take Public domain, CC0, CC BY and CC BY-SA.`);
+  if (/-nc|-nd|noncommercial|noderiv/i.test(lic)) r.problems.push('“NC/ND” licenses aren’t allowed.');
+  if (!r.artist) r.problems.push('It has no artist listed, so we can’t credit it.');
+  if (r.duration > 900) r.problems.push('It’s over 15 minutes; pick a shorter track.');
+  r.mp3 = ii.mime === 'audio/mpeg' ? ii.url.split('?')[0] : (p.videoinfo?.[0]?.derivatives || []).find(x => /audio\/mpeg/.test(x.type))?.src || '';
+  if (!r.mp3) r.problems.push('Commons has no MP3 copy, so it won’t play in every browser.');
+  return r;
+}
+function showResult(r) {
+  const box = $('m-result'), a = $('m-play');
+  if (r.problems.length) { box.className = 'note bad'; box.innerHTML = `<b>Can’t use “${esc(r.title)}”.</b> ${r.problems.map(esc).join(' ')}`; a.hidden = true; music = { kind: 'commons' }; return; }
+  box.className = 'note ok'; box.innerHTML = `<b>✓ Free to use: “${esc(r.title)}”</b><br>${esc(r.artist)} · ${esc(r.license)} · ${Math.floor(r.duration / 60)}:${String(r.duration % 60).padStart(2, '0')}. Plays on our page.`;
+  a.src = r.mp3; a.hidden = false;
+  music = { kind: 'commons', title: r.title, artist: r.artist, license: r.license, source: r.page, mp3: r.mp3, duration: r.duration };
+}
+$('m-check').onclick = async () => {
+  const link = v('m-link'), box = $('m-result');
+  if (/youtu\.?be|spotify|soundcloud|apple\.com|tiktok/i.test(link)) { box.className = 'note bad'; box.innerHTML = '<b>That link can’t be used.</b> YouTube, Spotify and similar sites don’t allow their songs to be played on our page, and most songs there are copyrighted. Pick a free track from the list above instead.'; music = { kind: 'commons' }; return; }
+  const m = decodeURIComponent(link).match(/(?:File:|\/commons\/(?:transcoded\/)?[0-9a-f]\/[0-9a-f]{2}\/)([^/?#]+?\.(?:mp3|ogg|oga|flac|wav|opus))/i);
+  if (!m) { box.className = 'note bad'; box.textContent = 'Paste a Wikimedia Commons file link, like https://commons.wikimedia.org/wiki/File:Song_name.mp3'; return; }
+  box.className = 'note'; box.textContent = 'Checking…';
+  try { showResult((await commonsInfo(['File:' + m[1].replace(/_/g, ' ')]))[0]); } catch (e) { box.className = 'note bad'; box.textContent = 'Commons didn’t answer. Try again in a moment.'; }
+};
+$('m-genre').onchange = async () => {
+  const g = v('m-genre'), list = $('m-list'); if (!g) { list.innerHTML = ''; return; }
+  list.innerHTML = '<li>Loading…</li>';
+  try {
+    const q = new URLSearchParams({ action: 'query', generator: 'categorymembers', gcmtitle: `Category:${g} music from Incompetech`, gcmtype: 'file', gcmlimit: '60',
+      prop: 'imageinfo|videoinfo', iiprop: 'url|mime|size|extmetadata', iiextmetadatafilter: 'LicenseShortName|License|Artist', viprop: 'derivatives', format: 'json', origin: '*' });
+    const d = await fetch(`${COMMONS}?${q}`).then(r => r.json());
+    const rows = Object.values(d.query?.pages || {}).map(judge).filter(r => !r.problems.length).sort((a, b) => a.title.localeCompare(b.title));
+    list.innerHTML = rows.length ? rows.map((r, i) => `<li><span><b>${esc(r.title.replace(/\s*\(ISRC.*$/, ''))}</b><small>${esc(r.artist)} · ${esc(r.license)} · ${Math.floor(r.duration / 60)}:${String(r.duration % 60).padStart(2, '0')}</small></span><button class="btn sm" type="button" data-t="${i}">Use this</button></li>`).join('') : '<li>No free tracks in this style right now.</li>';
+    list.onclick = e => { const b = e.target.closest('[data-t]'); if (!b) return; showResult(rows[+b.dataset.t]); list.querySelectorAll('[data-t]').forEach(x => x.textContent = 'Use this'); b.textContent = '✓ Chosen'; $('m-result').scrollIntoView({ block: 'nearest' }); };
+  } catch (e) { list.innerHTML = '<li>Commons didn’t answer. Try again in a moment.</li>'; }
+};
+$('s-need').onchange = () => $('s-fields').hidden = !$('s-need').checked;
+
+/* ---------- review + send ---------- */
+const list = s => s.split(',').map(x => x.trim()).filter(Boolean);
+function payload() {
+  const th = document.querySelector('input[name=theme]:checked')?.value || '';
+  return { organizer: { name: v('o-name'), email: v('o-email'), organization: v('o-org'), role: v('o-role') },
+    event: { title: v('e-title'), title_alt: v('e-alt'), title_alt_lang: v('e-altl'), date: v('e-date'), start: v('e-start'), end: v('e-end'), summary: v('e-sum'), details: v('e-det'),
+      languages: list(v('e-langs')), partners: list(v('e-partners')), expected: v('e-expected') },
+    flyer: $('f-later').checked ? { later: true } : { later: false, alt: v('f-alt'), ext: flyer?.ext, b64: flyer?.b64 },
+    background: { theme: th, idea: v('bg-idea') },
+    music: music.kind === 'library' ? { kind: 'library', pick: v('m-pick') } : music.kind === 'commons' ? music : { kind: 'none', idea: v('m-idea') },
+    signup: { needed: $('s-need').checked, url: v('s-url'), deadline: v('s-dl'), deadline_time: v('s-dt') },
+    extras: { competition: v('x-comp'), notes: v('x-notes') }, turnstile: tsToken };
+}
+function review() {
+  const p = payload(), th = THEMES[p.background.theme];
+  const rows = [['You', `${p.organizer.name} · ${p.organizer.email} · ${p.organizer.organization}`], ['Event', p.event.title + (p.event.title_alt ? ` (${p.event.title_alt})` : '')],
+    ['When', `${new Date(p.event.date + 'T12:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}, ${fmtTime(p.event.start)}–${fmtTime(p.event.end)}`],
+    ['Where', ROOM], ['Description', p.event.summary], ['Flyer', p.flyer.later ? 'We’ll email it later' : `${flyer?.name || ''}: “${p.flyer.alt}”`],
+    ['Background', [th ? th.label : 'Plain, or the Lab picks', p.background.idea && `Idea: ${p.background.idea}`].filter(Boolean).join(' · ')],
+    ['Music', p.music.kind === 'library' ? (LIB[p.music.pick]?.title || '') : p.music.kind === 'commons' ? `${p.music.title} (${p.music.license})` : (p.music.idea ? `Lab picks: ${p.music.idea}` : 'None / Lab picks')],
+    ['Sign-up', p.signup.needed ? p.signup.url : 'Not needed']];
+  if (p.extras.competition) rows.push(['Competition', p.extras.competition]); if (p.extras.notes) rows.push(['Notes', p.extras.notes]);
+  $('review').innerHTML = rows.map(([k, x]) => `<dt>${esc(k)}</dt><dd>${esc(x)}</dd>`).join('');
+}
+let tsLoaded = false;
+function turnstile() {
+  if (!CFG.worker_url || !CFG.turnstile_sitekey) { $('sendMsg').className = 'note warn'; $('sendMsg').textContent = 'Requests open soon. The form can’t send yet; please email the Lab for now.'; $('next').disabled = true; return; }
+  if (tsLoaded) return; tsLoaded = true;
+  window.onTs = () => turnstileApi.render('#turnstile', { sitekey: CFG.turnstile_sitekey, callback: t => tsToken = t, 'expired-callback': () => tsToken = '' });
+  window.turnstileApi = null; const s = document.createElement('script'); s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTsReady&render=explicit';
+  window.onTsReady = () => { window.turnstileApi = window.turnstile; onTs(); }; document.head.appendChild(s);
+}
+async function send() {
+  for (let i = 0; i < STEPS.length - 1; i++) if (!check(i)) { go(i); check(i, true); return; }
+  const msg = $('sendMsg');
+  if (!tsToken) { msg.className = 'note warn'; msg.textContent = 'Please finish the “I’m human” check first.'; return; }
+  $('next').disabled = true; $('next').textContent = 'Sending…'; msg.className = 'note'; msg.textContent = '';
+  try {
+    const r = await fetch(CFG.worker_url.replace(/\/$/, '') + '/submit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload()) });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok || !j.ok) throw new Error(j.error || 'Your request couldn’t be sent. Please try again.');
+    $('form').hidden = true; $('done').hidden = false; $('doneEmail').textContent = v('o-email'); $('doneId').textContent = j.id; $('done').focus();
+    document.querySelectorAll('ol.steps button').forEach(b => b.disabled = true);
+  } catch (e) { msg.className = 'note bad'; msg.textContent = e.message; $('next').disabled = false; $('next').textContent = 'Send request'; window.turnstile?.reset?.(); tsToken = ''; }
+}
+go(0, false);
+</script>
+</body>
+</html>

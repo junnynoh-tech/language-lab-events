@@ -185,7 +185,8 @@ code { font: 500 14px ui-monospace, Menlo, Consolas, monospace; background: var(
 'use strict';
 /* ---------- where the data lives (nothing is stored in this file) ---------- */
 const OWNER = 'junnynoh-tech', REPO = 'language-lab-events', BRANCH = 'main';
-const API = `https://api.github.com/repos/${OWNER}/${REPO}`;
+const REQ_REPO = 'lab-event-requests'; // PRIVATE: requests from organizations (names, emails). Read only with the key.
+const API = `https://api.github.com/repos/${OWNER}/${REPO}`, apiOf = repo => `https://api.github.com/repos/${OWNER}/${repo}`;
 const CMS = `https://app.pagescms.org/${OWNER}/${REPO}/${BRANCH}`;
 const SITE = `https://${OWNER}.github.io/${REPO}/`;
 const TOKEN_KEY = 'labConsoleToken';
@@ -223,8 +224,8 @@ function setMode(m) { document.documentElement.dataset.mode = m; $('modeBtn').te
 $('modeBtn').onclick = () => setMode(document.documentElement.dataset.mode === 'dark' ? 'light' : 'dark');
 
 /* ---------- GitHub ---------- */
-async function gh(path, opt = {}) {
-  const r = await fetch(API + path, { ...opt, headers: { Accept: 'application/vnd.github+json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(opt.body ? { 'Content-Type': 'application/json' } : {}) } });
+async function gh(path, opt = {}, repo = REPO) {
+  const r = await fetch(apiOf(repo) + path, { ...opt, headers: { Accept: 'application/vnd.github+json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(opt.body ? { 'Content-Type': 'application/json' } : {}) } });
   if (!r.ok) { const j = await r.json().catch(() => ({})); const err = new Error(j.message || r.statusText); err.status = r.status; throw err; }
   return r.status === 204 ? null : r.json();
 }
@@ -252,28 +253,31 @@ async function load() {
   S.rubrics = await Promise.all(rub.map(async p => ({ value: p.replace('current/', ''), label: (await getJSON(p))?.title || p.split('/').pop() })));
   if (!S.events) { $('main').innerHTML = '<div class="empty" role="alert">events.json could not be read.</div>'; return; }
   codes(S.events);
+  await loadRequests();
   connUI(); nav(); show(S.view, false);
 }
 
 /* one commit for every file a Save touches. files: { path: {text}|{b64}|{sha}|null } */
-async function commit(files, message) {
+async function commit(files, message, repo = REPO) {
   if (!token) { openSettings(); throw new Error('Connect your GitHub key first.'); }
-  const ref = await gh(`/git/ref/heads/${BRANCH}`), head = ref.object.sha;
-  if (head !== S.head) { // someone saved since this page loaded: stop if they touched the same files
-    const cmp = await gh(`/compare/${S.head}...${head}`);
+  const G = (p, o) => gh(p, o, repo), pub = repo === REPO;
+  const ref = await G(`/git/ref/heads/${BRANCH}`), head = ref.object.sha;
+  if (pub && head !== S.head) { // someone saved since this page loaded: stop if they touched the same files
+    const cmp = await G(`/compare/${S.head}...${head}`);
     const clash = (cmp.files || []).map(f => f.filename).filter(f => f in files);
     if (clash.length) throw new Error(`Someone else just changed ${clash.join(', ')}. Press Reload, then make your change again.`);
   }
-  const base = (await gh(`/git/commits/${head}`)).tree.sha;
+  const base = (await G(`/git/commits/${head}`)).tree.sha;
   const tree = [];
   for (const [path, v] of Object.entries(files)) {
-    if (v === null) { if (S.tree[path]) tree.push({ path, mode: '100644', type: 'blob', sha: null }); continue; }
-    const sha = v.sha || (await gh('/git/blobs', { method: 'POST', body: JSON.stringify(v.b64 ? { content: v.b64, encoding: 'base64' } : { content: b64(v.text), encoding: 'base64' }) })).sha;
+    if (v === null) { if (!pub || S.tree[path]) tree.push({ path, mode: '100644', type: 'blob', sha: null }); continue; }
+    const sha = v.sha || (await G('/git/blobs', { method: 'POST', body: JSON.stringify(v.b64 ? { content: v.b64, encoding: 'base64' } : { content: b64(v.text), encoding: 'base64' }) })).sha;
     tree.push({ path, mode: '100644', type: 'blob', sha });
   }
-  const nt = await gh('/git/trees', { method: 'POST', body: JSON.stringify({ base_tree: base, tree }) });
-  const nc = await gh('/git/commits', { method: 'POST', body: JSON.stringify({ message, tree: nt.sha, parents: [head] }) });
-  await gh(`/git/refs/heads/${BRANCH}`, { method: 'PATCH', body: JSON.stringify({ sha: nc.sha }) });
+  const nt = await G('/git/trees', { method: 'POST', body: JSON.stringify({ base_tree: base, tree }) });
+  const nc = await G('/git/commits', { method: 'POST', body: JSON.stringify({ message, tree: nt.sha, parents: [head] }) });
+  await G(`/git/refs/heads/${BRANCH}`, { method: 'PATCH', body: JSON.stringify({ sha: nc.sha }) });
+  if (!pub) return;
   S.head = nc.sha;
   for (const [path, v] of Object.entries(files)) { if (v === null) delete S.tree[path]; else S.tree[path] = v.sha || 'new'; }
 }
@@ -330,21 +334,21 @@ function issues() {
 }
 
 /* ---------- navigation ---------- */
-const VIEWS = [['overview', 'Overview'], ['events', 'Events'], ...Object.entries(KINDS).map(([k, v]) => [k, v.label]), ['settings', 'Settings']];
+const VIEWS = [['overview', 'Overview'], ['events', 'Events'], ['requests', 'Requests'], ...Object.entries(KINDS).map(([k, v]) => [k, v.label]), ['settings', 'Settings']];
 function nav() {
-  const cnt = v => v === 'events' ? S.events.events.length : KINDS[v] ? Object.keys(S.lib[v]).length : '';
+  const cnt = v => v === 'requests' ? (S.reqs || []).filter(r => r.data.status === 'pending').length || '' : v === 'events' ? S.events.events.length : KINDS[v] ? Object.keys(S.lib[v]).length : '';
   const li = v => `<li><button type="button" data-view="${v[0]}" ${S.view === v[0] ? 'aria-current="page"' : ''}>${esc(v[1])}<span class="n">${cnt(v[0])}</span></button></li>`;
-  $('nav').innerHTML = `<h2>Start</h2><ul>${VIEWS.slice(0, 2).map(li).join('')}</ul><h2>What events pick</h2><ul>${VIEWS.slice(2, -1).map(li).join('')}</ul><h2>Setup</h2><ul>${li(VIEWS.at(-1))}</ul>`;
+  $('nav').innerHTML = `<h2>Start</h2><ul>${VIEWS.slice(0, 3).map(li).join('')}</ul><h2>What events pick</h2><ul>${VIEWS.slice(3, -1).map(li).join('')}</ul><h2>Setup</h2><ul>${li(VIEWS.at(-1))}</ul>`;
 }
 $('nav').addEventListener('click', ev => { const b = ev.target.closest('[data-view]'); if (b) show(b.dataset.view); });
-function show(v, focus = true) {
+let show = function (v, focus = true) {
   S.view = v; nav();
-  const html = v === 'overview' ? vOverview() : v === 'events' ? vEvents() : v === 'settings' ? vSettings() : vLibrary(v);
+  const html = v === 'overview' ? vOverview() : v === 'events' ? vEvents() : v === 'requests' ? vRequests() : v === 'settings' ? vSettings() : vLibrary(v);
   $('main').innerHTML = `<div class="view">${html}</div>`;
   if (v === 'settings') wireSettings();
   try { history.replaceState(null, '', '#' + v); } catch (e) {}
   if (focus) $('main').querySelector('h1')?.focus();
-}
+};
 function header(eyebrow, title, lede, actions = '') {
   return `<div class="head"><div><p class="eyebrow">${esc(eyebrow)}</p><h1 tabindex="-1">${esc(title)}</h1>${lede ? `<p class="lede">${esc(lede)}</p>` : ''}</div><div class="row">${actions}</div></div>`;
 }
@@ -367,9 +371,10 @@ function evCard(e) {
 const campusName = c => (S.events.campuses || []).find(x => x.code === c)?.name || c || '';
 function sorted() { return [...S.events.events].sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start)); }
 function vOverview() {
-  const evs = sorted(), up = evs.filter(e => at(e.date) >= today), list = issues();
+  const evs = sorted(), up = evs.filter(e => at(e.date) >= today), list = issues(), pend = (S.reqs || []).filter(r => r.data.status === 'pending');
   return header('Overview', 'Events at a glance', 'What students see now, and anything that needs a look.', `<a class="btn" href="${SITE}visual/event-carousel.html" target="_blank" rel="noopener">See the student page ↗</a><button class="btn primary" type="button" data-new-ev>New event</button>`)
     + `<div class="stats"><div class="stat"><b>${up.filter(e => e.status !== 'draft').length}</b><span>Upcoming, showing</span></div><div class="stat"><b>${up.filter(e => e.status === 'draft').length}</b><span>Drafts</span></div><div class="stat"><b>${Object.values(S.lib).reduce((n, o) => n + Object.keys(o).length, 0)}</b><span>Things to pick from</span></div><div class="stat"><b>${list.length}</b><span>To check</span></div></div>`
+    + (pend.length ? `<h2 class="sec">New requests</h2><ul class="issues">${pend.map(r => `<li><span class="tag warn">Request</span><span><b>${esc(r.data.event.title)}</b><br><span style="color:var(--sub)">${esc(r.data.organizer.organization)} · ${esc(at(r.data.event.date).toDateString())}</span></span><button class="btn sm" type="button" data-req="${esc(r.id)}">Review</button></li>`).join('')}</ul>` : '')
     + `<h2 class="sec">Needs a look</h2>` + (list.length ? `<ul class="issues">${list.map(([lv, what, msg, e, lib]) => `<li><span class="tag ${lv}">${lv === 'bad' ? 'Fix' : 'Check'}</span><span><b>${esc(what)}</b><br><span style="color:var(--sub)">${esc(msg)}</span></span><button class="btn sm" type="button" ${e ? `data-ev="${esc(e.id)}"` : `data-item="${esc(lib[0])}|${esc(lib[1])}"`}>Open</button></li>`).join('')}</ul>` : '<p class="empty">All clear.</p>')
     + `<h2 class="sec">Coming up</h2>` + (up.length ? `<div class="evlist">${up.slice(0, 4).map(evCard).join('')}</div>` : '<p class="empty">No upcoming events. Add one with New event.</p>');
 }
@@ -402,7 +407,7 @@ function vLibrary(kind) {
 function vSettings() {
   return header('Setup', 'Settings', 'Looking around needs nothing. To save from this console, connect a GitHub key once on this computer.')
     + `<ol class="howto"><li><span>Open <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub → new fine-grained token ↗</a>. Name it “Lab console”.</span></li>
-      <li><span><b>Repository access:</b> Only select repositories → <code>${REPO}</code>.</span></li>
+      <li><span><b>Repository access:</b> Only select repositories → <code>${REPO}</code> and <code>${REQ_REPO}</code> (requests).</span></li>
       <li><span><b>Permissions:</b> Repository → <b>Contents: Read and write</b>. Nothing else.</span></li>
       <li><span>Generate it, copy it, paste it below. It stays in this browser only and is never put in a file.</span></li></ol>
       <fieldset style="max-width:620px"><legend>GitHub key</legend><div class="f"><label for="tok">Key</label><input type="password" id="tok" autocomplete="off" spellcheck="false" placeholder="github_pat_…" value="${token ? '••••••••' : ''}"></div>
@@ -414,7 +419,7 @@ function wireSettings() {
     const v = $('tok').value.trim(); if (!v || v.startsWith('•')) { $('tokMsg').textContent = 'Paste the key first.'; return; }
     const old = token; token = v;
     try { const r = await gh(''); if (!r.permissions?.push) throw new Error('This key can read but not save. Give it Contents: Read and write.');
-      try { localStorage.setItem(TOKEN_KEY, v); } catch (e) {} connUI(); $('tokMsg').textContent = 'Connected. You can save now.'; $('tokClear').disabled = false; }
+      try { localStorage.setItem(TOKEN_KEY, v); } catch (e) {} await loadRequests(); nav(); connUI(); $('tokMsg').textContent = 'Connected. You can save now.'; $('tokClear').disabled = false; }
     catch (e) { token = old; $('tokMsg').textContent = e.message; }
   };
   $('tokClear').onclick = () => { token = ''; try { localStorage.removeItem(TOKEN_KEY); } catch (e) {} connUI(); show('settings'); toast('Disconnected. This browser no longer has the key.'); };
@@ -628,10 +633,133 @@ function editItem(kind, name) {
   (document.getElementById(NEED[kind][0]) || {}).focus?.();
 }
 
+
+/* ---------- requests from organizations (private repo lab-event-requests, written by the Cloudflare Worker) ---------- */
+const ROOM = 'Language Lab, Martha T. Nesbitt Building, Room 4201';
+const fromB64 = s => decodeURIComponent(escape(atob(s.replace(/\n/g, ''))));
+async function loadRequests() {
+  S.reqs = null; S.reqErr = '';
+  if (!token) { S.reqErr = 'Connect your GitHub key (Settings) to see requests. They are private.'; return; }
+  try {
+    const t = await gh(`/git/trees/${BRANCH}?recursive=1`, {}, REQ_REPO);
+    const files = Object.fromEntries(t.tree.filter(x => x.type === 'blob').map(x => [x.path, x.sha]));
+    const reqs = Object.keys(files).filter(p => /^requests\/[^/]+\/request\.json$/.test(p));
+    S.reqs = await Promise.all(reqs.map(async p => { const b = await gh(`/git/blobs/${files[p]}`, {}, REQ_REPO); const dir = p.replace(/request\.json$/, '');
+      const data = JSON.parse(fromB64(b.content)); return { id: data.id || dir.split('/')[1], path: p, data, flyer: data.flyer?.file ? { path: dir + data.flyer.file, sha: files[dir + data.flyer.file] } : null }; }));
+    S.reqs.sort((a, b) => (a.data.status === 'pending' ? 0 : 1) - (b.data.status === 'pending' ? 0 : 1) || a.data.event.date.localeCompare(b.data.event.date));
+  } catch (e) {
+    if (e.status === 409) S.reqs = []; // no requests yet (empty repo)
+    else S.reqErr = e.status === 404 ? 'Your key can’t see the requests. Add the lab-event-requests repository to it (Settings).' : e.message;
+  }
+}
+const clashes = r => (S.events.events || []).filter(x => x.date === r.event.date && /4201/.test(x.location || '') && x.status !== 'draft' && x.start < r.event.end && r.event.start < x.end);
+function vRequests() {
+  const R = S.reqs || [];
+  return header('Start', 'Requests', 'Events organizations asked to hold in the Lab. Review one to approve it into the events list, or decline it.', `<a class="btn" href="${SITE}request/" target="_blank" rel="noopener">The request form ↗</a><button class="btn" type="button" id="reqReload">Reload</button>`)
+    + (S.reqErr ? `<p class="empty" role="status">${esc(S.reqErr)}</p>` : !R.length ? '<p class="empty">No requests yet. Share the request form with organizations.</p>'
+    : `<div class="evlist">${R.map(r => { const d = r.data, e = d.event, dt = at(e.date), c = clashes(d);
+        return `<button type="button" class="ev${d.status !== 'pending' ? ' past' : ''}" data-req="${esc(r.id)}" aria-label="Review ${esc(e.title)} from ${esc(d.organizer.organization)}">
+        <span class="date"><small>${dt.toLocaleDateString('en-US', { month: 'short' })}</small><b>${dt.getDate()}</b><small>${dt.toLocaleDateString('en-US', { weekday: 'short' })}</small></span>
+        <span class="thumb" data-reqthumb="${esc(r.id)}">${r.flyer ? '' : 'Flyer later'}</span>
+        <span><h3>${esc(e.title)}</h3><span class="meta">${esc(d.organizer.organization)} · ${esc(fmtTime(e.start))}–${esc(fmtTime(e.end))}</span>
+        <span class="chips">${d.status === 'pending' ? '<span class="tag warn">Waiting for you</span>' : d.status === 'approved' ? `<span class="tag ok">Approved${d.admin?.event_key ? ' · ' + esc(d.admin.event_key) : ''}</span>` : '<span class="tag">Declined</span>'}${c.length ? '<span class="tag bad">Time clash</span>' : ''}${d.music?.kind === 'commons' ? '<span class="tag">♪ New track</span>' : ''}${d.background?.idea ? '<span class="tag">Background idea</span>' : ''}</span></span>
+        <span class="tag" aria-hidden="true">Review →</span></button>`; }).join('')}</div>`);
+}
+async function reqFlyerURL(r) {
+  if (!r.flyer?.sha) return '';
+  r.flyerB64 ||= (await gh(`/git/blobs/${r.flyer.sha}`, {}, REQ_REPO)).content.replace(/\n/g, '');
+  const ext = r.flyer.path.split('.').pop().toLowerCase(), type = ext === 'pdf' ? 'application/pdf' : ext === 'jpg' ? 'image/jpeg' : 'image/' + ext;
+  return `data:${type};base64,${r.flyerB64}`;
+}
+const _show = show; show = function (v, focus) { _show(v, focus);
+  if (v === 'requests') { const b = $('reqReload'); if (b) b.onclick = async () => { await loadRequests(); nav(); _show('requests'); };
+    (S.reqs || []).forEach(async r => { const el = document.querySelector(`[data-reqthumb="${CSS.escape(r.id)}"]`); if (!el || !r.flyer) return;
+      try { const u = await reqFlyerURL(r); if (/^data:image\/(webp|png|jpeg|gif)/.test(u)) el.style.backgroundImage = `url('${u}')`; else el.textContent = 'PDF / photo'; } catch (e) {} }); } };
+async function reviewRequest(id) {
+  const r = S.reqs.find(x => x.id === id), d = r.data, e = d.event, c = clashes(d), pending = d.status === 'pending';
+  const fly = await reqFlyerURL(r).catch(() => ''), isImg = /^data:image\/(webp|png|jpeg|gif)/.test(fly);
+  const th = d.background?.theme, m = d.music || {};
+  const mail = (subj, body) => `mailto:${encodeURIComponent(d.organizer.email)}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`;
+  const body = `
+    ${c.length ? `<p class="note" style="border-left:3px solid var(--bad);padding:10px 12px;background:var(--bad-bg);color:var(--bad);border-radius:0 10px 10px 0;margin:0 0 14px"><b>Time clash:</b> ${c.map(x => esc(`${x.key} ${x.title} (${fmtTime(x.start)}–${fmtTime(x.end)})`)).join(', ')}</p>` : ''}
+    <fieldset><legend>From</legend><p style="margin:0">${esc(d.organizer.name)}${d.organizer.role ? `, ${esc(d.organizer.role)}` : ''} · <b>${esc(d.organizer.organization)}</b><br><a href="mailto:${esc(d.organizer.email)}">${esc(d.organizer.email)}</a> · sent ${esc(new Date(d.submitted_at).toLocaleString())}${e.expected ? ` · about ${esc(e.expected)} people` : ''}</p></fieldset>
+    <fieldset><legend>The event (you can edit before approving)</legend>
+      ${fld('r-title', 'Event name', txt('r-title', e.title, 'maxlength="80"'))}
+      <div class="three">${fld('r-date', 'Date', `<input type="date" id="r-date" value="${esc(e.date)}">`)}${fld('r-start', 'Starts', timeSel('r-start', e.start))}${fld('r-end', 'Ends', timeSel('r-end', e.end))}</div>
+      ${fld('r-where', 'Where', txt('r-where', ROOM, 'readonly'))}
+      ${fld('r-sum', 'Short description', area('r-sum', e.summary, 'maxlength="300"'))}
+      ${e.details ? fld('r-det', 'More details', area('r-det', e.details)) : ''}
+      <p class="hint" style="margin:0">Languages: ${esc((e.languages || []).join(', ') || '—')} · Partners: ${esc((e.partners || []).join(', ') || '—')}${e.title_alt ? ` · Also called: ${esc(e.title_alt)}` : ''}</p></fieldset>
+    <fieldset><legend>Flyer</legend>${r.flyer ? `<div class="preview"><span class="thumb" style="${isImg ? `background-image:url('${fly}')` : ''}">${isImg ? '' : 'PDF / photo'}</span><p class="hint" style="margin:0">“${esc(d.flyer.alt)}”</p></div>` : '<p class="hint" style="margin:0">They will email the flyer. Add it later in Flyers.</p>'}</fieldset>
+    <fieldset><legend>Background</legend>${fld('r-theme', 'Background', sel('r-theme', S.themes[th] ? th : '', Object.entries(S.themes).map(([k, v]) => [k, v.label || k]), 'Plain (no background)'), th ? 'Their pick is selected.' : '')}
+      ${d.background?.idea ? `<p class="hint" style="margin:0"><b>Their idea:</b> ${esc(d.background.idea)}</p>` : ''}</fieldset>
+    <fieldset><legend>Music</legend>
+      ${m.kind === 'commons' ? `<label class="switch"><input type="checkbox" role="switch" id="r-addtrack" checked>Add their track: ${esc(m.title)}</label><p class="hint" style="margin:0 0 8px">${esc(m.artist)} · ${esc(m.license)} · <a href="${esc(m.source)}" target="_blank" rel="noopener">Commons page ↗</a> (checked as free to use when they sent it)</p><audio controls preload="none" src="${esc(m.mp3)}" style="width:100%"></audio>`
+        : m.kind === 'none' && m.idea ? `<p class="hint" style="margin:0 0 8px"><b>Their wish:</b> ${esc(m.idea)}</p>` : ''}
+      ${fld('r-music', m.kind === 'commons' ? 'Or use one of ours instead' : 'Track', sel('r-music', m.kind === 'library' ? fname(m.pick) : '', libOpts('music'), m.kind === 'commons' ? 'Their track (above)' : 'No music'))}</fieldset>
+    ${d.signup?.needed ? `<fieldset><legend>Sign-up</legend><p style="margin:0"><a href="${esc(d.signup.url)}" target="_blank" rel="noopener">${esc(d.signup.url)}</a>${d.signup.deadline ? ` · by ${esc(d.signup.deadline)} ${esc(fmtTime(d.signup.deadline_time))}` : ''}</p></fieldset>` : ''}
+    ${d.extras?.competition || d.extras?.notes ? `<fieldset><legend>Extras</legend>${d.extras.competition ? `<p style="margin:0 0 8px"><b>Competition:</b> ${esc(d.extras.competition)}</p>` : ''}${d.extras.notes ? `<p style="margin:0"><b>Notes:</b> ${esc(d.extras.notes)}</p>` : ''}<p class="hint" style="margin:8px 0 0">Set up a competition in Competitions, then switch it on in the event.</p></fieldset>` : ''}
+    <fieldset><legend>Your decision</legend>${fld('r-status', 'When approved', sel('r-status', 'published', [['published', 'Show it to students now'], ['draft', 'Add it as a draft']]))}
+      ${fld('r-note', 'Note to them (optional)', area('r-note', d.admin?.note || ''), 'Goes into the email that opens after you decide.')}</fieldset>`;
+  const foot = pending ? `<div class="row"><button class="btn danger" type="button" id="r-decline">Decline</button></div><div class="row"><button class="btn" type="button" data-close2>Later</button><button class="btn primary" type="button" id="r-approve">Approve and add event</button></div>`
+    : `<div class="row"><span class="tag ${d.status === 'approved' ? 'ok' : ''}">${esc(d.status === 'approved' ? 'Approved' : 'Declined')} ${esc(new Date(d.admin?.decided_at || d.submitted_at).toLocaleDateString())}</span></div><div class="row"><a class="btn" href="${mail(`Your Language Lab event: ${e.title}`, '')}">Email them</a><button class="btn" type="button" data-close2>Close</button></div>`;
+  pane(e.title, `Request from ${d.organizer.organization}`, body, foot);
+  $('dlg').querySelector('[data-close2]').onclick = () => $('dlg').close();
+  if (!pending) return;
+  const decide = async (status, extra = {}) => {
+    const nd = { ...d, status, admin: { ...(d.admin || {}), decided_at: new Date().toISOString(), note: val('r-note'), ...extra } };
+    await commit({ [r.path]: { text: dump(nd) } }, `${status === 'approved' ? 'Approve' : 'Decline'}: ${e.title}`, REQ_REPO);
+    r.data = nd;
+  };
+  $('r-decline').onclick = ev => { if (!confirm(`Decline “${e.title}”? Your email to ${d.organizer.email} opens next.`)) return;
+    saving(ev.target, async () => { await decide('declined'); location.href = mail(`Your Language Lab event request: ${e.title}`, `Hello ${d.organizer.name},\n\nThank you for your request. Unfortunately we can't host "${e.title}" in the Language Lab as requested.${val('r-note') ? '\n\n' + val('r-note') : ''}\n\nUNG Language Lab`); }); };
+  $('r-approve').onclick = ev => {
+    if (val('r-end') <= val('r-start')) { toast('The event has to end after it starts.'); return; }
+    if (clashes({ event: { date: val('r-date'), start: val('r-start'), end: val('r-end') } }).length && !confirm('Another event is in the Lab then. Approve anyway?')) return;
+    saving(ev.target, async () => {
+      const base = slug(val('r-title')) || 'event', uniq = (kind, b) => { let n = b + '.json', i = 2; while (S.lib[kind][n]) n = `${b}-${i++}.json`; return n; };
+      const add = {}, n = { title: val('r-title'), status: val('r-status'), campus: 'gvl', date: val('r-date'), start: val('r-start'), end: val('r-end'), location: ROOM,
+        summary: val('r-sum'), details: val('r-det') || e.details || '', languages: e.languages || [], hosts: [d.organizer.organization], partners: e.partners || [],
+        title_alt: e.title_alt || '', title_alt_lang: e.title_alt_lang || '', theme: val('r-theme') || undefined, music_pick: [],
+        signup: { on: false }, credit: { on: false }, assignment: { on: false }, competition: { on: false } };
+      if (r.flyer) { // copy the flyer over from the private repo
+        const b64 = r.flyerB64 || (await gh(`/git/blobs/${r.flyer.sha}`, {}, REQ_REPO)).content.replace(/\n/g, '');
+        let img = `current/flyers/new-${base}.${r.flyer.path.split('.').pop().toLowerCase()}`, i = 2; while (S.tree[img]) img = img.replace(/(-\d+)?(\.[a-z0-9]+)$/, `-${i++}$2`);
+        const fn = uniq('flyers', base); add[img] = { b64 }; const fl = { title: `${n.title} flyer`, image: img.replace('current/', ''), alt: d.flyer.alt };
+        add[`current/library/flyers/${fn}`] = { text: dump(fl) }; S.lib.flyers[fn] = fl; n.flyer_pick = fn;
+      }
+      if (val('r-music')) n.music_pick = [val('r-music')];
+      else if (m.kind === 'commons' && $('r-addtrack')?.checked) { // download their checked track from Commons into our music folder
+        const res = await fetch(m.mp3); if (!res.ok) throw new Error('Their track could not be downloaded from Commons. Pick one of ours instead.');
+        const buf = await res.arrayBuffer(); if (buf.byteLength > 15 * 1048576) throw new Error('Their track is over 15 MB. Pick one of ours instead.');
+        const fn = uniq('music', slug(m.title) || 'track'), mp3 = `current/music/${fn.replace(/\.json$/, '')}.mp3`;
+        const tr = { title: m.title, artist: m.artist, file: mp3.replace('current/', ''), license: m.license, source: m.source };
+        add[mp3] = { b64: bufB64(buf) }; add[`current/library/music/${fn}`] = { text: dump(tr) }; S.lib.music[fn] = tr; n.music_pick = [fn];
+      }
+      if (d.signup?.needed && d.signup.url) {
+        const fn = uniq('forms', `${base}-sign-up`), fo = { title: `${n.title} sign-up`, url: d.signup.url, label: 'Sign up' };
+        add[`current/library/forms/${fn}`] = { text: dump(fo) }; S.lib.forms[fn] = fo;
+        n.signup = { on: true, form: fn, deadline: d.signup.deadline || '', deadline_time: d.signup.deadline_time || '' };
+      }
+      if (!n.theme) delete n.theme;
+      const doc = structuredClone(S.events); doc.events.push(n);
+      const files = { ...eventFiles(doc), ...add };
+      await commit(files, `Approve request: ${n.title} (${d.organizer.organization})`);
+      S.events = doc;
+      const t = await gh(`/git/trees/${S.head}?recursive=1`); S.tree = Object.fromEntries(t.tree.filter(x => x.type === 'blob').map(x => [x.path, x.sha]));
+      const doc2 = structuredClone(S.events), f2 = eventFiles(doc2); if (Object.keys(f2).length > 1) await commit(f2, 'Tidy: flyer named after its event code');
+      const key = S.events.events.find(x => x.id === n.id)?.key || '';
+      await decide('approved', { event_id: n.id, event_key: key });
+      setTimeout(() => { location.href = mail(`Approved: ${n.title} in the Language Lab`, `Hello ${d.organizer.name},\n\nGood news: "${n.title}" is approved for ${new Date(n.date + 'T12:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}, ${fmtTime(n.start)}–${fmtTime(n.end)}, in ${ROOM}.${val('r-note') ? '\n\n' + val('r-note') : ''}\n\nIt will show on the Lab's events page: ${SITE}\n\nUNG Language Lab`); }, 400);
+    });
+  };
+}
+
 /* ---------- clicks ---------- */
 document.addEventListener('click', ev => {
-  const t = ev.target.closest('[data-ev],[data-new-ev],[data-item],[data-new-item]'); if (!t) return;
-  if (t.dataset.ev) editEvent(t.dataset.ev);
+  const t = ev.target.closest('[data-ev],[data-new-ev],[data-item],[data-new-item],[data-req]'); if (!t) return;
+  if (t.dataset.req) reviewRequest(t.dataset.req);
+  else if (t.dataset.ev) editEvent(t.dataset.ev);
   else if ('newEv' in t.dataset) editEvent(null);
   else if (t.dataset.item) { const [k, n] = t.dataset.item.split('|'); editItem(k, n); }
   else if (t.dataset.newItem) editItem(t.dataset.newItem, null);
