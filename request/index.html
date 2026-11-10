@@ -218,7 +218,7 @@ dl.review dd { margin: 0; overflow-wrap: anywhere; }
         <p class="eyebrow">Step 7 of 7</p><h2 id="h-send" tabindex="-1">Check and send</h2>
         <p class="lede">The Lab reviews every request and emails you. Nothing shows on the events page until it’s approved.</p>
         <div class="card"><dl class="review" id="review"></dl></div>
-        <div class="card"><div id="turnstile"></div><p class="note" id="sendMsg" role="alert"></p></div>
+        <div class="card"><div id="ts-box"></div><p class="note" id="sendMsg" role="alert"></p></div>
       </section>
 
       <div class="nav" id="navBtns"><button class="btn" type="button" id="back">← Back</button><button class="btn primary" type="button" id="next">Next →</button></div>
@@ -433,9 +433,10 @@ let tsLoaded = false;
 function turnstile() {
   if (!CFG.worker_url || !CFG.turnstile_sitekey) { $('sendMsg').className = 'note warn'; $('sendMsg').textContent = 'Requests open soon. The form can’t send yet; please email the Lab for now.'; $('next').disabled = true; return; }
   if (tsLoaded) return; tsLoaded = true;
-  window.onTs = () => turnstileApi.render('#turnstile', { sitekey: CFG.turnstile_sitekey, callback: t => tsToken = t, 'expired-callback': () => tsToken = '' });
-  window.turnstileApi = null; const s = document.createElement('script'); s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTsReady&render=explicit';
-  window.onTsReady = () => { window.turnstileApi = window.turnstile; onTs(); }; document.head.appendChild(s);
+  /* the box must not be id="turnstile": a page element with that id shadows window.turnstile and the check never draws */
+  window.onTsReady = () => window.turnstile.render('#ts-box', { sitekey: CFG.turnstile_sitekey, callback: t => { tsToken = t; $('sendMsg').textContent = ''; $('sendMsg').className = 'note'; },
+    'expired-callback': () => tsToken = '', 'error-callback': () => { $('sendMsg').className = 'note bad'; $('sendMsg').textContent = 'The “I’m human” check couldn’t load. Refresh the page and try again.'; } });
+  const s = document.createElement('script'); s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTsReady&render=explicit'; document.head.appendChild(s);
 }
 async function send() {
   for (let i = 0; i < STEPS.length - 1; i++) if (!check(i)) { go(i); check(i, true); return; }
