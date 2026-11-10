@@ -275,18 +275,18 @@ async function commit(files, message, repo = REPO) {
     if (clash.length) throw new Error(`Someone else just changed ${clash.join(', ')}. Press Reload, then make your change again.`);
   }
   const base = (await G(`/git/commits/${head}`)).tree.sha;
-  const tree = [];
+  const tree = [], made = {};
   for (const [path, v] of Object.entries(files)) {
     if (v === null) { if (!pub || S.tree[path]) tree.push({ path, mode: '100644', type: 'blob', sha: null }); continue; }
     const sha = v.sha || (await G('/git/blobs', { method: 'POST', body: JSON.stringify(v.b64 ? { content: v.b64, encoding: 'base64' } : { content: b64(v.text), encoding: 'base64' }) })).sha;
-    tree.push({ path, mode: '100644', type: 'blob', sha });
+    tree.push({ path, mode: '100644', type: 'blob', sha }); made[path] = sha;
   }
   const nt = await G('/git/trees', { method: 'POST', body: JSON.stringify({ base_tree: base, tree }) });
   const nc = await G('/git/commits', { method: 'POST', body: JSON.stringify({ message, tree: nt.sha, parents: [head] }) });
   await G(`/git/refs/heads/${BRANCH}`, { method: 'PATCH', body: JSON.stringify({ sha: nc.sha }) });
   if (!pub) return;
   S.head = nc.sha;
-  for (const [path, v] of Object.entries(files)) { if (v === null) delete S.tree[path]; else S.tree[path] = v.sha || 'new'; }
+  for (const [path, v] of Object.entries(files)) { if (v === null) delete S.tree[path]; else S.tree[path] = made[path]; }
 }
 
 /* ---------- the same rules as event_library.py / tidy_site.py ---------- */
@@ -304,7 +304,7 @@ function eventFiles(doc) {
     const pick = fname(e.flyer_pick); if (!pick || taken.has(pick)) return; taken.add(pick);
     const fl = S.lib.flyers[pick]; if (!fl?.image) return;
     const from = 'current/' + clean(fl.image), ext = (from.match(/\.[a-z0-9]+$/i) || ['.webp'])[0].toLowerCase(), to = `current/flyers/${e.key}${ext}`;
-    if (from === to || !S.tree[from] || S.tree[from] === 'new') return;
+    if (from === to || !S.tree[from]) return;
     moves.push({ from, to, sha: S.tree[from], pick, fl });
   });
   const targets = new Set(moves.map(m => m.to));
@@ -627,7 +627,6 @@ function editItem(kind, name) {
       S.lib[kind][file] = n;
       await commit(files, `${isNew ? 'Add' : 'Update'} ${K.one}: ${n[K.primary]}`);
       if (kind === 'flyers' && upload && used.length) { // already picked: rename to the event code now
-        const t = await gh(`/git/trees/${S.head}?recursive=1`); S.tree = Object.fromEntries(t.tree.filter(x => x.type === 'blob').map(x => [x.path, x.sha]));
         const doc = structuredClone(S.events), f2 = eventFiles(doc); if (Object.keys(f2).length > 1) await commit(f2, 'Tidy: flyer named after its event code');
       }
     });
@@ -752,7 +751,8 @@ async function reviewRequest(id) {
         signup: { on: false }, credit: { on: false }, assignment: { on: false }, competition: { on: false } };
       if (r.flyer) { // copy the flyer over from the private repo
         const b64 = r.flyerB64 || (await gh(`/git/blobs/${r.flyer.sha}`, {}, REQ_REPO)).content.replace(/\n/g, '');
-        let img = `current/flyers/new-${base}.${r.flyer.path.split('.').pop().toLowerCase()}`, i = 2; while (S.tree[img]) img = img.replace(/(-\d+)?(\.[a-z0-9]+)$/, `-${i++}$2`);
+        const probe = structuredClone(S.events); probe.events.push({ ...n }); codes(probe); const key = probe.events.at(-1).key; // its code once added
+        const img = `current/flyers/${key}.${r.flyer.path.split('.').pop().toLowerCase()}`; // eventFiles() moves any flyer already there to its own new code
         const fn = uniq('flyers', base); add[img] = { b64 }; const fl = { title: `${n.title} flyer`, image: img.replace('current/', ''), alt: d.flyer.alt };
         add[`current/library/flyers/${fn}`] = { text: dump(fl) }; S.lib.flyers[fn] = fl; n.flyer_pick = fn;
       }
@@ -774,8 +774,6 @@ async function reviewRequest(id) {
       const files = { ...eventFiles(doc), ...add };
       await commit(files, `Approve request: ${n.title} (${d.organizer.organization})`);
       S.events = doc;
-      const t = await gh(`/git/trees/${S.head}?recursive=1`); S.tree = Object.fromEntries(t.tree.filter(x => x.type === 'blob').map(x => [x.path, x.sha]));
-      const doc2 = structuredClone(S.events), f2 = eventFiles(doc2); if (Object.keys(f2).length > 1) await commit(f2, 'Tidy: flyer named after its event code');
       const key = S.events.events.find(x => x.id === n.id)?.key || '';
       await decide('approved', { event_id: n.id, event_key: key });
       setTimeout(() => { location.href = mail(`Approved: ${n.title} in the Language Lab`, `Hello ${d.organizer.name},\n\nGood news: "${n.title}" is approved for ${new Date(n.date + 'T12:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}, ${fmtTime(n.start)}–${fmtTime(n.end)}, in ${ROOM}.${val('r-note') ? '\n\n' + val('r-note') : ''}\n\nIt will show on the Lab's events page: ${SITE}\n\nUNG Language Lab`); }, 400);
