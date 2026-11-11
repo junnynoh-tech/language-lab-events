@@ -85,6 +85,15 @@ h2.sec { font: 700 20px/1.3 "Source Serif 4", serif; margin: 28px 0 12px; }
 .tag.ok { background: var(--ok-bg); color: var(--ok); }
 .tag.warn { background: var(--warn-bg); color: var(--warn); }
 .tag.bad { background: var(--bad-bg); color: var(--bad); }
+/* music finder (free tracks on Wikimedia Commons, same checks as the request form) */
+.finder { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin: 0 0 14px; background: var(--bg); }
+.finder > b { display: block; margin-bottom: 6px; }
+.tracks { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; max-height: 260px; overflow: auto; }
+.tracks li { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.tracks small { display: block; color: var(--sub); }
+.mnote { margin: 8px 0 0; padding: 8px 10px; border-radius: 8px; background: var(--chip); }
+.mnote.ok { background: var(--ok-bg); color: var(--ok); } .mnote.bad { background: var(--bad-bg); color: var(--bad); }
+.mnote:empty { display: none; }
 .banner { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; padding: 14px 16px; border-radius: 12px; margin: 0 0 18px; border: 1px solid var(--line); }
 .banner span { flex: 1 1 260px; }
 .banner.new { background: var(--warn-bg); color: var(--warn); border-color: var(--warn); }
@@ -539,6 +548,37 @@ function editEvent(id) {
   $('e-title').focus();
 }
 
+/* ---------- free music on Wikimedia Commons (same rules as request/index.html: free license, credit, MP3 copy, ≤15 min) ---------- */
+const COMMONS = 'https://commons.wikimedia.org/w/api.php';
+const OK_LICENSE = /^(public domain|pd|cc0|cc-?zero|cc[- ]by(-sa)?([- ][\d.]+)?)$/i;
+const GENRES = ['Latin', 'World', 'Holiday', 'Lounge/relax', 'Jazz', 'Classical', 'African', 'Pop', 'Contemporary', 'Polka', 'Reggae', 'Ska'];
+const stripHtml = h => { const d = document.createElement('div'); d.innerHTML = h || ''; return d.textContent.replace(/\s+/g, ' ').trim(); };
+const mmss = n => `${Math.floor(n / 60)}:${String(n % 60).padStart(2, '0')}`;
+function judgeTrack(p) {
+  const ii = p.imageinfo?.[0], md = ii?.extmetadata || {}, lic = stripHtml(md.LicenseShortName?.value) || '', title = (p.title || '').replace(/^File:/, '').replace(/\.[a-z0-9]+$/i, '');
+  const r = { title: title.replace(/\s*\(ISRC[^)]*\)\s*$/, ''), page: ii?.descriptionurl || '', license: lic, artist: stripHtml(md.Artist?.value).slice(0, 200), duration: Math.round(+(ii?.duration || p.videoinfo?.[0]?.duration || 0)), problems: [] };
+  if (!ii) { r.problems.push('That file isn’t on Wikimedia Commons.'); return r; }
+  if (!/^audio\/|^application\/ogg$|^video\/ogg$/.test(ii.mime)) r.problems.push('It isn’t an audio file.');
+  if (!OK_LICENSE.test(lic.replace(/\s+/g, ' ').trim())) r.problems.push(`Its license (${lic || 'unknown'}) isn’t free to play. Public domain, CC0, CC BY and CC BY-SA only.`);
+  if (/-nc|-nd|noncommercial|noderiv/i.test(lic)) r.problems.push('NC/ND licenses aren’t allowed.');
+  if (!r.artist) r.problems.push('It has no artist listed to credit.');
+  if (r.duration > 900) r.problems.push('It’s over 15 minutes.');
+  r.mp3 = ii.mime === 'audio/mpeg' ? ii.url.split('?')[0] : (p.videoinfo?.[0]?.derivatives || []).find(x => /audio\/mpeg/.test(x.type))?.src || '';
+  if (!r.mp3) r.problems.push('Commons has no MP3 copy, so it won’t play in every browser.');
+  return r;
+}
+async function commonsQuery(extra) {
+  const q = new URLSearchParams({ action: 'query', prop: 'imageinfo|videoinfo', iiprop: 'url|mime|size|extmetadata', iiextmetadatafilter: 'LicenseShortName|License|Artist', viprop: 'derivatives', format: 'json', origin: '*', ...extra });
+  const d = await fetch(`${COMMONS}?${q}`).then(r => r.json());
+  return Object.values(d.query?.pages || {}).map(judgeTrack);
+}
+const FINDER = `<div class="finder" role="group" aria-labelledby="mf-h"><b id="mf-h">Find a free track</b>
+  <div class="f"><label for="mf-genre">Browse by style</label><select id="mf-genre"><option value="">Pick a style</option>${GENRES.map(g => `<option>${esc(g)}</option>`).join('')}</select><span class="hint">Kevin MacLeod (incompetech.com) on <a href="https://commons.wikimedia.org/wiki/Category:Audio_files_from_Incompetech_by_genre" target="_blank" rel="noopener">Wikimedia Commons ↗</a>. Only tracks that pass the license check are listed.</span></div>
+  <ul class="tracks" id="mf-list" aria-label="Tracks in this style"></ul>
+  <div class="f" style="margin-top:10px"><label for="mf-link">Or paste a Wikimedia Commons link</label><div style="display:flex;gap:8px"><input type="url" id="mf-link" placeholder="https://commons.wikimedia.org/wiki/File:…" style="flex:1"><button class="btn sm" type="button" id="mf-check">Check</button></div></div>
+  <p class="mnote" id="mf-result" role="status"></p><audio controls preload="none" id="mf-play" hidden style="width:100%;margin-top:8px"></audio>
+  <span class="hint">Choosing a track fills in the boxes below; it is copied into our music folder when you save. Or upload your own MP3 instead.</span></div>`;
+
 /* ---------- library editors ---------- */
 const FORMS = {
   flyers: o => fld('l-title', 'Flyer name', txt('l-title', o.title), 'For this list only, e.g. Karaoke flyer.')
@@ -555,7 +595,7 @@ const FORMS = {
     + fld('l-rules', 'Rules', area('l-rules', (o.rules || []).join('\n'), 'rows="5"'), 'One rule per line.') + fld('l-pnote', 'Prize note (optional)', area('l-pnote', o.prizes_note))
     + fld('l-rubric', 'Judging rubric', sel('l-rubric', o.rubric, S.rubrics.map(r => [r.value, r.label]), 'No rubric'), 'Rubrics are built in the Event Generator.')
     + `<div class="f"><span style="font-weight:600">Prizes</span><span class="hint">${(o.prizes || []).length ? (o.prizes || []).map(p => esc(`${p.place}: ${p.name}`)).join(' · ') : 'None yet'}</span></div>`,
-  music: o => `<div class="two">${fld('l-title', 'Song', txt('l-title', o.title))}${fld('l-artist', 'Artist', txt('l-artist', o.artist))}</div>`
+  music: o => FINDER + `<div class="two">${fld('l-title', 'Song', txt('l-title', o.title))}${fld('l-artist', 'Artist', txt('l-artist', o.artist))}</div>`
     + `<div class="two">${fld('l-license', 'License', txt('l-license', o.license), 'e.g. CC BY 3.0 or Public domain')}${fld('l-source', 'Where it came from', `<input type="url" id="l-source" value="${esc(o.source || '')}">`)}</div>`
     + `<div class="f"><label for="l-mp3">Audio file (MP3)</label><input type="file" id="l-mp3" accept=".mp3,audio/mpeg"><span class="hint">${o.file ? 'Current: ' + esc(o.file) : 'No file yet'}. Under 15 MB.</span></div>`,
 };
@@ -594,6 +634,8 @@ async function toWebp(file) {
 function editItem(kind, name) {
   const K = KINDS[kind], isNew = !name, o = isNew ? {} : structuredClone(S.lib[kind][name]), used = isNew ? [] : usedBy(kind, name);
   let upload = null; // { path, b64 }
+  let commons = null; // a checked Commons track: { mp3, title, … }, downloaded on save
+  const freeName = (dir, base, ext) => { let b = base, i = 2; while (S.tree[`current/${dir}/${b}${ext}`]) b = `${base}-${i++}`; return `current/${dir}/${b}${ext}`; };
   const cmsLink = isNew ? `${CMS}/collection/${kind}/new` : `${CMS}/collection/${kind}/edit/${encodeURIComponent(`current/library/${kind}/${name}`)}`;
   const foot = `<div class="row">${isNew ? '' : `<button class="btn danger" type="button" id="l-del" ${used.length ? 'disabled title="Used by an event"' : ''}>Delete</button>`}<a class="btn" href="${cmsLink}" target="_blank" rel="noopener">${kind === 'competitions' ? 'Prizes and photos' : 'Open in the website editor'} ↗</a></div>
     <div class="row"><button class="btn" type="button" data-close2>Cancel</button><button class="btn primary" type="button" id="l-save">${isNew ? 'Add' : 'Save'}</button></div>`;
@@ -615,15 +657,51 @@ function editItem(kind, name) {
     ['dragleave', 'drop'].forEach(t => d.addEventListener(t, ev => { ev.preventDefault(); d.classList.remove('over'); }));
     d.addEventListener('drop', ev => pick(ev.dataTransfer.files[0]));
   }
-  if (kind === 'music') $('l-mp3').onchange = async ev => { const f = ev.target.files[0]; if (!f) return;
-    if (f.size > 15 * 1048576) { toast('Keep tracks under 15 MB.'); ev.target.value = ''; return; }
-    upload = { path: `current/music/${slug(f.name.replace(/\.mp3$/i, ''))}.mp3`, b64: bufB64(await f.arrayBuffer()) }; };
+  if (kind === 'music') {
+    $('l-mp3').onchange = async ev => { const f = ev.target.files[0]; if (!f) return;
+      if (f.size > 15 * 1048576) { toast('Keep tracks under 15 MB.'); ev.target.value = ''; return; }
+      commons = null; $('mf-result').textContent = ''; $('mf-play').hidden = true; $('mf-list').querySelectorAll('[data-t]').forEach(x => x.textContent = 'Use this');
+      upload = { path: freeName('music', slug(f.name.replace(/\.mp3$/i, '')) || 'track', '.mp3'), b64: bufB64(await f.arrayBuffer()) }; };
+    const box = $('mf-result'), play = $('mf-play');
+    const choose = r => {
+      if (r.problems.length) { box.className = 'mnote bad'; box.innerHTML = `<b>Can’t use “${esc(r.title)}”.</b> ${r.problems.map(esc).join(' ')}`; play.hidden = true; return false; }
+      commons = r; upload = null; $('l-mp3').value = '';
+      $('l-title').value = r.title; $('l-artist').value = r.artist; $('l-license').value = r.license; $('l-source').value = r.page;
+      ['l-title', 'l-artist', 'l-license'].forEach(id => $(id).removeAttribute('aria-invalid'));
+      box.className = 'mnote ok'; box.innerHTML = `<b>✓ Free to use: “${esc(r.title)}”</b> ${esc(r.artist)} · ${esc(r.license)} · ${mmss(r.duration)}. Copied in when you save.`;
+      play.src = r.mp3; play.hidden = false; return true;
+    };
+    $('mf-genre').onchange = async () => {
+      const g = val('mf-genre'), list = $('mf-list'); if (!g) { list.innerHTML = ''; return; }
+      list.innerHTML = '<li>Loading…</li>';
+      try {
+        const rows = (await commonsQuery({ generator: 'categorymembers', gcmtitle: `Category:${g} music from Incompetech`, gcmtype: 'file', gcmlimit: '60' }))
+          .filter(r => !r.problems.length).sort((a, b) => a.title.localeCompare(b.title));
+        list.innerHTML = rows.length ? rows.map((r, i) => `<li><span><b>${esc(r.title)}</b><small>${esc(r.artist)} · ${esc(r.license)} · ${mmss(r.duration)}</small></span><button class="btn sm" type="button" data-t="${i}">Use this</button></li>`).join('') : '<li>No free tracks in this style right now.</li>';
+        list.onclick = e => { const b = e.target.closest('[data-t]'); if (!b) return; if (choose(rows[+b.dataset.t])) { list.querySelectorAll('[data-t]').forEach(x => x.textContent = 'Use this'); b.textContent = '✓ Chosen'; } };
+      } catch (e) { list.innerHTML = '<li>Commons didn’t answer. Try again in a moment.</li>'; }
+    };
+    $('mf-check').onclick = async () => {
+      const link = val('mf-link');
+      if (/youtu\.?be|spotify|soundcloud|apple\.com|tiktok/i.test(link)) { box.className = 'mnote bad'; box.innerHTML = '<b>That link can’t be used.</b> YouTube, Spotify and similar sites don’t allow their audio on our page. Pick a free track from Commons.'; return; }
+      const m = decodeURIComponent(link).match(/(?:File:|\/commons\/(?:transcoded\/)?[0-9a-f]\/[0-9a-f]{2}\/)([^/?#]+?\.(?:mp3|ogg|oga|flac|wav|opus))/i);
+      if (!m) { box.className = 'mnote bad'; box.textContent = 'Paste a Wikimedia Commons file link, like https://commons.wikimedia.org/wiki/File:Song_name.mp3'; return; }
+      box.className = 'mnote'; box.textContent = 'Checking…';
+      try { const [r] = await commonsQuery({ titles: 'File:' + m[1].replace(/_/g, ' ') }); choose(r); } catch (e) { box.className = 'mnote bad'; box.textContent = 'Commons didn’t answer. Try again in a moment.'; }
+    };
+    $('mf-link').onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); $('mf-check').click(); } };
+  }
   $('l-save').onclick = ev => {
+    if (kind === 'music' && !o.file && !upload && !commons) { toast('Pick a free track above, or choose an MP3.'); $('mf-genre').focus(); return; }
     const miss = NEED[kind].find(id => !val(id)); if (miss) { toast('Fill in the highlighted box first.'); $(miss).focus(); $(miss).setAttribute('aria-invalid', 'true'); return; }
     if (kind === 'flyers' && !o.image && !upload) { toast('Choose the flyer file.'); $('l-file').focus(); return; }
-    if (kind === 'music' && !o.file && !upload) { toast('Choose the MP3.'); $('l-mp3').focus(); return; }
     if (kind === 'forms' && !/^https:\/\//.test(val('l-url'))) { toast('The link has to start with https://'); $('l-url').focus(); return; }
     saving(ev.target, async () => {
+      if (kind === 'music' && commons && !upload) { // copy the checked Commons track into our music folder, in this same commit
+        const res = await fetch(commons.mp3); if (!res.ok) throw new Error('The track could not be downloaded from Commons. Try again, or upload an MP3.');
+        const buf = await res.arrayBuffer(); if (buf.byteLength > 15 * 1048576) throw new Error('That track is over 15 MB. Pick a shorter one.');
+        upload = { path: freeName('music', slug(val('l-title')) || 'track', '.mp3'), b64: bufB64(buf) };
+      }
       const n = READ[kind](o), files = {};
       const file = isNew ? (() => { let b = slug(n[K.primary]) || K.one, f = b + '.json', i = 2; while (S.lib[kind][f]) f = `${b}-${i++}.json`; return f; })() : name;
       if (upload) { files[upload.path] = { b64: upload.b64 };
