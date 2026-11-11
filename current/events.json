@@ -255,6 +255,46 @@
       "key": "gvl-3",
       "id": "2026-11-12-taste-of-korean-coffee-and-well-being-tea-event",
       "theme": "korean-tea-house"
+    },
+    {
+      "title": "Matcha & More",
+      "status": "published",
+      "campus": "gvl",
+      "date": "2027-11-10",
+      "start": "11:00",
+      "end": "13:00",
+      "location": "Language Lab, Martha T. Nesbitt Building, Room 4201",
+      "summary": "Take a matcha break with the Japanese Program! Drop by the Language Lab for a taste of matcha and more Japanese drinks, all part of International Education Week.",
+      "details": "",
+      "languages": [
+        "All languages"
+      ],
+      "hosts": [
+        "Japanese Program"
+      ],
+      "partners": [
+        "East Asian Studies",
+        "Center for Global Engagement"
+      ],
+      "title_alt": "抹茶",
+      "title_alt_lang": "ja",
+      "theme": "matcha-ceremony",
+      "music_pick": [],
+      "signup": {
+        "on": false
+      },
+      "credit": {
+        "on": false
+      },
+      "assignment": {
+        "on": false
+      },
+      "competition": {
+        "on": false
+      },
+      "flyer_pick": "matcha-more.json",
+      "key": "gvl-7",
+      "id": "2027-11-10-matcha-more"
     }
   ],
   "library": 1
