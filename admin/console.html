@@ -316,7 +316,7 @@ function codes(doc) {
 function eventFiles(doc) {
   codes(doc); doc.library = 1;
   const files = { 'current/events.json': { text: dump(doc) } }, taken = new Set(), moves = [];
-  [...doc.events].sort((a, b) => a.key < b.key ? -1 : 1).forEach(e => {
+  [...doc.events].sort((a, b) => a.key.localeCompare(b.key, 'en', { numeric: true })).forEach(e => {   // gvl-2 before gvl-10
     const pick = fname(e.flyer_pick); if (!pick || taken.has(pick)) return; taken.add(pick);
     const fl = S.lib.flyers[pick]; if (!fl?.image) return;
     const from = 'current/' + clean(fl.image), ext = (from.match(/\.[a-z0-9]+$/i) || ['.webp'])[0].toLowerCase(), to = `current/flyers/${e.key}${ext}`;

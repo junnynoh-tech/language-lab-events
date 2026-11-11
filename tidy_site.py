@@ -79,7 +79,7 @@ def main(check=False):
     taken = set()
     if doc.get("library"):
         lib = Library(CUR)
-        for e in sorted(doc["events"], key=lambda e: e["key"]):
+        for e in sorted(doc["events"], key=lambda e: (e["key"].rsplit("-", 1)[0], int(e["key"].rsplit("-", 1)[1]))):  # gvl-2 before gvl-10
             pick = str(e.get("flyer_pick") or "").split("/")[-1]
             if not pick or pick in taken:
                 continue
