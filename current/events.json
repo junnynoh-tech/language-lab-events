@@ -133,7 +133,7 @@
         "Gracias"
       ],
       "theme": "karaoke",
-      "key": "gvl-4",
+      "key": "gvl-5",
       "flyer_pick": "lingo-cafe-karaoke.json",
       "music_pick": [
         "casa-bossa-nova.json"
@@ -170,7 +170,7 @@
       ],
       "partners": [],
       "theme": "winter-holidays",
-      "key": "gvl-5",
+      "key": "gvl-6",
       "flyer_pick": "languages-around-the-world-let-s-learn-and-celebrate-holiday-style.json",
       "music_pick": [
         "jingle-bells-calm.json"
@@ -209,7 +209,7 @@
         "German Club"
       ],
       "theme": "lingo-cafe",
-      "key": "gvl-6",
+      "key": "gvl-7",
       "flyer_pick": "lingo-cafe-holiday-chill.json",
       "music_pick": [
         "silent-night.json"
@@ -252,7 +252,7 @@
         "on": false
       },
       "flyer_pick": "taste-of-korean-coffee-and-well-being-tea-event.json",
-      "key": "gvl-3",
+      "key": "gvl-4",
       "id": "2026-11-12-taste-of-korean-coffee-and-well-being-tea-event",
       "theme": "korean-tea-house"
     },
@@ -260,7 +260,7 @@
       "title": "Matcha & More",
       "status": "published",
       "campus": "gvl",
-      "date": "2027-11-10",
+      "date": "2026-11-11",
       "start": "11:00",
       "end": "13:00",
       "location": "Language Lab, Martha T. Nesbitt Building, Room 4201",
@@ -281,19 +281,27 @@
       "theme": "matcha-ceremony",
       "music_pick": [],
       "signup": {
-        "on": false
+        "on": false,
+        "form": "",
+        "deadline": "",
+        "deadline_time": ""
       },
       "credit": {
-        "on": false
+        "on": false,
+        "option": ""
       },
       "assignment": {
-        "on": false
+        "on": false,
+        "pick": "",
+        "due": "",
+        "due_time": ""
       },
       "competition": {
-        "on": false
+        "on": false,
+        "pick": ""
       },
       "flyer_pick": "matcha-more.json",
-      "key": "gvl-7",
+      "key": "gvl-3",
       "id": "2027-11-10-matcha-more"
     }
   ],
