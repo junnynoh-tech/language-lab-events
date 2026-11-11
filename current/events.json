@@ -59,6 +59,18 @@
         "pick": "taste-tell.json",
         "due": "",
         "due_time": ""
+      },
+      "flyer_pick": "candies-around-the-world.json",
+      "music_pick": [],
+      "signup": {
+        "on": false,
+        "form": "",
+        "deadline": "",
+        "deadline_time": ""
+      },
+      "competition": {
+        "on": false,
+        "pick": ""
       }
     },
     {
