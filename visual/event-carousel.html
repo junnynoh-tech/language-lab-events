@@ -442,7 +442,7 @@ async function drawFlyer(e, box) {
   const found = await resolveFlyer(e.flyer, e.key);
   const alt = e.flyer_alt || `Flyer for ${e.title}`;
   if (!found) { box.innerHTML = placeholder(e); return; }
-  const url = found.url;
+  const url = found.url + (e.flyer_v && !PV && found.url === BASE + e.flyer ? '?v=' + e.flyer_v : '');   // content version: a renamed flyer is never served from a cache
   const open = box.closest('.slide').querySelector('[data-open]');
   if (open) { open.href = url; open.hidden = false; }
   const isPdf = found.pdf;
@@ -749,14 +749,14 @@ $('slides').addEventListener('touchend', ev => { if (tx == null) return; const d
    In the website editor an event PICKS things made in their own tabs: a flyer, music, a sign-up form, extra credit,
    an assignment or mini-project, a competition (prizes, rules, rubric). Each is current/library/<kind>/<name>.json.
    This fills the event's older fields from its picks, so the rest of the page reads events the same way as before.
-   Event codes: per campus, by date and start time, the earliest is gvl-1. Same rules as event_library.py; this block
+   Event codes: per campus, by date and start time, the earliest is gvl-1; drafts are gvl-draft-N. Same rules as event_library.py; this block
    is identical in event-carousel.html and event-details.html. Files without "library" (the Event Generator's preview)
    carry everything inline and are left as they are. */
 const EC_NOTE = 'Extra credit is up to each instructor. Ask yours whether this event counts in your course.';
 function eventCodes(doc) {
   const n = {}, k = e => [e.date || '', e.start || '', e.title || ''];
   [...(doc?.events || [])].sort((a, b) => { const x = k(a), y = k(b); for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] < y[i] ? -1 : 1; return 0; })
-    .forEach(e => { const c = e.campus || 'gvl'; n[c] = (n[c] || 0) + 1; e.key = `${c}-${n[c]}`; });
+    .forEach(e => { const c = (e.campus || 'gvl') + (e.status === 'draft' ? '-draft' : ''); n[c] = (n[c] || 0) + 1; e.key = `${c}-${n[c]}`; });   // drafts numbered apart: they never renumber live events
 }
 async function resolveLibrary(doc, base) {
   eventCodes(doc);
@@ -774,7 +774,7 @@ async function resolveLibrary(doc, base) {
     const [fly, form, ec, task, comp, music] = await Promise.all([get('flyers', e.flyer_pick), on(S) && get('forms', S.form),
       on(C) && get('extra-credit', C.option), on(A) && get('assignments', A.pick), on(K) && get('competitions', K.pick),
       Promise.all((e.music_pick || []).map(m => get('music', m)))]);
-    e.flyer = clean(fly?.image); e.flyer_alt = fly?.alt || '';
+    e.flyer = clean(fly?.image); e.flyer_alt = fly?.alt || ''; e.flyer_v = fly?.v || '';
     e.music = music.filter(Boolean).map(m => ({ ...m, file: clean(m.file) }));
     e.entry = form?.url ? { url: form.url, label: form.label || 'Sign up', deadline: S.deadline || '', deadline_time: S.deadline_time || '' } : null;
     e.extra_credit = { offered: on(C), note: on(C) ? (ec?.note || EC_NOTE) : '' };

@@ -196,6 +196,7 @@ code { font: 500 14px ui-monospace, Menlo, Consolas, monospace; background: var(
 <dialog id="dlg" aria-labelledby="dlgTitle"></dialog>
 <p class="toast" id="toast" role="status" aria-live="polite" hidden></p>
 
+<script src="../shared/commons-music.js"></script>
 <script>
 'use strict';
 /* ---------- where the data lives (nothing is stored in this file) ---------- */
@@ -278,26 +279,38 @@ async function load() {
   connUI(); nav(); show(S.view, false);
 }
 
+/* a file's git blob id, worked out here. Its first 8 characters go into a flyer's "v", which pages add to the image
+   address (?v=…), so a new picture under an old name (gvl-3.webp after a renumber) is never served from a cache. */
+async function gitSha(b64s) { const bin = Uint8Array.from(atob(b64s), c => c.charCodeAt(0)), head = new TextEncoder().encode(`blob ${bin.length}\0`), all = new Uint8Array(head.length + bin.length);
+  all.set(head); all.set(bin, head.length); return [...new Uint8Array(await crypto.subtle.digest('SHA-1', all))].map(x => x.toString(16).padStart(2, '0')).join(''); }
+const SENT = {}; // blob sha -> base64 content sent from this page (kept for the session, to resend if GitHub hasn't stored it yet)
 /* one commit for every file a Save touches. files: { path: {text}|{b64}|{sha}|null } */
 async function commit(files, message, repo = REPO) {
   if (!token) { openSettings(); throw new Error('Connect your GitHub key first.'); }
   const G = (p, o) => gh(p, o, repo), pub = repo === REPO;
   const ref = await G(`/git/ref/heads/${BRANCH}`), head = ref.object.sha;
   if (pub && head !== S.head) { // someone saved since this page loaded: stop if they touched the same files
-    const cmp = await G(`/compare/${S.head}...${head}`);
+    const cmp = await G(`/compare/${S.head}...${head}`).catch(() => ({ files: Object.keys(files).map(filename => ({ filename })) }));
     const clash = (cmp.files || []).map(f => f.filename).filter(f => f in files);
     if (clash.length) throw new Error(`Someone else just changed ${clash.join(', ')}. Press Reload, then make your change again.`);
   }
-  const base = (await G(`/git/commits/${head}`)).tree.sha;
+  /* GitHub can take a while to store a file it just accepted ("GitRPC::BadObjectState"), most often when a save moves a
+     flyer uploaded a minute before (2026-11-11: failed twice, the third Save went through). Every step retries for about
+     a minute, and between tries the files this page sent are sent again, which makes GitHub finish storing them. */
+  const transient = e => /bad ?object|BadObjectState|not found|409|422|50[234]/i.test(e.message + ' ' + e.status) && !/fast.?forward|too large|invalid/i.test(e.message);
+  const resend = async () => { for (const t of tree) if (t.sha && SENT[t.sha]) await G('/git/blobs', { method: 'POST', body: JSON.stringify({ content: SENT[t.sha], encoding: 'base64' }) }).catch(() => {}); };
+  const retry = async (fn, fix) => { for (let k = 0; ; k++) { try { return await fn(); } catch (e) {
+    if (k >= 8 || !transient(e)) throw k >= 8 && transient(e) ? new Error('GitHub is still storing the file from your last save. Nothing was changed: wait a minute, then press Save again.') : e;
+    await new Promise(r => setTimeout(r, Math.min(1500 * (k + 1), 10000))); if (fix) await fix(); } } };
+  const base = (await retry(() => G(`/git/commits/${head}`))).tree.sha;
   const tree = [], made = {};
   for (const [path, v] of Object.entries(files)) {
     if (v === null) { if (!pub || S.tree[path]) tree.push({ path, mode: '100644', type: 'blob', sha: null }); continue; }
-    const sha = v.sha || (await G('/git/blobs', { method: 'POST', body: JSON.stringify(v.b64 ? { content: v.b64, encoding: 'base64' } : { content: b64(v.text), encoding: 'base64' }) })).sha;
+    let sha = v.sha;
+    if (!sha) { const content = v.b64 || b64(v.text); sha = (await retry(() => G('/git/blobs', { method: 'POST', body: JSON.stringify({ content, encoding: 'base64' }) }))).sha; SENT[sha] = content; }
     tree.push({ path, mode: '100644', type: 'blob', sha }); made[path] = sha;
   }
-  const retry = async fn => { for (let k = 0; ; k++) { try { return await fn(); } catch (e) {
-    if (k >= 5 || !/bad ?object|BadObjectState|not found|409|422/i.test(e.message + ' ' + e.status)) throw e; await new Promise(r => setTimeout(r, 1200 * (k + 1))); } } };
-  const nt = await retry(() => G('/git/trees', { method: 'POST', body: JSON.stringify({ base_tree: base, tree }) }));
+  const nt = await retry(() => G('/git/trees', { method: 'POST', body: JSON.stringify({ base_tree: base, tree }) }), resend);
   const nc = await retry(() => G('/git/commits', { method: 'POST', body: JSON.stringify({ message, tree: nt.sha, parents: [head] }) }));
   await retry(() => G(`/git/refs/heads/${BRANCH}`, { method: 'PATCH', body: JSON.stringify({ sha: nc.sha }) }));
   if (!pub) return;
@@ -309,7 +322,7 @@ async function commit(files, message, repo = REPO) {
 function codes(doc) {
   const n = {}, k = e => [e.date || '', e.start || '', e.title || ''];
   [...(doc.events || [])].sort((a, b) => { const x = k(a), y = k(b); for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] < y[i] ? -1 : 1; return 0; })
-    .forEach(e => { const c = e.campus || 'gvl'; n[c] = (n[c] || 0) + 1; e.key = `${c}-${n[c]}`; });
+    .forEach(e => { const c = (e.campus || 'gvl') + (e.status === 'draft' ? '-draft' : ''); n[c] = (n[c] || 0) + 1; e.key = `${c}-${n[c]}`; });   // drafts numbered apart: they never renumber live events
   const ids = new Set(); (doc.events || []).forEach(e => { let id = e.id || [e.date, slug(e.title)].filter(Boolean).join('-'), base = id, i = 2; while (ids.has(id)) id = `${base}-${i++}`; e.id = id; ids.add(id); }); // ids stay unique, so one delete never removes two
 }
 /* events.json + every flyer rename the new codes need, as commit files. Flyer files are moved (same content) to flyers/<code>.<ext>. */
@@ -332,7 +345,7 @@ function eventFiles(doc) {
     moves.push({ from: p, to, sha: S.tree[p], pick: n, fl }); targets.add(to);
   });
   moves.forEach(m => { files[m.to] = { sha: m.sha }; if (!targets.has(m.from)) files[m.from] = null;
-    m.fl.image = m.to.replace('current/', ''); files[`current/library/flyers/${m.pick}`] = { text: dump(m.fl) }; });
+    m.fl.image = m.to.replace('current/', ''); if (m.sha) m.fl.v = m.sha.slice(0, 8); files[`current/library/flyers/${m.pick}`] = { text: dump(m.fl) }; });
   return files;
 }
 const usedBy = (kind, name) => (S.events.events || []).filter(e => USES[kind](e).map(fname).includes(name));
@@ -548,30 +561,8 @@ function editEvent(id) {
   $('e-title').focus();
 }
 
-/* ---------- free music on Wikimedia Commons (same rules as request/index.html: free license, credit, MP3 copy, ≤15 min) ---------- */
-const COMMONS = 'https://commons.wikimedia.org/w/api.php';
-const OK_LICENSE = /^(public domain|pd|cc0|cc-?zero|cc[- ]by(-sa)?([- ][\d.]+)?)$/i;
-const GENRES = ['Latin', 'World', 'Holiday', 'Lounge/relax', 'Jazz', 'Classical', 'African', 'Pop', 'Contemporary', 'Polka', 'Reggae', 'Ska'];
-const stripHtml = h => { const d = document.createElement('div'); d.innerHTML = h || ''; return d.textContent.replace(/\s+/g, ' ').trim(); };
-const mmss = n => `${Math.floor(n / 60)}:${String(n % 60).padStart(2, '0')}`;
-function judgeTrack(p) {
-  const ii = p.imageinfo?.[0], md = ii?.extmetadata || {}, lic = stripHtml(md.LicenseShortName?.value) || '', title = (p.title || '').replace(/^File:/, '').replace(/\.[a-z0-9]+$/i, '');
-  const r = { title: title.replace(/\s*\(ISRC[^)]*\)\s*$/, ''), page: ii?.descriptionurl || '', license: lic, artist: stripHtml(md.Artist?.value).slice(0, 200), duration: Math.round(+(ii?.duration || p.videoinfo?.[0]?.duration || 0)), problems: [] };
-  if (!ii) { r.problems.push('That file isn’t on Wikimedia Commons.'); return r; }
-  if (!/^audio\/|^application\/ogg$|^video\/ogg$/.test(ii.mime)) r.problems.push('It isn’t an audio file.');
-  if (!OK_LICENSE.test(lic.replace(/\s+/g, ' ').trim())) r.problems.push(`Its license (${lic || 'unknown'}) isn’t free to play. Public domain, CC0, CC BY and CC BY-SA only.`);
-  if (/-nc|-nd|noncommercial|noderiv/i.test(lic)) r.problems.push('NC/ND licenses aren’t allowed.');
-  if (!r.artist) r.problems.push('It has no artist listed to credit.');
-  if (r.duration > 900) r.problems.push('It’s over 15 minutes.');
-  r.mp3 = ii.mime === 'audio/mpeg' ? ii.url.split('?')[0] : (p.videoinfo?.[0]?.derivatives || []).find(x => /audio\/mpeg/.test(x.type))?.src || '';
-  if (!r.mp3) r.problems.push('Commons has no MP3 copy, so it won’t play in every browser.');
-  return r;
-}
-async function commonsQuery(extra) {
-  const q = new URLSearchParams({ action: 'query', prop: 'imageinfo|videoinfo', iiprop: 'url|mime|size|extmetadata', iiextmetadatafilter: 'LicenseShortName|License|Artist', viprop: 'derivatives', format: 'json', origin: '*', ...extra });
-  const d = await fetch(`${COMMONS}?${q}`).then(r => r.json());
-  return Object.values(d.query?.pages || {}).map(judgeTrack);
-}
+/* ---------- free music on Wikimedia Commons: rules + checker in ../shared/commons-music.js (shared with the request form) ---------- */
+const { GENRES, mmss } = CommonsMusic;
 const FINDER = `<div class="finder" role="group" aria-labelledby="mf-h"><b id="mf-h">Find a free track</b>
   <div class="f"><label for="mf-genre">Browse by style</label><select id="mf-genre"><option value="">Pick a style</option>${GENRES.map(g => `<option>${esc(g)}</option>`).join('')}</select><span class="hint">Kevin MacLeod (incompetech.com) on <a href="https://commons.wikimedia.org/wiki/Category:Audio_files_from_Incompetech_by_genre" target="_blank" rel="noopener">Wikimedia Commons ↗</a>. Only tracks that pass the license check are listed.</span></div>
   <ul class="tracks" id="mf-list" aria-label="Tracks in this style"></ul>
@@ -675,19 +666,18 @@ function editItem(kind, name) {
       const g = val('mf-genre'), list = $('mf-list'); if (!g) { list.innerHTML = ''; return; }
       list.innerHTML = '<li>Loading…</li>';
       try {
-        const rows = (await commonsQuery({ generator: 'categorymembers', gcmtitle: `Category:${g} music from Incompetech`, gcmtype: 'file', gcmlimit: '60' }))
-          .filter(r => !r.problems.length).sort((a, b) => a.title.localeCompare(b.title));
+        const rows = await CommonsMusic.browse(g);
         list.innerHTML = rows.length ? rows.map((r, i) => `<li><span><b>${esc(r.title)}</b><small>${esc(r.artist)} · ${esc(r.license)} · ${mmss(r.duration)}</small></span><button class="btn sm" type="button" data-t="${i}">Use this</button></li>`).join('') : '<li>No free tracks in this style right now.</li>';
         list.onclick = e => { const b = e.target.closest('[data-t]'); if (!b) return; if (choose(rows[+b.dataset.t])) { list.querySelectorAll('[data-t]').forEach(x => x.textContent = 'Use this'); b.textContent = '✓ Chosen'; } };
       } catch (e) { list.innerHTML = '<li>Commons didn’t answer. Try again in a moment.</li>'; }
     };
     $('mf-check').onclick = async () => {
-      const link = val('mf-link');
-      if (/youtu\.?be|spotify|soundcloud|apple\.com|tiktok/i.test(link)) { box.className = 'mnote bad'; box.innerHTML = '<b>That link can’t be used.</b> YouTube, Spotify and similar sites don’t allow their audio on our page. Pick a free track from Commons.'; return; }
-      const m = decodeURIComponent(link).match(/(?:File:|\/commons\/(?:transcoded\/)?[0-9a-f]\/[0-9a-f]{2}\/)([^/?#]+?\.(?:mp3|ogg|oga|flac|wav|opus))/i);
-      if (!m) { box.className = 'mnote bad'; box.textContent = 'Paste a Wikimedia Commons file link, like https://commons.wikimedia.org/wiki/File:Song_name.mp3'; return; }
       box.className = 'mnote'; box.textContent = 'Checking…';
-      try { const [r] = await commonsQuery({ titles: 'File:' + m[1].replace(/_/g, ' ') }); choose(r); } catch (e) { box.className = 'mnote bad'; box.textContent = 'Commons didn’t answer. Try again in a moment.'; }
+      try { const r = await CommonsMusic.checkLink(val('mf-link'));
+        if (r.error === 'blocked') { box.className = 'mnote bad'; box.innerHTML = '<b>That link can’t be used.</b> YouTube, Spotify and similar sites don’t allow their audio on our page. Pick a free track from Commons.'; }
+        else if (r.error) { box.className = 'mnote bad'; box.textContent = 'Paste a Wikimedia Commons file link, like https://commons.wikimedia.org/wiki/File:Song_name.mp3'; }
+        else choose(r);
+      } catch (e) { box.className = 'mnote bad'; box.textContent = 'Commons didn’t answer. Try again in a moment.'; }
     };
     $('mf-link').onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); $('mf-check').click(); } };
   }
@@ -706,7 +696,7 @@ function editItem(kind, name) {
       const file = isNew ? (() => { let b = slug(n[K.primary]) || K.one, f = b + '.json', i = 2; while (S.lib[kind][f]) f = `${b}-${i++}.json`; return f; })() : name;
       if (upload) { files[upload.path] = { b64: upload.b64 };
         const prev = kind === 'flyers' ? o.image : o.file; if (prev && 'current/' + clean(prev) !== upload.path) files['current/' + clean(prev)] = null;
-        if (kind === 'flyers') n.image = upload.path.replace('current/', ''); else n.file = upload.path.replace('current/', ''); }
+        if (kind === 'flyers') { n.image = upload.path.replace('current/', ''); n.v = (await gitSha(upload.b64)).slice(0, 8); } else n.file = upload.path.replace('current/', ''); }
       Object.keys(n).forEach(k => (n[k] === '' || (Array.isArray(n[k]) && !n[k].length)) && delete n[k]);
       files[`current/library/${kind}/${file}`] = { text: dump(n) };
       S.lib[kind][file] = n;
@@ -840,7 +830,7 @@ async function reviewRequest(id) {
         const b64 = r.flyerB64 || (await gh(`/git/blobs/${r.flyer.sha}`, {}, REQ_REPO)).content.replace(/\n/g, '');
         const probe = structuredClone(S.events); probe.events.push({ ...n }); codes(probe); const key = probe.events.at(-1).key; // its code once added
         const img = `current/flyers/${key}.${r.flyer.path.split('.').pop().toLowerCase()}`; // eventFiles() moves any flyer already there to its own new code
-        const fn = uniq('flyers', base); add[img] = { b64 }; const fl = { title: `${n.title} flyer`, image: img.replace('current/', ''), alt: d.flyer.alt };
+        const fn = uniq('flyers', base); add[img] = { b64 }; const fl = { title: `${n.title} flyer`, image: img.replace('current/', ''), alt: d.flyer.alt, v: (await gitSha(b64)).slice(0, 8) };
         add[`current/library/flyers/${fn}`] = { text: dump(fl) }; S.lib.flyers[fn] = fl; n.flyer_pick = fn;
       }
       if (val('r-music')) n.music_pick = [val('r-music')];

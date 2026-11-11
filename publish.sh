@@ -22,7 +22,11 @@ for d in library flyers prizes music; do rm -rf "$HUB/current/$d"; cp -r "$HERE/
 if ! python3 "$LABS/check_music.py" "$HERE/current/events.json"; then
   [ -n "$SKIP_MUSIC_CHECK" ] || { echo "Fix the music above in the website editor's Music tab (or SKIP_MUSIC_CHECK=1 bash publish.sh)"; exit 1; }
 fi
+D2L_BEFORE="$(cd "$LABS/class-pages/out" 2>/dev/null && md5sum */*.html 2>/dev/null)"
 python3 "$LABS/class-pages/build.py"
+# files that live in D2L as uploaded copies don't update themselves (the GitHub-frame news items do): name the ones that changed
+D2L_CHANGED="$(cd "$LABS/class-pages/out" && md5sum */*.html | grep -v -x -F "$D2L_BEFORE" | awk '{print $2}' | grep -v '/news-item.html$' || true)"
+[ -n "$D2L_CHANGED" ] && { echo "Re-upload to D2L (changed): "; echo "$D2L_CHANGED" | sed 's|^|  labs/class-pages/out/|'; echo "  (or use the GitHub-frame news item, news-item.html, which updates by itself)"; }
 cd "$HERE"
 git add -A
 git -c user.name="junnynoh-tech" -c user.email="junnynoh-tech@users.noreply.github.com" commit -q -m "Update events" || echo "Nothing new to publish."

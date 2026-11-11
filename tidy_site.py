@@ -3,14 +3,14 @@
     python3 tidy_site.py            # fix codes + flyers in ./current
     python3 tidy_site.py --check    # say what would change, change nothing
 
-1. Event codes: per campus, by date and start time, the earliest event is gvl-1 (event_library.codes()). Codes are
+1. Event codes: per campus, by date and start time, the earliest event is gvl-1, drafts gvl-draft-N (event_library.codes()). Codes are
    locked in the website editor; this writes them. Delete an event and the later ones move up.
 2. Flyers: whatever was uploaded (JPG, PNG, HEIC, PDF, GIF, AVIF, WebP...) becomes one web image, current/flyers/<code>.webp
    (at most 1600 px wide), and the flyer's entry in the Flyers tab is pointed at it. When an event's code changes, its
    flyer file is renamed with it. The old upload is removed.
    HEIC needs pillow-heif and PDF needs pypdfium2 (installed on GitHub). Without them the file is only renamed.
 """
-import io, json, os, re, sys, unicodedata
+import hashlib, io, json, os, re, sys, unicodedata
 from pathlib import Path
 from event_library import Library, clean, codes
 
@@ -123,8 +123,9 @@ def main(check=False):
             plans.append((entry_file, entry, src, target, src.read_bytes()))
             changes.append(f"unused flyer {clean(entry['image'])} -> {target}")
     if check or not changes:
-        print("\n".join(changes) or "Nothing to tidy.")
-        return bool(changes)
+        vs = stamp_versions(write=not check)
+        print("\n".join(changes + vs) or "Nothing to tidy.")
+        return bool(changes or vs)
     # all sources were read into memory first, so swapping two codes can't overwrite a flyer
     targets = {CUR / t for *_, t, _ in plans}
     for _, _, src, _, _ in plans:
@@ -136,8 +137,28 @@ def main(check=False):
         entry["image"] = target
         entry_file.write_text(dump(entry), encoding="utf-8")
     ev_path.write_text(dump(doc), encoding="utf-8")
-    print("\n".join(changes))
+    print("\n".join(changes + stamp_versions(write=True)))
     return True
+
+
+def stamp_versions(write):
+    """Each flyer entry carries "v": the first 8 characters of its file's git blob id (the console writes the same).
+    Pages add ?v= to the image address, so a new picture under an old name (gvl-3.webp after a renumber) is never shown
+    from a browser cache. This pass fills in or corrects v after uploads made straight on GitHub or in the website editor."""
+    out = []
+    for f in sorted((CUR / "library" / "flyers").glob("*.json")):
+        entry = json.loads(f.read_text(encoding="utf-8"))
+        img = CUR / clean(entry.get("image") or "")
+        if not entry.get("image") or not img.is_file():
+            continue
+        data = img.read_bytes()
+        v = hashlib.sha1(b"blob %d\0" % len(data) + data).hexdigest()[:8]
+        if entry.get("v") != v:
+            out.append(f"flyer version {f.name}: {entry.get('v') or '(none)'} -> {v}")
+            if write:
+                entry["v"] = v
+                f.write_text(dump(entry), encoding="utf-8")
+    return out
 
 
 if __name__ == "__main__":

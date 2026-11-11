@@ -19,15 +19,17 @@ from pathlib import Path
 
 EC_NOTE = "Extra credit is up to each instructor. Ask yours whether this event counts in your course."
 KINDS = ("flyers", "music", "forms", "extra-credit", "assignments", "competitions")
-LEGACY = ("flyer", "flyer_alt", "music", "entry", "extra_credit", "mini_project", "link",
+LEGACY = ("flyer", "flyer_alt", "flyer_v", "music", "entry", "extra_credit", "mini_project", "link",
           "prizes", "prizes_note", "rules", "rubric", "activities")
 
 
 def codes(doc):
-    """Give every event its code: per campus, by date then start time (then name); the earliest is gvl-1."""
+    """Give every event its code: per campus, by date then start time (then name); the earliest is gvl-1.
+    Drafts are numbered on their own (gvl-draft-1, …), so adding or moving a draft never renumbers a live event or
+    renames its flyer (2026-11-11). Same rule in admin/console.html codes() and eventCodes() in both student pages."""
     count = {}
     for e in sorted(doc.get("events") or [], key=lambda e: (e.get("date") or "", e.get("start") or "", e.get("title") or "")):
-        c = e.get("campus") or "gvl"
+        c = (e.get("campus") or "gvl") + ("-draft" if e.get("status") == "draft" else "")
         count[c] = count.get(c, 0) + 1
         e["key"] = f"{c}-{count[c]}"
     return doc
@@ -83,6 +85,7 @@ def resolve_event(e, lib):
     music = [m for m in (lib.get("music", n) for n in (e.get("music_pick") or [])) if m]
     e["flyer"] = clean((fly or {}).get("image") or "")
     e["flyer_alt"] = (fly or {}).get("alt") or ""
+    e["flyer_v"] = (fly or {}).get("v") or ""  # content version: pages add ?v= so a renamed flyer is never served from a cache
     e["music"] = [{**m, "file": clean(m.get("file") or "")} for m in music]
     e["entry"] = {"url": form["url"], "label": form.get("label") or "Sign up",
                   "deadline": S.get("deadline") or "", "deadline_time": S.get("deadline_time") or ""} if form and form.get("url") else None

@@ -228,17 +228,16 @@ dl.review dd { margin: 0; overflow-wrap: anywhere; }
     <div class="card done-box" id="done" hidden tabindex="-1"><b>Request sent. Thank you!</b><p class="lede" style="margin:0 auto 16px">The Lab will email you at <span id="doneEmail"></span>. Your request number is <code id="doneId"></code>.</p><a class="btn" href="../">See the Lab’s events</a></div>
   </main>
 </div>
+<script src="../shared/commons-music.js"></script>
 <script>
 'use strict';
 const ROOM = 'Language Lab, Martha T. Nesbitt Building, Room 4201';
 const GH = 'https://api.github.com/repos/junnynoh-tech/language-lab-events';
 const RAW = 'https://raw.githubusercontent.com/junnynoh-tech/language-lab-events/main/';
-const COMMONS = 'https://commons.wikimedia.org/w/api.php';
-const OK_LICENSE = /^(public domain|pd|cc0|cc-?zero|cc[- ]by(-sa)?([- ][\d.]+)?)$/i; // free to play on our page with credit
 const STEPS = [['you', 'About you', 'Name and organization'], ['event', 'The event', 'Name, date, time'], ['flyer', 'Flyer', 'Picture or PDF'], ['look', 'Background', 'Pick or suggest'],
   ['music', 'Music', 'Free tracks only'], ['extras', 'Sign-up and extras', 'If they apply'], ['send', 'Check and send', 'Review your request']];
 const LANGS = [['es', 'Spanish'], ['fr', 'French'], ['de', 'German'], ['it', 'Italian'], ['pt', 'Portuguese'], ['zh', 'Chinese'], ['ja', 'Japanese'], ['ko', 'Korean'], ['ar', 'Arabic'], ['ru', 'Russian']];
-const GENRES = ['Latin', 'World', 'Holiday', 'Lounge/relax', 'Jazz', 'Classical', 'African', 'Pop', 'Contemporary', 'Polka', 'Reggae', 'Ska'];
+const { GENRES } = CommonsMusic; // music rules + checker: ../shared/commons-music.js (shared with the console)
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const strip = h => { const d = document.createElement('div'); d.innerHTML = h || ''; return d.textContent.replace(/\s+/g, ' ').trim(); };
@@ -361,25 +360,6 @@ document.querySelectorAll('input[name=mk]').forEach(r => r.addEventListener('cha
   music = k === 'commons' ? { kind: 'commons' } : { kind: k };
 }));
 $('m-pick').onchange = () => { const m = LIB[v('m-pick')], a = $('m-libplay'); if (m?.file) { a.src = '../current/' + m.file.replace(/^.*?current\//, ''); a.hidden = false; } else a.hidden = true; };
-/* the checker: free license + plays in every browser (MP3, or Commons' own MP3 copy of an OGG/FLAC/WAV) + credit we can show */
-async function commonsInfo(titles) {
-  const q = new URLSearchParams({ action: 'query', titles: titles.join('|'), prop: 'imageinfo|videoinfo', iiprop: 'url|mime|size|extmetadata', iiextmetadatafilter: 'LicenseShortName|License|Artist|ObjectName', viprop: 'derivatives', format: 'json', origin: '*' });
-  const d = await fetch(`${COMMONS}?${q}`).then(r => r.json());
-  return Object.values(d.query?.pages || {}).map(judge);
-}
-function judge(p) {
-  const ii = p.imageinfo?.[0], md = ii?.extmetadata || {}, lic = strip(md.LicenseShortName?.value) || '', title = (p.title || '').replace(/^File:/, '').replace(/\.[a-z0-9]+$/i, '');
-  const r = { title: title.replace(/\s*\(ISRC[^)]*\)\s*$/, ''), page: ii?.descriptionurl || '', license: lic, artist: strip(md.Artist?.value).slice(0, 200), duration: Math.round(+(ii?.duration || p.videoinfo?.[0]?.duration || 0)), problems: [] };
-  if (!ii) { r.problems.push('That file isn’t on Wikimedia Commons.'); return r; }
-  if (!/^audio\/|^application\/ogg$|^video\/ogg$/.test(ii.mime)) r.problems.push('It isn’t an audio file.');
-  if (!OK_LICENSE.test(lic.replace(/\s+/g, ' ').trim())) r.problems.push(`Its license (${lic || 'unknown'}) doesn’t let us play it freely. We take Public domain, CC0, CC BY and CC BY-SA.`);
-  if (/-nc|-nd|noncommercial|noderiv/i.test(lic)) r.problems.push('“NC/ND” licenses aren’t allowed.');
-  if (!r.artist) r.problems.push('It has no artist listed, so we can’t credit it.');
-  if (r.duration > 900) r.problems.push('It’s over 15 minutes; pick a shorter track.');
-  r.mp3 = ii.mime === 'audio/mpeg' ? ii.url.split('?')[0] : (p.videoinfo?.[0]?.derivatives || []).find(x => /audio\/mpeg/.test(x.type))?.src || '';
-  if (!r.mp3) r.problems.push('Commons has no MP3 copy, so it won’t play in every browser.');
-  return r;
-}
 function showResult(r) {
   const box = $('m-result'), a = $('m-play');
   if (r.problems.length) { box.className = 'note bad'; box.innerHTML = `<b>Can’t use “${esc(r.title)}”.</b> ${r.problems.map(esc).join(' ')}`; a.hidden = true; music = { kind: 'commons' }; return; }
@@ -388,21 +368,18 @@ function showResult(r) {
   music = { kind: 'commons', title: r.title, artist: r.artist, license: r.license, source: r.page, mp3: r.mp3, duration: r.duration };
 }
 $('m-check').onclick = async () => {
-  const link = v('m-link'), box = $('m-result');
-  if (/youtu\.?be|spotify|soundcloud|apple\.com|tiktok/i.test(link)) { box.className = 'note bad'; box.innerHTML = '<b>That link can’t be used.</b> YouTube, Spotify and similar sites don’t allow their songs to be played on our page, and most songs there are copyrighted. Pick a free track from the list above instead.'; music = { kind: 'commons' }; return; }
-  const m = decodeURIComponent(link).match(/(?:File:|\/commons\/(?:transcoded\/)?[0-9a-f]\/[0-9a-f]{2}\/)([^/?#]+?\.(?:mp3|ogg|oga|flac|wav|opus))/i);
-  if (!m) { box.className = 'note bad'; box.textContent = 'Paste a Wikimedia Commons file link, like https://commons.wikimedia.org/wiki/File:Song_name.mp3'; return; }
-  box.className = 'note'; box.textContent = 'Checking…';
-  try { showResult((await commonsInfo(['File:' + m[1].replace(/_/g, ' ')]))[0]); } catch (e) { box.className = 'note bad'; box.textContent = 'Commons didn’t answer. Try again in a moment.'; }
+  const box = $('m-result'); box.className = 'note'; box.textContent = 'Checking…';
+  try { const r = await CommonsMusic.checkLink(v('m-link'));
+    if (r.error === 'blocked') { box.className = 'note bad'; box.innerHTML = '<b>That link can’t be used.</b> YouTube, Spotify and similar sites don’t allow their songs to be played on our page, and most songs there are copyrighted. Pick a free track from the list above instead.'; music = { kind: 'commons' }; }
+    else if (r.error) { box.className = 'note bad'; box.textContent = 'Paste a Wikimedia Commons file link, like https://commons.wikimedia.org/wiki/File:Song_name.mp3'; }
+    else showResult(r);
+  } catch (e) { box.className = 'note bad'; box.textContent = 'Commons didn’t answer. Try again in a moment.'; }
 };
 $('m-genre').onchange = async () => {
   const g = v('m-genre'), list = $('m-list'); if (!g) { list.innerHTML = ''; return; }
   list.innerHTML = '<li>Loading…</li>';
   try {
-    const q = new URLSearchParams({ action: 'query', generator: 'categorymembers', gcmtitle: `Category:${g} music from Incompetech`, gcmtype: 'file', gcmlimit: '60',
-      prop: 'imageinfo|videoinfo', iiprop: 'url|mime|size|extmetadata', iiextmetadatafilter: 'LicenseShortName|License|Artist', viprop: 'derivatives', format: 'json', origin: '*' });
-    const d = await fetch(`${COMMONS}?${q}`).then(r => r.json());
-    const rows = Object.values(d.query?.pages || {}).map(judge).filter(r => !r.problems.length).sort((a, b) => a.title.localeCompare(b.title));
+    const rows = await CommonsMusic.browse(g);
     list.innerHTML = rows.length ? rows.map((r, i) => `<li><span><b>${esc(r.title.replace(/\s*\(ISRC.*$/, ''))}</b><small>${esc(r.artist)} · ${esc(r.license)} · ${Math.floor(r.duration / 60)}:${String(r.duration % 60).padStart(2, '0')}</small></span><button class="btn sm" type="button" data-t="${i}">Use this</button></li>`).join('') : '<li>No free tracks in this style right now.</li>';
     list.onclick = e => { const b = e.target.closest('[data-t]'); if (!b) return; showResult(rows[+b.dataset.t]); list.querySelectorAll('[data-t]').forEach(x => x.textContent = 'Use this'); b.textContent = '✓ Chosen'; $('m-result').scrollIntoView({ block: 'nearest' }); };
   } catch (e) { list.innerHTML = '<li>Commons didn’t answer. Try again in a moment.</li>'; }
