@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<title>Semester Console</title>
+<title>Lab Console · Semester plan</title>
 <!-- Coordinators' semester planning console (2026-11-13). Built by labs/semester-console/build.py from page.html,
      semester.css, semester.js and the events console's stylesheet (one look for both consoles).
      Holds no data (CLAUDE.md rule 11): the plan lives in this browser (IndexedDB) and in a plan file the coordinators
@@ -163,6 +163,13 @@ input[readonly] { background: var(--chip); }
 .howto li::before { content: counter(s); display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--gold); font-weight: 600; font-size: 14px; }
 code { font: 500 14px ui-monospace, Menlo, Consolas, monospace; background: var(--chip); border-radius: 4px; padding: 1px 6px; }
 
+/* one Lab console, two areas (Events | Semester plan): same rail on both pages */
+.areas { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; margin: 0 8px; border-radius: 12px; background: var(--chip); }
+.areas a { text-align: center; padding: 8px 6px; border-radius: 9px; font-weight: 600; font-size: 15px; text-decoration: none; color: var(--text); }
+.areas a:hover { background: var(--surface); }
+.areas a[aria-current="page"] { background: var(--accent); color: var(--accent-ink); }
+@media (max-width: 860px) { .areas { grid-column: 1 / -1; margin: 0; } }
+
 @media (max-width: 860px) {
   .shell { grid-template-columns: 1fr; }
   .rail { position: sticky; top: 0; z-index: 5; height: auto; border-right: 0; border-bottom: 1px solid var(--line); padding: 10px 16px 8px; gap: 8px; display: grid; grid-template-columns: 1fr auto; align-items: center; }
@@ -295,14 +302,14 @@ input[type=time], input[type=number], input[type=search] { min-height: 42px; pad
 <a class="skip" href="#main">Skip to content</a>
 <div class="shell">
   <header class="rail">
-    <div class="brand"><small>Language Lab</small><b>Semester console</b></div>
+    <div class="brand"><small>Language Lab</small><b>Lab console</b></div>
+    <nav class="areas" aria-label="Console areas"><a href="console.html">Events</a><a href="semester.html" aria-current="page">Semester plan</a></nav>
     <div class="semsel"><label for="semPick">Semester</label><select id="semPick"></select></div>
     <nav aria-label="Console sections" id="nav"></nav>
     <div class="rail-foot">
       <div class="conn" id="fileState"><span class="dot" aria-hidden="true"></span><span>No plan file yet</span></div>
       <button class="btn sm primary" type="button" id="saveBtn">Save plan</button>
       <button class="btn sm" type="button" id="modeBtn">Dark mode</button>
-      <a class="btn sm" href="console.html">Events console</a>
     </div>
   </header>
   <main id="main" tabindex="-1"><p class="loading">Opening your plan…</p></main>
@@ -468,7 +475,7 @@ function fileUI() {
   const el = $('fileState'), dot = el.querySelector('.dot'), t = el.querySelector('span:last-child');
   dot.classList.toggle('on', !!F.name && !F.dirty);
   t.textContent = !F.name ? (P.semesters.length ? 'Not in a plan file yet' : 'No plan file yet') : F.dirty ? `Changes not saved to ${F.name}` : `Saved in ${F.name}`;
-  document.title = (F.dirty ? '• ' : '') + 'Semester Console';
+  document.title = (F.dirty ? '• ' : '') + 'Lab Console · Semester plan';
 }
 function download(name, text, type = 'application/json') {
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name; document.body.append(a); a.click();

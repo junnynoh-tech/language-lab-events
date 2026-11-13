@@ -121,11 +121,10 @@ dl.faq dd { margin: 4px 0 0; color: var(--sub); }
         <li><a href="#backgrounds"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3.5a8.5 8.5 0 1 0 0 17c1.4 0 1.9-1 1.4-2.1-.6-1.2.3-2.4 1.6-2.4h1.8a3.7 3.7 0 0 0 3.7-3.7C20.5 7.3 16.7 3.5 12 3.5Z"/><circle cx="8" cy="11" r="1.2"/><circle cx="11.5" cy="7.5" r="1.2"/><circle cx="16" cy="9" r="1.2"/></svg>Backgrounds</a></li>
         <li><a href="#campuses"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11Z"/><circle cx="12" cy="10" r="2.3"/></svg>Campuses and rooms</a></li>
       </ul>
-      <h2>SPAN 1001 site</h2>
+      <h2>Lab planning</h2>
       <ul>
-        <li><a href="#semester"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M8.5 11h7M8.5 14.5h7M8.5 7.5h4"/></svg>This semester's pages</a></li>
-        <li><a href="#new-semester"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 12a8 8 0 0 1 14-5.3M20 12a8 8 0 0 1-14 5.3"/><path d="M18 3v4h-4M6 21v-4h4"/></svg>Start a new semester</a></li>
-        <li><a href="#calendar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4M8 14h2M12 14h2M16 14h0"/></svg>Class calendar</a></li>
+        <li><a href="semester.html">Plan the semester</a></li>
+        <li><a href="#staff">Staff console</a></li>
       </ul>
       <h2>Help</h2>
       <ul>
@@ -145,7 +144,7 @@ dl.faq dd { margin: 4px 0 0; color: var(--sub); }
       <h1 id="h-start">Change the Lab's websites without touching code</h1>
       <p class="lede">Pick what you want to change on the left. Each page gives you one button that opens the right form, plus three or four steps. Saving puts your change on the site in about a minute.</p>
       <div class="actions">
-        <a class="btn primary" href="console.html">Open the events console</a>
+        <a class="btn primary" href="console.html">Open the Lab console</a>
         <a class="btn secondary" href="../request/" target="_blank" rel="noopener">Request form for organizations <span class="ext">(new tab)</span></a>
         <a class="btn secondary" href="https://app.pagescms.org/junnynoh-tech/language-lab-events/main/file/events" target="_blank" rel="noopener">Website editor (forms) <span class="ext">(new tab)</span></a>
         <a class="btn secondary" href="../" target="_blank" rel="noopener">See the events site <span class="ext">(new tab)</span></a>
@@ -153,8 +152,8 @@ dl.faq dd { margin: 4px 0 0; color: var(--sub); }
       <div class="cards">
         <a class="card" href="#events"><b>Add or change an event</b><span>Date, time, room, description, sign-up form, prizes.</span></a>
         <a class="card" href="#flyers"><b>Flyers and photos</b><span>Upload a flyer once, pick it in the event.</span></a>
-        <a class="card" href="#semester"><b>SPAN 1001 pages</b><span>What students see this semester, section by section.</span></a>
-        <a class="card" href="#new-semester"><b>Start a new semester</b><span>Archive this term and begin the next one.</span></a>
+        <a class="card" href="semester.html"><b>Plan the semester</b><span>Calendar, courses, rooms and lab due dates (Lab console → Semester plan).</span></a>
+        <a class="card" href="#staff"><b>Staff console</b><span>Lab assistants, schedules, grading and the roster. Coordinators only.</span></a>
       </div>
       <div class="note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16v.2"/></svg>
         <p><b>First time?</b> The editor asks you to sign in. Use the email address you were invited with (no GitHub account needed). Nothing you type is public until you press <b>Save</b>.</p></div>
@@ -232,49 +231,8 @@ dl.faq dd { margin: 4px 0 0; color: var(--sub); }
         <p>Don't change a campus's short code once events use it. Events find their campus by that code.</p></div>
     </section>
 
-    <!-- SEMESTER -->
-    <section class="topic" id="semester" aria-labelledby="h-semester" hidden>
-      <p class="eyebrow">SPAN 1001 site</p>
-      <h1 id="h-semester">This semester's pages</h1>
-      <p class="lede">The SPAN 1001 site lists this semester's pages in sections, for example "Oral Final". Rename a section, change its dates, or add a page to it.</p>
-      <div class="actions">
-        <a class="btn primary" href="https://app.pagescms.org/junnynoh-tech/span1001/main/file/semester" target="_blank" rel="noopener">Edit this semester <span class="ext">(new tab)</span></a>
-        <a class="btn secondary" href="https://junnynoh-tech.github.io/span1001/" target="_blank" rel="noopener">See the SPAN 1001 site</a>
-      </div>
-      <ol class="steps">
-        <li><span><b>Open a section</b> to change its name or dates, or add a new one at the bottom.</span></li>
-        <li><span><b>To list a page,</b> add it under <b>Pages in this section</b> with its name, file and a one-line description.</span></li>
-        <li><span><b>Press Save.</b> The site rebuilds its menus in about a minute.</span></li>
-      </ol>
-      <div class="note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16v.2"/></svg>
-        <p>The page file itself has to be on the site already; this list only adds it to the menu. Exams, answer keys, grades and student work never go on this site.</p></div>
-    </section>
 
-    <!-- NEW SEMESTER -->
-    <section class="topic" id="new-semester" aria-labelledby="h-new-semester" hidden>
-      <p class="eyebrow">SPAN 1001 site</p>
-      <h1 id="h-new-semester">Start a new semester</h1>
-      <p class="lede">This moves this semester's pages to the archive (they keep working) and starts an empty semester. Do it once, after final grades are in.</p>
-      <div class="actions">
-        <a class="btn primary" href="https://app.pagescms.org/junnynoh-tech/span1001/main/file/new-semester" target="_blank" rel="noopener">Start a new semester <span class="ext">(new tab)</span></a>
-      </div>
-      <ol class="steps">
-        <li><span><b>Pick the season, year and class days.</b></span></li>
-        <li><span><b>Turn on "Start it now?"</b> and press <b>Save</b>.</span></li>
-        <li><span><b>Wait about a minute.</b> The old semester appears under past semesters on the site, and the new one is ready for pages.</span></li>
-      </ol>
-      <div class="note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16v.2"/></svg>
-        <p>D2L links point to the current semester. Update them in the new D2L course after you start the new semester.</p></div>
-    </section>
 
-    <!-- CALENDAR -->
-    <section class="topic" id="calendar" aria-labelledby="h-calendar" hidden>
-      <p class="eyebrow">SPAN 1001 site</p>
-      <h1 id="h-calendar">Class calendar</h1>
-      <p class="lede">The class calendar still lives in D2L. It moves here next, as a form like the others: one row per class day.</p>
-      <div class="note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16v.2"/></svg>
-        <p>Until then, send calendar changes to Daniel. Exam and composition dates follow the syllabus and are never changed here.</p></div>
-    </section>
 
     <!-- PEOPLE -->
     <section class="topic" id="people" aria-labelledby="h-people" hidden>
@@ -283,7 +241,6 @@ dl.faq dd { margin: 4px 0 0; color: var(--sub); }
       <p class="lede">Only people Daniel invites can save changes. Anyone can read this help page, but the editor stays locked to everyone else.</p>
       <div class="actions">
         <a class="btn primary" href="https://app.pagescms.org/junnynoh-tech/language-lab-events/main/collaborators" target="_blank" rel="noopener">Invite to events <span class="ext">(new tab)</span></a>
-        <a class="btn secondary" href="https://app.pagescms.org/junnynoh-tech/span1001/main/collaborators" target="_blank" rel="noopener">Invite to SPAN 1001</a>
       </div>
       <ol class="steps">
         <li><span><b>Type their email</b> and send the invite. They don't need a GitHub account.</span></li>
@@ -292,6 +249,21 @@ dl.faq dd { margin: 4px 0 0; color: var(--sub); }
       </ol>
       <div class="note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16v.2"/></svg>
         <p>Invited editors can change content and upload files. Only Daniel can change how the forms work or who is invited.</p></div>
+    </section>
+
+    <!-- STAFF CONSOLE -->
+    <section class="topic" id="staff" aria-labelledby="h-staff" hidden>
+      <p class="eyebrow">Lab planning</p>
+      <h1 id="h-staff">Staff console</h1>
+      <p class="lede">Lab assistants, availability, shifts, grading, class visits and the student roster. It holds people's information, so it is not on this website: coordinators open it from their own folder.</p>
+      <ol class="steps">
+        <li><span><b>Open <code>staff-console.html</code></b> from the coordinators-only Teams folder, in Edge or Chrome.</span></li>
+        <li><span><b>Open plan file</b> (the semester plan) and <b>Open staff file</b> (people, shifts, grading).</span></li>
+        <li><span><b>Make your changes, then Save staff file.</b> If someone else saved it after you opened it, you're asked first.</span></li>
+        <li><span><b>To publish,</b> drop the COM692 roster on Student Roster, then Outputs for D2L → one .zip → upload it to the Lab Hub.</span></li>
+      </ol>
+      <div class="note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16v.2"/></svg>
+        <p>The roster is never saved, not even in the browser. The Lab Hub in D2L is for lab assistants and coordinators only.</p></div>
     </section>
 
     <!-- HELP -->
