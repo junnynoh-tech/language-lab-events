@@ -578,6 +578,8 @@ function importCourses(semId, rows1430, rows775) {
   const s = semById(semId);
   list.rows.forEach(c => {
     if (old[c.CRN]?.LOCATION_SET) { c.LOCATION = old[c.CRN].LOCATION; c.LOCATION_SET = true; } // a campus someone chose survives a re-import
+    if (rows1430?.length && !rows775?.length && list.files['775'] && old[c.CRN]) // a new COM1430 alone keeps what the last COM775 added
+      ['INSTRUCTOR', 'TITLE', 'BUILDING', 'ROOM', 'PART_OF_TERM', 'START', 'END'].forEach(k => { if (old[c.CRN][k]) c[k] = old[c.CRN][k]; });
     if ((!c.START || !c.END) && list.ptrm[c.PART_OF_TERM]) { c.START = list.ptrm[c.PART_OF_TERM].start; c.END = list.ptrm[c.PART_OF_TERM].end; }
     if ((!c.START || !c.END) && s) { const [a, b] = termSpan(s); c.START ||= a; c.END ||= b; }
   });
