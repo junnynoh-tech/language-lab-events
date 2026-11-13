@@ -1,0 +1,1238 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Semester Console</title>
+<!-- Coordinators' semester planning console (2026-11-13). Built by labs/semester-console/build.py from page.html,
+     semester.css, semester.js and the events console's stylesheet (one look for both consoles).
+     Holds no data (CLAUDE.md rule 11): the plan lives in this browser (IndexedDB) and in a plan file the coordinators
+     open and save in a shared OneDrive/Teams folder. Outputs are files for D2L, uploaded by hand. Never GitHub. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
+<style>
+/* Canonical tokens (design-system skill, student theme), same as admin/index.html. Dark mode re-maps them. */
+:root {
+  --navy: #1A3A6B; --navy-dark: #132C52; --gold: #B08D3F; --offwhite: #F7F7F5; --white: #FFFFFF; --ink: #1F2937; --muted: #5A6472;
+  --bg: var(--offwhite); --surface: var(--white); --text: var(--ink); --sub: var(--muted); --line: #DCDDD8;
+  --accent: var(--navy); --accent-ink: var(--white); --rail: var(--white); --chip: #EEF0F3;
+  --ok: #1E6B45; --ok-bg: #E3F1E8; --warn: #8A4B08; --warn-bg: #FBEEDB; --bad: #A12A2A; --bad-bg: #F9E3E3; --shadow: 0 1px 2px rgba(20,30,50,.06), 0 8px 24px rgba(20,30,50,.06);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-mode="light"]) {
+  --bg: #0E1F3A; --surface: var(--navy-dark); --text: var(--offwhite); --sub: #C9CFD8; --line: #2B4670;
+  --accent: var(--offwhite); --accent-ink: var(--navy-dark); --rail: #102443; --chip: #1C3864;
+  --ok: #8FD9AE; --ok-bg: #173F33; --warn: #F2C47E; --warn-bg: #4A3415; --bad: #F4A3A3; --bad-bg: #4A1E26; --shadow: none; color-scheme: dark; } }
+:root[data-mode="dark"] {
+  --bg: #0E1F3A; --surface: var(--navy-dark); --text: var(--offwhite); --sub: #C9CFD8; --line: #2B4670;
+  --accent: var(--offwhite); --accent-ink: var(--navy-dark); --rail: #102443; --chip: #1C3864;
+  --ok: #8FD9AE; --ok-bg: #173F33; --warn: #F2C47E; --warn-bg: #4A3415; --bad: #F4A3A3; --bad-bg: #4A1E26; --shadow: none; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--text); font: 400 16px/1.5 "DM Sans", sans-serif; }
+a { color: inherit; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; border-radius: 4px; }
+h1[tabindex="-1"]:focus { outline: none; }
+.skip { position: absolute; left: 12px; top: -48px; background: var(--surface); padding: 8px 12px; border: 1px solid var(--line); border-radius: 6px; z-index: 20; }
+.skip:focus { top: 12px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.shell { display: grid; grid-template-columns: 264px 1fr; min-height: 100vh; }
+.rail { background: var(--rail); border-right: 1px solid var(--line); padding: 22px 14px; display: flex; flex-direction: column; gap: 20px; position: sticky; top: 0; height: 100vh; overflow: auto; }
+.brand { padding: 0 8px; }
+.brand small { display: block; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--sub); }
+.brand b { font: 700 23px/1.2 "Source Serif 4", serif; }
+nav h2 { font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--sub); margin: 0 8px 6px; }
+nav ul { list-style: none; margin: 0 0 14px; padding: 0; }
+nav button { width: 100%; display: flex; align-items: center; gap: 10px; padding: 8px; border: 0; background: none; border-radius: 8px; font-weight: 500; cursor: pointer; text-align: left; }
+nav button:hover { background: var(--chip); }
+nav button[aria-current="page"] { background: var(--accent); color: var(--accent-ink); }
+nav .n { margin-left: auto; font-size: 13px; color: var(--sub); }
+nav button[aria-current="page"] .n { color: inherit; opacity: .8; }
+.rail-foot { margin-top: auto; display: grid; gap: 8px; padding: 0 8px; }
+.conn { font-size: 14px; color: var(--sub); display: flex; gap: 8px; align-items: center; }
+.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--warn); flex: none; }
+.dot.on { background: var(--ok); }
+
+main { padding: 28px clamp(16px, 3.5vw, 48px) 64px; min-width: 0; }
+.head { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: end; justify-content: space-between; margin-bottom: 20px; }
+.eyebrow { font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--sub); margin: 0 0 4px; }
+h1 { font: 700 clamp(26px, 3vw, 34px)/1.15 "Source Serif 4", serif; margin: 0; }
+.lede { color: var(--sub); margin: 6px 0 0; max-width: 64ch; }
+h2.sec { font: 700 20px/1.3 "Source Serif 4", serif; margin: 28px 0 12px; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; padding: 9px 16px; border-radius: 10px; font-weight: 600; text-decoration: none; border: 1px solid var(--line); background: var(--surface); cursor: pointer; }
+.btn:hover { background: var(--chip); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.primary:hover { filter: brightness(1.12); background: var(--accent); }
+.btn.danger { color: var(--bad); }
+.btn[disabled] { opacity: .5; cursor: not-allowed; }
+.btn.sm { min-height: 34px; padding: 5px 12px; font-size: 14px; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; box-shadow: var(--shadow); }
+.stat b { display: block; font: 700 32px/1 "Source Serif 4", serif; margin-bottom: 6px; }
+.stat span { color: var(--sub); font-size: 15px; }
+
+.issues { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.issues li { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; }
+.tag { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: var(--chip); color: var(--text); white-space: nowrap; }
+.tag.ok { background: var(--ok-bg); color: var(--ok); }
+.tag.warn { background: var(--warn-bg); color: var(--warn); }
+.tag.bad { background: var(--bad-bg); color: var(--bad); }
+/* music finder (free tracks on Wikimedia Commons, same checks as the request form) */
+.finder { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin: 0 0 14px; background: var(--bg); }
+.finder > b { display: block; margin-bottom: 6px; }
+.tracks { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; max-height: 260px; overflow: auto; }
+.tracks li { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.tracks small { display: block; color: var(--sub); }
+.mnote { margin: 8px 0 0; padding: 8px 10px; border-radius: 8px; background: var(--chip); }
+.mnote.ok { background: var(--ok-bg); color: var(--ok); } .mnote.bad { background: var(--bad-bg); color: var(--bad); }
+.mnote:empty { display: none; }
+.banner { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; padding: 14px 16px; border-radius: 12px; margin: 0 0 18px; border: 1px solid var(--line); }
+.banner span { flex: 1 1 260px; }
+.banner.new { background: var(--warn-bg); color: var(--warn); border-color: var(--warn); }
+.banner.warn { background: var(--bad-bg); color: var(--bad); border-color: var(--bad); }
+.banner .btn { color: var(--text); }
+.banner .btn.primary { color: var(--accent-ink); }
+.empty { color: var(--sub); background: var(--surface); border: 1px dashed var(--line); border-radius: 12px; padding: 18px; }
+
+/* events */
+.evlist { display: grid; gap: 12px; }
+.ev { display: grid; grid-template-columns: 76px 92px 1fr auto; gap: 16px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 16px 12px 12px; box-shadow: var(--shadow); text-align: left; width: 100%; cursor: pointer; }
+.ev:hover { border-color: var(--sub); }
+.ev.past { opacity: .62; }
+.date { text-align: center; border-radius: 10px; background: var(--chip); padding: 8px 4px; }
+.date small { display: block; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--sub); }
+.date b { display: block; font: 700 28px/1 "Source Serif 4", serif; }
+.thumb { width: 92px; height: 92px; border-radius: 8px; background: var(--chip) center/cover no-repeat; display: grid; place-items: center; color: var(--sub); font-size: 12px; text-align: center; overflow: hidden; }
+.ev h3 { font: 600 18px/1.3 "Source Serif 4", serif; margin: 0 0 4px; }
+.ev .meta { color: var(--sub); font-size: 14px; margin-bottom: 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.code { font: 600 13px ui-monospace, Menlo, Consolas, monospace; background: var(--chip); padding: 2px 7px; border-radius: 6px; }
+
+/* library */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
+.item { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; box-shadow: var(--shadow); }
+.item .pic { aspect-ratio: 4 / 5; background: var(--chip) center/contain no-repeat; border-bottom: 1px solid var(--line); }
+.item .body { padding: 14px 16px; display: grid; gap: 6px; flex: 1; align-content: start; }
+.item h3 { font: 600 17px/1.3 "Source Serif 4", serif; margin: 0; }
+.item p { margin: 0; color: var(--sub); font-size: 14px; overflow-wrap: anywhere;  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.item .foot { padding: 10px 16px 14px; display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* editor panel */
+dialog { border: 0; padding: 0; margin: 0 0 0 auto; height: 100vh; max-height: 100vh; width: min(640px, 100vw); background: var(--bg); color: var(--text); box-shadow: -12px 0 40px rgba(0,0,0,.25); }
+dialog::backdrop { background: rgba(10,20,40,.45); }
+.pane { display: grid; grid-template-rows: auto 1fr auto; height: 100%; }
+.pane header { padding: 18px 22px; border-bottom: 1px solid var(--line); background: var(--surface); display: flex; gap: 12px; align-items: start; justify-content: space-between; }
+.pane header h2 { font: 700 22px/1.25 "Source Serif 4", serif; margin: 0; }
+.pane .scroll { overflow: auto; padding: 18px 22px 28px; }
+.pane footer { padding: 14px 22px; border-top: 1px solid var(--line); background: var(--surface); display: flex; gap: 10px; flex-wrap: wrap; justify-content: space-between; }
+.x { border: 0; background: none; font-size: 22px; line-height: 1; padding: 6px 10px; border-radius: 8px; cursor: pointer; }
+.x:hover { background: var(--chip); }
+fieldset { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px 16px; margin: 0 0 14px; background: var(--surface); }
+legend { font-weight: 700; padding: 0 6px; }
+.f { display: grid; gap: 4px; margin-bottom: 12px; }
+.f:last-child { margin-bottom: 0; }
+.f label { font-weight: 600; font-size: 15px; }
+.f .hint { color: var(--sub); font-size: 13px; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.three { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 12px; }
+input[type=text], input[type=url], input[type=date], input[type=password], select, textarea { width: 100%; min-height: 42px; padding: 8px 11px; border: 1px solid var(--line); border-radius: 9px; background: var(--bg); }
+textarea { min-height: 84px; resize: vertical; }
+input[readonly] { background: var(--chip); }
+.switch { display: flex; align-items: center; gap: 12px; font-weight: 600; cursor: pointer; margin-bottom: 12px; }
+.switch input { appearance: none; width: 46px; height: 26px; border-radius: 999px; background: var(--line); position: relative; cursor: pointer; flex: none; margin: 0; transition: background .15s; }
+.switch input::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: var(--white); transition: transform .15s; box-shadow: 0 1px 2px rgba(0,0,0,.3); }
+.switch input:checked { background: var(--ok); }
+.switch input:checked::after { transform: translateX(20px); }
+.off .dep select, .off .dep input { border-style: dashed; }
+.preview { display: grid; grid-template-columns: 120px 1fr; gap: 14px; align-items: center; margin-bottom: 14px; }
+.preview .thumb { width: 120px; height: 150px; background-size: contain; }
+.drop { border: 2px dashed var(--line); border-radius: 12px; padding: 16px; text-align: center; color: var(--sub); }
+.drop.over { border-color: var(--gold); background: var(--chip); }
+.toast { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 10px 18px; border-radius: 10px; font-weight: 600; z-index: 30; max-width: calc(100vw - 32px); box-shadow: 0 8px 24px rgba(0,0,0,.25); }
+.toast[hidden] { display: none; }
+.loading { color: var(--sub); padding: 40px 0; }
+.howto { counter-reset: s; list-style: none; padding: 0; display: grid; gap: 10px; max-width: 70ch; }
+.howto li { counter-increment: s; display: grid; grid-template-columns: 30px 1fr; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+.howto li::before { content: counter(s); display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--gold); font-weight: 600; font-size: 14px; }
+code { font: 500 14px ui-monospace, Menlo, Consolas, monospace; background: var(--chip); border-radius: 4px; padding: 1px 6px; }
+
+@media (max-width: 860px) {
+  .shell { grid-template-columns: 1fr; }
+  .rail { position: sticky; top: 0; z-index: 5; height: auto; border-right: 0; border-bottom: 1px solid var(--line); padding: 10px 16px 8px; gap: 8px; display: grid; grid-template-columns: 1fr auto; align-items: center; }
+  .brand b { font-size: 19px; }
+  .rail-foot { margin: 0; grid-column: 2; grid-row: 1; }
+  .rail-foot .conn, .rail-foot #modeBtn { display: none; }
+  nav { grid-column: 1 / -1; display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 0 16px 4px; }
+  nav h2 { display: none; } nav ul { display: contents; }
+  nav button { white-space: nowrap; border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; font-size: 15px; width: auto; }
+  .ev { grid-template-columns: 64px 1fr; } .ev .thumb { display: none; } .ev > :last-child { grid-column: 1 / -1; }
+  .two, .three { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: no-preference) { .view { animation: in .18s ease-out; } @keyframes in { from { opacity: 0; transform: translateY(4px); } } }
+
+/* ---------- semester console: additions to the events console stylesheet ---------- */
+.semsel { padding: 0 8px; display: grid; gap: 4px; }
+.semsel label { font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--sub); }
+.semsel select { font-weight: 600; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; box-shadow: var(--shadow); margin-bottom: 16px; }
+.card > h2 { font: 700 19px/1.3 "Source Serif 4", serif; margin: 0 0 4px; }
+.card > .lede { margin: 0 0 12px; }
+.step { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--gold); font: 600 14px "DM Sans", sans-serif; margin-right: 8px; vertical-align: 2px; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; margin: 0 0 12px; }
+.toolbar .f { margin: 0; min-width: 150px; }
+.toolbar .grow { flex: 1 1 220px; }
+.muted { color: var(--sub); }
+.small { font-size: 14px; }
+.nowrap { white-space: nowrap; }
+
+/* tables */
+.tw { overflow: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+table.t { border-collapse: collapse; width: 100%; font-size: 15px; }
+table.t caption { text-align: left; padding: 10px 14px; font-weight: 600; color: var(--sub); caption-side: top; }
+table.t th, table.t td { padding: 8px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+table.t thead th { position: sticky; top: 0; background: var(--chip); font-size: 13px; letter-spacing: .04em; text-transform: uppercase; color: var(--sub); z-index: 1; }
+table.t tbody tr:last-child td { border-bottom: 0; }
+table.t td.num, table.t th.num { text-align: right; font-variant-numeric: tabular-nums; }
+table.t tr.flag td { background: var(--bad-bg); }
+table.t tfoot td { font-weight: 700; background: var(--chip); }
+table.t select, table.t input { min-height: 36px; padding: 4px 8px; }
+.lang { display: inline-block; font: 700 12px/1 "DM Sans", sans-serif; letter-spacing: .04em; color: #fff; padding: 4px 7px; border-radius: 6px; margin-right: 6px; vertical-align: 1px; }
+
+/* segmented choice (room 4201A / 4207) */
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
+.seg button { border: 0; background: var(--bg); padding: 7px 11px; font-weight: 600; cursor: pointer; min-height: 36px; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+
+/* semester cards */
+.semcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; margin-bottom: 18px; }
+.semcard { text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; box-shadow: var(--shadow); cursor: pointer; display: grid; gap: 6px; }
+.semcard:hover { border-color: var(--sub); }
+.semcard[aria-current="true"] { border: 2px solid var(--accent); padding: 13px 15px; }
+.semcard h3 { font: 700 19px/1.2 "Source Serif 4", serif; margin: 0; }
+
+/* month preview */
+.months { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+.month { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+.month h3 { font: 600 16px "Source Serif 4", serif; margin: 0 0 6px; }
+.mgrid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; font-size: 13px; text-align: center; }
+.mgrid .dh { color: var(--sub); font-weight: 600; font-size: 11px; }
+.mgrid .d { padding: 4px 0; border-radius: 6px; }
+.mgrid .d.in { background: var(--chip); }
+.mgrid .d.holiday { background: var(--bad-bg); color: var(--bad); font-weight: 700; }
+.mgrid .d.break { background: var(--warn-bg); color: var(--warn); font-weight: 700; }
+.mgrid .d.finals { background: var(--accent); color: var(--accent-ink); font-weight: 700; }
+.mgrid .d.first { outline: 2px solid var(--gold); outline-offset: -2px; font-weight: 700; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 14px; color: var(--sub); margin: 10px 0 0; }
+.legend i { display: inline-block; width: 14px; height: 14px; border-radius: 4px; vertical-align: -2px; margin-right: 6px; }
+
+/* weekly room grid */
+.wk { display: grid; grid-template-columns: 56px repeat(5, 1fr); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--surface); }
+.wk .hd { background: var(--chip); padding: 6px; text-align: center; font-weight: 600; font-size: 13px; color: var(--sub); }
+.wk .col { position: relative; border-left: 1px solid var(--line); }
+.wk .hr { position: absolute; left: 0; right: 0; border-top: 1px solid var(--line); }
+.wk .tl { position: absolute; right: 6px; font-size: 11px; color: var(--sub); transform: translateY(-50%); }
+.wk .blk { position: absolute; border-radius: 6px; padding: 3px 6px; color: #fff; font-size: 12px; line-height: 1.25; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,.2); }
+.wk .blk b { display: block; }
+.wk .blk.clash { outline: 3px solid var(--bad); outline-offset: -1px; }
+
+/* lab calendar */
+.classpick { display: grid; gap: 8px; }
+.classpick .lrow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.classpick .lname { width: 150px; font-weight: 700; }
+.chipbox { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px 6px 8px; cursor: pointer; background: var(--bg); font-weight: 600; }
+.chipbox input { width: 18px; height: 18px; margin: 0; accent-color: var(--navy); }
+.chipbox:has(input:checked) { background: var(--chip); border-color: var(--sub); }
+.tray { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 12px; }
+.pill { display: inline-flex; align-items: center; gap: 6px; color: #fff; font-weight: 600; font-size: 13px; padding: 5px 10px; border-radius: 999px; cursor: grab; user-select: none; border: 0; }
+.pill.ws { }
+.pill .x { background: none; border: 0; color: inherit; cursor: pointer; padding: 0 2px; font-size: 14px; line-height: 1; }
+.lab { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 14px; }
+.lab th, .lab td { border-bottom: 1px solid var(--line); border-left: 1px solid var(--line); padding: 6px 8px; vertical-align: top; }
+.lab thead th { position: sticky; top: 0; background: var(--chip); z-index: 1; text-align: center; }
+.lab th.wkh { text-align: left; white-space: nowrap; min-width: 120px; background: var(--surface); position: sticky; left: 0; z-index: 1; }
+.lab thead th.wkh { z-index: 2; background: var(--chip); }
+.lab td.cell { min-width: 120px; height: 52px; cursor: pointer; background: var(--surface); }
+.lab td.cell:hover, .lab td.cell:focus-visible { background: var(--chip); }
+.lab td.cell.over { outline: 2px dashed var(--gold); outline-offset: -3px; }
+.lab td.cell .due { display: block; font-size: 12px; color: var(--sub); margin-bottom: 4px; }
+.lab td.cell.holiday { background: var(--bad-bg); } .lab td.cell.holiday .due { color: var(--bad); font-weight: 700; }
+.lab td.cell.break { background: var(--warn-bg); } .lab td.cell.break .due { color: var(--warn); font-weight: 700; }
+.lab td.cell.finals { background: var(--chip); } .lab td.cell.finals .due { font-weight: 700; color: var(--text); }
+.lab td.cell.bad-place { box-shadow: inset 0 0 0 3px var(--bad); }
+.lab td.out { background: repeating-linear-gradient(45deg, var(--chip), var(--chip) 4px, var(--bg) 4px, var(--bg) 8px); cursor: default; }
+.lab .pill { cursor: grab; margin: 0 4px 4px 0; }
+.report { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; }
+.report li { padding: 8px 10px; border-radius: 8px; background: var(--chip); font-size: 14px; }
+.report li.warn { background: var(--warn-bg); color: var(--warn); }
+.report li.bad { background: var(--bad-bg); color: var(--bad); }
+.report li.ok { background: var(--ok-bg); color: var(--ok); }
+.checks { display: grid; gap: 4px; margin: 0 0 12px; }
+.checks label { display: flex; gap: 10px; align-items: start; cursor: pointer; }
+.checks input { width: 18px; height: 18px; margin-top: 3px; accent-color: var(--navy); flex: none; }
+
+/* outputs */
+.outs { display: grid; gap: 10px; }
+.out { display: grid; grid-template-columns: 1fr auto; gap: 6px 16px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; }
+.out b { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 15px; }
+.out p { margin: 2px 0 0; color: var(--sub); font-size: 14px; }
+.drop.big { padding: 26px 16px; }
+.drop input[type=file] { display: block; margin: 10px auto 0; }
+input[type=time], input[type=number], input[type=search] { min-height: 42px; padding: 8px 11px; border: 1px solid var(--line); border-radius: 9px; background: var(--bg); width: 100%; }
+@media (max-width: 860px) { .semsel { grid-column: 1 / -1; } .out { grid-template-columns: 1fr; } }
+@media print { .rail, .toolbar, .btn { display: none !important; } .shell { display: block; } }
+
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="shell">
+  <header class="rail">
+    <div class="brand"><small>Language Lab</small><b>Semester console</b></div>
+    <div class="semsel"><label for="semPick">Semester</label><select id="semPick"></select></div>
+    <nav aria-label="Console sections" id="nav"></nav>
+    <div class="rail-foot">
+      <div class="conn" id="fileState"><span class="dot" aria-hidden="true"></span><span>No plan file yet</span></div>
+      <button class="btn sm primary" type="button" id="saveBtn">Save plan</button>
+      <button class="btn sm" type="button" id="modeBtn">Dark mode</button>
+      <a class="btn sm" href="console.html">Events console</a>
+    </div>
+  </header>
+  <main id="main" tabindex="-1"><p class="loading">Opening your plan…</p></main>
+</div>
+<dialog id="dlg" aria-labelledby="dlgTitle"></dialog>
+<p class="toast" id="toast" role="status" aria-live="polite" hidden></p>
+<script>
+'use strict';
+/* =====================================================================================================================
+   Semester console. One plan per lab, many semesters inside it. Field names match the Lab Hub Generator's STATE
+   (semesters, activeSemesterId, labCalendars, course rows, roomAssignments, finalsOverrides), so the generator can load
+   the same plan file (its "Load semester plan" button) for shifts, grading and class visits.
+   Logic carried over from la-hub-generator.html (Banner parsing, finals table, room conflicts, lab weeks, due dates),
+   with the generator's known problems fixed: holidays are computed for each year (no "2026 dates with the year
+   swapped"), Fall dates come from UNG's perpetual calendar, one active semester, no duplicate helpers.
+===================================================================================================================== */
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const clone = o => JSON.parse(JSON.stringify(o));
+const DAY_FULL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const WD = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+const TYPE_LABEL = { fall: 'Fall', spring: 'Spring', summer: 'Summer' };
+const SESSIONS = [['maymester', 'Maymester'], ['first', '1st session'], ['second', '2nd session'], ['full', 'Full session'], ['ecore', 'eCore']];
+const SESSION_LABEL = Object.fromEntries(SESSIONS);
+const REGULAR = 'regular';
+/* languages: the lab's (lab calendar) and every language subject (courses). Colors are the generator's data colors. */
+const LAB_LANGS = [['SPAN', 'Spanish', '#b85a0f'], ['FREN', 'French', '#0e7aaa'], ['ITAL', 'Italian', '#6b28a0'], ['PORT', 'Portuguese', '#3a7a22'], ['GRMN', 'German', '#8a6600']];
+const LAB_LEVELS = ['1001', '1002'];
+const LANG = { ARAB: ['Arabic', '#3d4ec4'], CHIN: ['Chinese', '#8a3f7e'], FREN: ['French', '#0e7aaa'], GRMN: ['German', '#8a6600'], ITAL: ['Italian', '#6b28a0'],
+  JAPN: ['Japanese', '#a01010'], KREN: ['Korean', '#8a008a'], PORT: ['Portuguese', '#3a7a22'], RUSS: ['Russian', '#445e80'], SPAN: ['Spanish', '#b85a0f'], MLAN: ['Modern languages', '#52606d'] };
+const LANG_ORDER = ['ARAB', 'CHIN', 'FREN', 'GRMN', 'ITAL', 'JAPN', 'KREN', 'PORT', 'RUSS', 'SPAN'];
+const langColor = s => (LANG[String(s || '').toUpperCase()] || ['', '#52606d'])[1];
+const isLang = s => !!LANG[String(s || '').toUpperCase()];
+const LOCATIONS = ['Gainesville Campus', 'Dahlonega Campus', 'Oconee Campus', 'Cumming Campus', 'Blue Ridge Campus'];
+const PIVOTS = [['DAH', 'Dahlonega'], ['GVL', 'Gainesville'], ['OCN', 'Oconee']];
+const ROOMS = [['4201A', '4201A (larger)'], ['4207', '4207 (smaller)']];
+const DUE_TIMES = ['8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM', '6:00 PM', '8:00 PM', '11:59 PM'];
+const LAB_BLUE = '#0e7aaa', WORKSHOP_GREEN = '#2a7a3a';
+
+/* UNG Fall Semester Perpetual Calendar (knowledge/ung_fall_perpetual_calendar.md, UNG Academic Affairs).
+   [classes start, Labor Day, Fall Break start, Fall Break end, classes end (Full & 2nd), finals start, finals end] */
+const UNG_FALL_COLS = {
+  A: ['08-12', '09-02', '11-25', '11-29', '11-22', '12-03', '12-06'], B: ['08-11', '09-01', '11-24', '11-28', '11-21', '12-02', '12-05'],
+  C: ['08-10', '09-07', '11-23', '11-27', '11-20', '12-01', '12-04'], D: ['08-16', '09-06', '11-22', '11-26', '12-03', '12-07', '12-10'],
+  E: ['08-14', '09-04', '11-20', '11-25', '12-01', '12-05', '12-08'], F: ['08-12', '09-03', '11-19', '11-23', '11-30', '12-04', '12-07'] };
+const UNG_FALL_YEARS = { 2024: 'A', 2030: 'A', 2025: 'B', 2031: 'B', 2026: 'C', 2027: 'D', 2032: 'D', 2028: 'E', 2029: 'F' };
+function ungFall(year) {
+  const c = UNG_FALL_COLS[UNG_FALL_YEARS[year]]; if (!c) return null;
+  const d = i => `${year}-${c[i]}`;
+  return { start: d(0), end: d(4), finalsStart: d(5), finalsEnd: d(6), holidays: [{ date: d(1), name: 'Labor Day' }], breaks: [{ name: 'Fall Break', start: d(2), end: d(3) }] };
+}
+
+/* UNG final exam schedule (Fall/Spring), ung.edu/academic-affairs/calendars/final-exam-schedules.php:
+   pattern -> [class start, exam day, exam start, exam end]. Summer finals are the last class meeting (not this table). */
+const FINALS_TABLE = {
+  M: [['16:00', 'Wed', '17:30', '19:30'], ['19:00', 'Tue', '19:50', '21:50']],
+  W: [['16:00', 'Tue', '15:00', '17:00'], ['19:00', 'Tue', '19:50', '21:50']],
+  MW: [['16:00', 'Wed', '17:30', '19:30'], ['17:30', 'Thu', '17:30', '19:30'], ['19:00', 'Wed', '19:50', '21:50'], ['20:30', 'Wed', '19:50', '21:50']],
+  MWF: [['08:00', 'Fri', '08:00', '10:00'], ['09:00', 'Wed', '08:00', '10:00'], ['10:00', 'Fri', '10:20', '12:20'], ['11:00', 'Wed', '10:20', '12:20'], ['12:00', 'Thu', '10:20', '12:20'], ['13:00', 'Fri', '12:40', '14:40'], ['14:00', 'Wed', '12:40', '14:40'], ['15:00', 'Wed', '15:00', '17:00']],
+  T: [['19:00', 'Tue', '17:30', '19:30']],
+  R: [['19:00', 'Thu', '19:50', '21:50']],
+  TR: [['08:00', 'Tue', '08:00', '10:00'], ['09:30', 'Thu', '08:00', '10:00'], ['11:00', 'Tue', '10:20', '12:20'], ['12:30', 'Thu', '12:40', '14:40'], ['14:00', 'Tue', '12:40', '14:40'], ['15:30', 'Thu', '15:00', '17:00'], ['17:30', 'Thu', '17:30', '19:30'], ['19:00', 'Tue', '17:30', '19:30'], ['20:30', 'Thu', '19:50', '21:50']],
+  MTWRF: [['07:00', 'Fri', '12:40', '14:40'], ['12:00', 'Fri', '08:00', '10:00']],
+};
+
+/* ---------- dates & times ---------- */
+const pd = s => new Date(s + 'T00:00:00');
+const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+const fmtMD = s => s ? pd(s).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+const fmtWMD = s => s ? pd(s).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : '';
+const fmtLong = s => s ? pd(s).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) : '';
+const dayName = s => DAY_FULL[pd(s).getDay()];
+const toHHMM = t => { t = String(t || '').trim(); return /^\d{3,4}$/.test(t) ? t.padStart(4, '0').replace(/^(\d{2})(\d{2})$/, '$1:$2') : t; };   // Banner gives "800"/"0800": every reader goes through this
+const mins = t => { const m = toHHMM(t).match(/^(\d{1,2}):(\d{2})$/); return m ? +m[1] * 60 + +m[2] : -1; };
+const fmt12 = t => { const v = mins(t); if (v < 0) return t || ''; const h = Math.floor(v / 60), m = v % 60; return `${h % 12 || 12}${m ? ':' + String(m).padStart(2, '0') : ''}${h >= 12 ? ' pm' : ' am'}`; };
+const addMins = (t, n) => { const v = mins(t) + n; return `${String(Math.floor(v / 60) % 24).padStart(2, '0')}:${String(v % 60).padStart(2, '0')}`; };
+const parseDays = d => [...String(d || '').toUpperCase().replace(/\s+/g, '')].map(c => ({ M: 'Mon', T: 'Tue', W: 'Wed', R: 'Thu', F: 'Fri' })[c]).filter(Boolean);
+const normDays = d => String(d || '').trim().replace(/\s+/g, '');
+function normDate(s) {
+  s = String(s || '').trim(); if (!s) return '';
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+  const mo = { jan: '01', feb: '02', mar: '03', apr: '04', may: '05', jun: '06', jul: '07', aug: '08', sep: '09', oct: '10', nov: '11', dec: '12' };
+  let m = s.match(/^(\d{1,2})-([A-Za-z]{3})-(\d{2,4})$/); if (m) return `${m[3].length === 2 ? '20' + m[3] : m[3]}-${mo[m[2].toLowerCase()]}-${m[1].padStart(2, '0')}`;
+  m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/); if (m) return `${m[3]}-${m[1].padStart(2, '0')}-${m[2].padStart(2, '0')}`;
+  return s;
+}
+function nthWeekday(y, m, wd, n) { // n = 1.. from the start, -1 = last
+  if (n > 0) { const f = new Date(y, m, 1); return new Date(y, m, 1 + ((wd - f.getDay() + 7) % 7) + 7 * (n - 1)); }
+  const l = new Date(y, m + 1, 0); return new Date(y, m, l.getDate() - ((l.getDay() - wd + 7) % 7));
+}
+/* the US holidays that fall inside each kind of term, worked out for that year */
+function standardHolidays(type, y) {
+  if (type === 'spring') return [{ date: iso(nthWeekday(y, 0, 1, 3)), name: 'Martin Luther King Jr. Day' }];
+  if (type === 'summer') return [{ date: iso(nthWeekday(y, 4, 1, -1)), name: 'Memorial Day' }, { date: `${y}-06-19`, name: 'Juneteenth' }, { date: `${y}-07-04`, name: 'Independence Day' }];
+  const th = nthWeekday(y, 10, 4, 4);
+  return [{ date: iso(nthWeekday(y, 8, 1, 1)), name: 'Labor Day' }, { date: iso(th), name: 'Thanksgiving' }, { date: iso(addDays(th, 1)), name: 'Day after Thanksgiving' }];
+}
+
+/* ---------- the plan ---------- */
+const KIND = 'ung-language-lab-semester-plan';
+const blankPlan = () => ({ kind: KIND, version: 1, savedAt: '', semesters: [], activeSemesterId: null, courseLists: {}, rooms: {}, labCalendars: {} });
+let P = blankPlan();
+const F = { handle: null, name: '', lastModified: 0, dirty: false, supported: 'showOpenFilePicker' in window };
+let VIEW = 'overview';
+const sem = () => P.semesters.find(s => s.id === P.activeSemesterId) || null;
+const semById = id => P.semesters.find(s => s.id === id) || null;
+const semLabel = s => s ? `${TYPE_LABEL[s.type] || s.type} ${s.year}` : '';
+const semOrder = s => s.year * 10 + ({ spring: 1, summer: 2, fall: 3 })[s.type];
+const sortedSems = () => [...P.semesters].sort((a, b) => semOrder(b) - semOrder(a));
+const courses = (id = P.activeSemesterId) => P.courseLists[id]?.rows || [];
+const roomsOf = (id = P.activeSemesterId) => (P.rooms[id] ||= { assign: {}, finalsOverrides: {} });
+
+/* ---------- browser storage (IndexedDB): the working copy and the plan file's handle ---------- */
+const DB = (() => {
+  let db = null;
+  const open = () => db ? Promise.resolve(db) : new Promise((res, rej) => { const r = indexedDB.open('labSemesterConsole', 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => res(db = r.result); r.onerror = () => rej(r.error); });
+  const tx = (mode, fn) => open().then(d => new Promise((res, rej) => { const t = d.transaction('kv', mode), q = fn(t.objectStore('kv')); t.oncomplete = () => res(q?.result); t.onerror = () => rej(t.error); }));
+  return { get: k => tx('readonly', s => s.get(k)).catch(() => null), set: (k, v) => tx('readwrite', s => s.put(v, k)).catch(() => null), del: k => tx('readwrite', s => s.delete(k)).catch(() => null) };
+})();
+let saveTimer = null;
+function changed(rerender = true) {
+  F.dirty = true; fileUI();
+  clearTimeout(saveTimer); saveTimer = setTimeout(() => { DB.set('plan', P); storeMeta(); }, 300);
+  if (rerender) show(VIEW, false);
+}
+
+/* ---------- the plan file (shared folder) ---------- */
+const PICK = { types: [{ description: 'Semester plan', accept: { 'application/json': ['.json'] } }], excludeAcceptAllOption: false };
+function checkPlan(o) {
+  if (!o || typeof o !== 'object') throw new Error('That file is not a semester plan.');
+  if (o.kind !== KIND) throw new Error('That file is not a semester plan. To bring in academic-calendar.json, room-schedule.json or lab-due-dates.json, use Import on this page.');
+  return { ...blankPlan(), ...o };
+}
+async function openPlanFile() {
+  if (F.dirty && P.semesters.length && !confirm('Your changes are not saved to the plan file. Open another file anyway? Your changes stay in this browser until you open it.')) return;
+  try {
+    const [h] = await showOpenFilePicker(PICK); const f = await h.getFile();
+    P = checkPlan(JSON.parse(await f.text())); F.handle = h; F.name = f.name; F.lastModified = f.lastModified; F.dirty = false;
+    await DB.set('plan', P); await DB.set('handle', h); storeMeta(); render(); toast(`Opened ${f.name}`);
+  } catch (e) { if (e.name !== 'AbortError') toast(e.message, 6000); }
+}
+async function savePlan(as = false) {
+  P.savedAt = new Date().toISOString();
+  const text = JSON.stringify(P, null, 2);
+  if (!F.supported) { download(planName(), text, 'application/json'); F.dirty = false; F.name ||= planName(); storeMeta(); fileUI(); toast('Downloaded. Put it in the shared folder so the others get it.'); return; }
+  try {
+    if (!F.handle || as) { F.handle = await showSaveFilePicker({ ...PICK, suggestedName: F.name || planName() }); await DB.set('handle', F.handle); }
+    if ((await F.handle.queryPermission?.({ mode: 'readwrite' })) !== 'granted' && (await F.handle.requestPermission?.({ mode: 'readwrite' })) !== 'granted') throw new Error('Saving needs permission to change the file.');
+    const cur = await F.handle.getFile();
+    if (!as && F.lastModified && cur.lastModified > F.lastModified + 1000) { // someone else saved it after this page opened it
+      const when = new Date(cur.lastModified).toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit' });
+      if (!confirm(`Someone saved ${cur.name} at ${when}, after you opened it. Saving now replaces their changes.\n\nOK: save mine anyway. Cancel: keep theirs (then use "Open the plan file" to load their version).`)) return;
+    }
+    const w = await F.handle.createWritable(); await w.write(text); await w.close();
+    const f = await F.handle.getFile(); F.name = f.name; F.lastModified = f.lastModified; F.dirty = false;
+    await DB.set('plan', P); storeMeta(); fileUI(); toast(`Saved to ${f.name}`);
+  } catch (e) { if (e.name !== 'AbortError') toast(e.message, 6000); }
+}
+const storeMeta = () => DB.set('fileMeta', { name: F.name, lastModified: F.lastModified, dirty: F.dirty });
+const planName = () => `semester-plan${sem() ? '-' + sem().id : ''}.json`;
+function fileUI() {
+  const el = $('fileState'), dot = el.querySelector('.dot'), t = el.querySelector('span:last-child');
+  dot.classList.toggle('on', !!F.name && !F.dirty);
+  t.textContent = !F.name ? (P.semesters.length ? 'Not in a plan file yet' : 'No plan file yet') : F.dirty ? `Changes not saved to ${F.name}` : `Saved in ${F.name}`;
+  document.title = (F.dirty ? '• ' : '') + 'Semester Console';
+}
+function download(name, text, type = 'application/json') {
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name; document.body.append(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+const readFile = f => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = () => rej(r.error); r.readAsText(f); });
+
+/* ---------- semesters & weeks ---------- */
+function makeSemester(type, year) {
+  const id = `${type}-${year}`;
+  const s = { id, type, year, label: `${TYPE_LABEL[type]} ${year}`, start: '', end: '', finalsStart: '', finalsEnd: '', holidays: standardHolidays(type, year), breaks: [], sessions: type === 'summer' ? {} : null };
+  if (type === 'fall') applyUngFall(s);
+  return s;
+}
+function applyUngFall(s) {
+  const u = ungFall(s.year); if (!u) return false;
+  Object.assign(s, { start: u.start, end: u.end, finalsStart: u.finalsStart, finalsEnd: u.finalsEnd });
+  s.holidays = mergeBy([...(s.holidays || []).filter(h => h.name !== 'Labor Day'), ...u.holidays], 'date');
+  if (!(s.breaks || []).some(b => /fall break/i.test(b.name))) s.breaks = [...(s.breaks || []), ...u.breaks];
+  return true;
+}
+const mergeBy = (list, k) => [...new Map(list.map(x => [x[k], x])).values()].sort((a, b) => String(a[k]).localeCompare(String(b[k])));
+/* what a date is in this semester: holiday, break, finals (Fall/Spring window or a Summer session's) or nothing */
+function blocked(s, d) {
+  if (!s || !d) return null;
+  const h = (s.holidays || []).find(x => x.date === d); if (h) return { kind: 'holiday', name: h.name };
+  if (s.type !== 'summer' && s.finalsStart && s.finalsEnd && d >= s.finalsStart && d <= s.finalsEnd) return { kind: 'finals', name: 'Finals' };
+  const b = (s.breaks || []).find(x => d >= x.start && d <= x.end); if (b) return { kind: 'break', name: b.name || 'Break' };
+  for (const [k, x] of Object.entries(s.sessions || {})) if (x.finalsStart && x.finalsEnd && d >= x.finalsStart && d <= x.finalsEnd) return { kind: 'finals', name: `Finals (${SESSION_LABEL[k] || k})` };
+  return null;
+}
+function termSpan(s, sessionsOnly) {
+  if (s.type !== 'summer') return [s.start, s.end];
+  const ss = Object.entries(s.sessions || {}).filter(([k, x]) => x.start && x.end && (!sessionsOnly || sessionsOnly.includes(k))).map(([, x]) => x);
+  return ss.length ? [ss.reduce((a, b) => a.start < b.start ? a : b).start, ss.reduce((a, b) => a.end > b.end ? a : b).end] : ['', ''];
+}
+/* Monday-aligned weeks from the first to the last day of classes (same numbering as the generator, so plans match) */
+function weeksOf(s) {
+  const lc = s.type === 'summer' ? labCal(s) : null;
+  const [a, b] = termSpan(s, lc ? activeSessions(s) : null); if (!a || !b) return [];
+  let cur = pd(a); cur = addDays(cur, cur.getDay() === 0 ? -6 : 1 - cur.getDay());
+  const out = [], end = pd(b);
+  for (let i = 1; cur <= end; i++, cur = addDays(cur, 7)) out.push({ idx: i, start: iso(cur), end: iso(addDays(cur, 6)), days: [0, 1, 2, 3, 4, 5, 6].map(n => iso(addDays(cur, n))) });
+  return out;
+}
+
+/* ---------- courses: Banner COM1430 (schedule) + COM775 (term dates, building, full instructor name), merged by CRN ---------- */
+function parseCSV(text) {
+  const rows = []; let row = [], cur = '', q = false;
+  text = text.replace(/\r\n?/g, '\n');
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (c === '"') { if (q && text[i + 1] === '"') { cur += '"'; i++; } else q = !q; }
+    else if (c === ',' && !q) { row.push(cur.trim()); cur = ''; }
+    else if (c === '\n' && !q) { row.push(cur.trim()); if (row.some(Boolean)) rows.push(row); row = []; cur = ''; }
+    else cur += c;
+  }
+  row.push(cur.trim()); if (row.some(Boolean)) rows.push(row);
+  if (rows.length < 2) return [];
+  const h = rows[0].map(x => x.replace(/^﻿/, '').trim());
+  return rows.slice(1).map(r => Object.fromEntries(h.map((k, i) => [k, r[i] ?? ''])));
+}
+const kindOfCSV = rows => { const h = Object.keys(rows[0] || {}); return h.includes('BLDGRM') || h.includes('CAMPUS_CODE') || h.includes('MAXENR') ? '1430' : h.includes('Part_of_Term') || h.includes('Ptrm_Start_Date') ? '775' : ''; };
+const CAMPUS_CODE = c => { c = String(c || '').trim().toUpperCase(); return c === 'F' ? 'A' : c === 'NGO' ? 'OL' : c; };
+const AUTO_LOCATION = { A: 'Dahlonega Campus', GA: 'Gainesville Campus', OC: 'Oconee Campus', 9: 'Cumming Campus' };
+const pivotOf = loc => /gainesville|cumming/i.test(loc || '') ? 'GVL' : /dahlonega|blue\s*ridge/i.test(loc || '') ? 'DAH' : /oconee/i.test(loc || '') ? 'OCN' : '';
+function courseFrom1430(r) {
+  let from = '', to = '';
+  const t = String(r.TIME || '').trim(); if (t && !/TBA/i.test(t)) { const p = t.split('-'); if (p.length >= 2) { from = toHHMM(p[0]); to = toHHMM(p[1]); } }
+  const br = String(r.BLDGRM || '').replace(/\s+/g, ''), dash = br.lastIndexOf('-');
+  const cc = String(r.CAMPUS_CODE || '').trim().toUpperCase();
+  return { _id: r.CRN.trim(), CRN: r.CRN.trim(), SUBJ: (r.SUBJ || '').trim(), CRSE: (r.CRSE || '').trim(), SEC: (r.SEC || '').trim(), CMP: CAMPUS_CODE(cc),
+    CRED: String(r.HRSLO || r.HRSHI || '').trim().replace(/^0+/, '') || '3', TITLE: (r.TTL || '').trim(), DAYS: normDays(r.DAYS), TIME_FROM: from, TIME_TO: to,
+    INSTRUCTOR: (r.INST || '').trim(), BUILDING: dash > 0 ? br.slice(0, dash) : br, ROOM: dash > 0 ? br.slice(dash + 1) : '', BLDGRM_RAW: (r.BLDGRM || '').trim(),
+    LOCATION: AUTO_LOCATION[cc] || '', PART_OF_TERM: (r.PTRM || '').trim(), START: '', END: '',
+    MAXENR: r.MAXENR !== undefined && String(r.MAXENR).trim() !== '' && !isNaN(parseInt(r.MAXENR, 10)) ? parseInt(r.MAXENR, 10) : null };
+}
+function apply775(c, m) {
+  if (!m) return c;
+  const t = String(m['Start-End_Times'] || '').trim();
+  if (!c.TIME_FROM && t && !/TBA/i.test(t)) { const p = t.split('-'); c.TIME_FROM = toHHMM(p[0]); c.TIME_TO = toHHMM(p[1]); }
+  if (m.Building) { c.BUILDING = m.Building.trim(); c.ROOM = (m.Room_Numb || '').trim(); }
+  if (m.Instructor) c.INSTRUCTOR = m.Instructor.trim();
+  if (m.Days) c.DAYS = normDays(m.Days);
+  if (m.Course_Title) c.TITLE = m.Course_Title.trim();
+  if (m.Part_of_Term) c.PART_OF_TERM = m.Part_of_Term.trim();
+  const s = normDate(m.Ptrm_Start_Date || m.Start_Date), e = normDate(m.Ptrm_End_Date || m.End_Date);
+  if (s) c.START = s; if (e) c.END = e;
+  return c;
+}
+/* term parts (Part_of_Term -> earliest start, latest end): fills dates COM775 left blank, and the calendar's "Fill from COM775" */
+function ptrmSummary(rows775) {
+  const out = {};
+  rows775.forEach(r => { const pt = (r.Part_of_Term || '').trim(), s = normDate(r.Ptrm_Start_Date || r.Start_Date), e = normDate(r.Ptrm_End_Date || r.End_Date);
+    if (!pt || !s || !e) return; const x = out[pt] ||= { start: s, end: e }; if (s < x.start) x.start = s; if (e > x.end) x.end = e; });
+  return out;
+}
+function importCourses(semId, rows1430, rows775) {
+  const list = P.courseLists[semId] ||= { rows: [], importedAt: '', files: {}, ptrm: {} };
+  const old = Object.fromEntries(list.rows.map(c => [c.CRN, c]));
+  const m775 = Object.fromEntries((rows775 || []).map(r => [String(r.CRN || '').trim(), r]));
+  if (rows775?.length) list.ptrm = { ...list.ptrm, ...ptrmSummary(rows775) };
+  if (rows1430?.length) {
+    const seen = new Set();
+    list.rows = rows1430.filter(r => { const k = String(r.CRN || '').trim(); if (!k || seen.has(k)) return false; seen.add(k); return true; }).map(r => apply775(courseFrom1430(r), m775[String(r.CRN).trim()]));
+  } else list.rows = list.rows.map(c => apply775(c, m775[c.CRN]));
+  const s = semById(semId);
+  list.rows.forEach(c => {
+    if (old[c.CRN]?.LOCATION_SET) { c.LOCATION = old[c.CRN].LOCATION; c.LOCATION_SET = true; } // a campus someone chose survives a re-import
+    if ((!c.START || !c.END) && list.ptrm[c.PART_OF_TERM]) { c.START = list.ptrm[c.PART_OF_TERM].start; c.END = list.ptrm[c.PART_OF_TERM].end; }
+    if ((!c.START || !c.END) && s) { const [a, b] = termSpan(s); c.START ||= a; c.END ||= b; }
+  });
+  if (rows1430?.length) list.files['1430'] = { rows: rows1430.length, at: new Date().toISOString() };
+  if (rows775?.length) list.files['775'] = { rows: rows775.length, at: new Date().toISOString() };
+  list.importedAt = new Date().toISOString();
+  return list;
+}
+
+/* ---------- rooms (the lab's Banner room, Nesbitt 4201, split between 4201A and 4207) ---------- */
+const inNesbitt4201 = c => /nesbitt/i.test(c.BUILDING || '') && String(c.ROOM || '').trim() === '4201';
+function finalsFor(c, id = P.activeSemesterId) {
+  const o = roomsOf(id).finalsOverrides[c.CRN]; if (o?.day) return { examDay: o.day, examStart: o.start, examEnd: o.end, source: 'manual', note: '' };
+  const k = normDays(c.DAYS).toUpperCase(), t = toHHMM(c.TIME_FROM);
+  if (semById(id)?.type === 'summer') return { examDay: null, examStart: null, examEnd: null, source: null, note: 'Summer finals are the last class meeting' };
+  if (!k || !t) return { examDay: null, examStart: null, examEnd: null, source: null, note: 'No day or time to work from' };
+  let hit = (FINALS_TABLE[k] || []).find(r => r[0] === t); if (hit) return { examDay: hit[1], examStart: hit[2], examEnd: hit[3], source: 'exact', note: '' };
+  if (k === 'MW' && (hit = FINALS_TABLE.MWF.find(r => r[0] === t))) return { examDay: hit[1], examStart: hit[2], examEnd: hit[3], source: 'MW→MWF fallback', note: 'From the MWF row, per the schedule\'s footnote' };
+  if (k === 'F') return { examDay: 'Fri', examStart: '10:20', examEnd: '12:20', source: 'Friday-only (all times)', note: '' };
+  if (k === 'S') return { examDay: 'Sat', examStart: t, examEnd: addMins(t, 120), source: 'Saturday-only (regular time)', note: '' };
+  return { examDay: null, examStart: null, examEnd: null, source: null, note: 'Not on the UNG final exam schedule: enter it by hand' };
+}
+function roomClashes(id = P.activeSemesterId) {
+  const A = roomsOf(id).assign, occ = [];
+  courses(id).filter(c => inNesbitt4201(c) && A[c.CRN]).forEach(c => parseDays(c.DAYS).forEach(d => occ.push({ crn: c.CRN, room: A[c.CRN], d, f: mins(c.TIME_FROM), t: mins(c.TIME_TO) })));
+  const out = new Set();
+  occ.forEach((a, i) => occ.slice(i + 1).forEach(b => { if (a.crn !== b.crn && a.room === b.room && a.d === b.d && a.f < b.t && b.f < a.t) { out.add(a.crn); out.add(b.crn); } }));
+  return out;
+}
+/* same class next term: section + pattern first, then course + pattern when that is the only match (CRNs change every term) */
+function copyRooms(fromId, toId) {
+  const src = roomsOf(fromId).assign, from = courses(fromId), to = courses(toId).filter(inNesbitt4201), A = roomsOf(toId).assign;
+  const k1 = c => `${c.SUBJ}${c.CRSE}.${c.SEC}|${normDays(c.DAYS)}|${toHHMM(c.TIME_FROM)}`, k2 = c => `${c.SUBJ}${c.CRSE}|${normDays(c.DAYS)}|${toHHMM(c.TIME_FROM)}`;
+  const m1 = {}, m2 = {};
+  from.filter(c => src[c.CRN]).forEach(c => { m1[k1(c)] = src[c.CRN]; (m2[k2(c)] ||= new Set()).add(src[c.CRN]); });
+  let copied = 0; const missed = [];
+  to.forEach(c => { const r = m1[k1(c)] || (m2[k2(c)]?.size === 1 ? [...m2[k2(c)]][0] : ''); if (r) { A[c.CRN] = r; copied++; } else if (!A[c.CRN]) missed.push(`${c.SUBJ} ${c.CRSE}.${c.SEC}`); });
+  return { copied, missed };
+}
+
+/* ---------- lab calendar (generator shape: classesOffered, sessionToggles, dueDayTimes, labTypes, placements) ---------- */
+const defaultLabTypes = () => [1, 2, 3, 4].map(n => ({ id: 'lab' + n, label: 'Lab ' + n, color: LAB_BLUE }));
+function labCal(s) {
+  return P.labCalendars[s.id] ||= { classesOffered: {}, sessionToggles: {}, dueDayTimes: {}, labTypes: defaultLabTypes(), placements: {}, exportLangs: {} };
+}
+const classKey = (code, level, session) => `${code}${level}_${session}`;
+const splitPlace = k => { const i = k.indexOf('_'); return [+k.slice(0, i), k.slice(i + 1)]; };   // "5_SPAN1001_regular" -> [5, "SPAN1001_regular"]
+const activeSessions = s => s.type === 'summer' ? SESSIONS.map(x => x[0]).filter(k => labCal(s).sessionToggles[k]) : [REGULAR];
+function offered(s) {
+  const lc = labCal(s), out = [];
+  LAB_LANGS.forEach(([code, label, color]) => LAB_LEVELS.forEach(level => activeSessions(s).forEach(session => {
+    const key = classKey(code, level, session);
+    if (lc.classesOffered[key]) out.push({ key, code, label, color, level, session, name: `${code}${level}${session === REGULAR ? '' : ' (' + SESSION_LABEL[session] + ')'}` });
+  })));
+  return out;
+}
+const dueInWeek = (s, week, key) => { const dd = labCal(s).dueDayTimes[key]; return dd ? week.days.find(d => dayName(d) === dd.day) || '' : ''; };
+function inWindow(s, week, session) {
+  if (s.type !== 'summer' || session === REGULAR) return true;
+  const x = s.sessions?.[session]; return !x?.start || !x?.end || (week.start <= x.end && week.end >= x.start);
+}
+/* every placed lab with its real due date, and whether that date is a holiday, break or finals day */
+function placedLabs(s) {
+  const lc = labCal(s), weeks = weeksOf(s), byKey = Object.fromEntries(offered(s).map(c => [c.key, c])), out = [];
+  Object.entries(lc.placements).forEach(([k, ids]) => {
+    const [w, ck] = splitPlace(k), c = byKey[ck], week = weeks[w - 1];
+    (ids || []).forEach(id => {
+      const lt = lc.labTypes.find(l => l.id === id); if (!lt) return;
+      const date = week && c ? dueInWeek(s, week, ck) || week.start : '';
+      out.push({ key: k, week: w, cls: c, classKey: ck, lab: lt, date, block: date ? blocked(s, date) : null, outside: !week, notOffered: !c });
+    });
+  });
+  return out.sort((a, b) => a.week - b.week);
+}
+function autoFill(s) {
+  const lc = labCal(s), weeks = weeksOf(s);
+  offered(s).forEach(c => {
+    let n = 0;
+    for (let i = 1; i < weeks.length && n < lc.labTypes.length; i++) { // week 1 stays free (first week of classes)
+      const w = weeks[i], d = dueInWeek(s, w, c.key);
+      if (!d || !inWindow(s, w, c.session) || blocked(s, d)) continue;
+      const k = `${w.idx}_${c.key}`, lt = lc.labTypes[n];
+      if (!Object.entries(lc.placements).some(([pk, ids]) => pk.endsWith('_' + c.key) && ids.includes(lt.id))) (lc.placements[k] ||= []).push(lt.id);
+      n++;
+    }
+  });
+}
+/* Copy another semester's lab setup. Placements keep their week number (Lab 2 in week 4 stays in week 4); a due date
+   that now lands on a holiday, break or finals moves to the next open week when moveBlocked is on, else it is flagged. */
+function planCopy(fromId, to, opt) {
+  const src = P.labCalendars[fromId], fromSem = semById(fromId);
+  const dst = clone(labCal(to)), rep = { classes: 0, types: 0, placed: 0, moved: [], flagged: [], dropped: [], skipped: [] };
+  if (!src) return { dst, rep };
+  if (opt.classes) {
+    dst.classesOffered = {}; dst.dueDayTimes = {};
+    Object.entries(src.classesOffered || {}).forEach(([k, on]) => {
+      if (!on) return; const sess = k.split('_')[1];
+      if ((to.type === 'summer') !== (sess !== REGULAR)) return; // summer sessions only copy into a summer
+      dst.classesOffered[k] = true; if (src.dueDayTimes?.[k]) dst.dueDayTimes[k] = { ...src.dueDayTimes[k] }; rep.classes++;
+    });
+    if (to.type === 'summer') dst.sessionToggles = { ...(src.sessionToggles || {}) };
+  }
+  if (opt.types) { dst.labTypes = clone(src.labTypes || defaultLabTypes()); rep.types = dst.labTypes.length; }
+  if (opt.placements) {
+    dst.placements = {};
+    const saved = P.labCalendars[to.id]; P.labCalendars[to.id] = dst; // weeks and due days below read the copy
+    const weeks = weeksOf(to), labName = id => (src.labTypes || []).find(l => l.id === id)?.label || id;
+    Object.entries(src.placements || {}).sort((a, b) => splitPlace(a[0])[0] - splitPlace(b[0])[0]).forEach(([k, ids]) => {
+      const [w, ck] = splitPlace(k), cls = ck.split('_')[0];
+      (ids || []).forEach(id => {
+        if (!dst.classesOffered[ck]) { rep.skipped.push(`${cls} ${labName(id)}`); return; }
+        if (!dst.labTypes.some(l => l.id === id)) { const lt = (src.labTypes || []).find(l => l.id === id); if (lt) dst.labTypes.push({ ...lt }); else return; }
+        const sess = ck.split('_')[1], fits = i => { const wk = weeks[i - 1]; if (!wk || !inWindow(to, wk, sess)) return null; const d = dueInWeek(to, wk, ck) || wk.start; return { d, b: blocked(to, d) }; };
+        let target = w, f = fits(w);
+        if (!f) { rep.dropped.push(`${cls} ${labName(id)}: week ${w} is past the end of ${semLabel(to)}`); return; }
+        if (f.b && opt.moveBlocked) {
+          let j = w + 1, g; while (j <= weeks.length && (!(g = fits(j)) || g.b)) j++;
+          if (j > weeks.length) { rep.dropped.push(`${cls} ${labName(id)}: week ${w} is ${f.b.name.toLowerCase()} and no open week follows`); return; }
+          rep.moved.push(`${cls} ${labName(id)}: week ${w} (${fmtMD(f.d)}, ${f.b.name}) → week ${j} (${fmtMD(g.d)})`); target = j;
+        } else if (f.b) rep.flagged.push(`${cls} ${labName(id)}: week ${w}, ${fmtWMD(f.d)} is ${f.b.name}`);
+        const pk = `${target}_${ck}`; (dst.placements[pk] ||= []); if (!dst.placements[pk].includes(id)) { dst.placements[pk].push(id); rep.placed++; }
+      });
+    });
+    P.labCalendars[to.id] = saved;
+  }
+  rep.from = semLabel(fromSem);
+  return { dst, rep };
+}
+/* lab-due-dates.json: the shape the Lab Hub's Grade Due Dates page reads (unchanged from the generator) */
+function labDueDatesOut(s) {
+  const lc = labCal(s), by = {};
+  placedLabs(s).filter(p => p.cls && !p.outside).forEach(p => { (by[p.classKey] ||= []).push(p); });
+  return { semester: s.id, semester_label: semLabel(s), generated: new Date().toISOString(),
+    classes: offered(s).map(c => ({ key: c.key, class_label: c.name, subject: c.code, level: c.level, session: c.session, due_day: lc.dueDayTimes[c.key]?.day || null, due_time: lc.dueDayTimes[c.key]?.time || null,
+      labs: (by[c.key] || []).sort((a, b) => a.week - b.week).map(p => ({ label: p.lab.label, date: p.date })) })).filter(c => c.labs.length) };
+}
+
+/* =====================================================================================================================
+   Screens. One section per screen, like the events console: overview, then the four planning sections, then the
+   outputs for D2L and the plan file.
+===================================================================================================================== */
+const SECTIONS = [['overview', 'Overview'], ['calendar', 'Academic calendar'], ['courses', 'Language courses'], ['rooms', 'Room scheduling'], ['labs', 'Lab calendar'], ['outputs', 'Outputs for D2L'], ['plan', 'Plan file']];
+const fld = (id, label, input, hint = '') => `<div class="f"><label for="${id}">${esc(label)}</label>${input}${hint ? `<span class="hint">${esc(hint)}</span>` : ''}</div>`;
+const opt = (v, l, cur) => `<option value="${esc(v)}"${String(v) === String(cur ?? '') ? ' selected' : ''}>${esc(l)}</option>`;
+const sel = (id, cur, opts, empty, extra = '') => `<select id="${id}" ${extra}>${empty != null ? opt('', empty, cur) : ''}${opts.map(([v, l]) => opt(v, l, cur)).join('')}</select>`;
+const dateIn = (id, v, extra = '') => `<input type="date" id="${id}" value="${esc(v || '')}" ${extra}>`;
+const val = id => { const e = $(id); return e ? (e.type === 'checkbox' ? e.checked : e.value.trim()) : ''; };
+const langTag = code => `<span class="lang" style="background:${langColor(code)}">${esc(code)}</span>`;
+function toast(m, ms = 3200) { const t = $('toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, ms); }
+function pane(title, sub, body, foot) {
+  const d = $('dlg');
+  d.innerHTML = `<form class="pane" method="dialog" novalidate><header><div><p class="eyebrow">${esc(sub)}</p><h2 id="dlgTitle">${esc(title)}</h2></div><button class="x" type="button" data-close aria-label="Close">✕</button></header><div class="scroll">${body}</div><footer>${foot || '<span></span><button class="btn" type="button" data-close>Close</button>'}</footer></form>`;
+  d.querySelectorAll('[data-close]').forEach(b => b.onclick = () => d.close());
+  if (!d.open) d.showModal();
+}
+const head = (eyebrow, title, lede, right = '') => `<div class="head"><div><p class="eyebrow">${esc(eyebrow)}</p><h1 tabindex="-1">${esc(title)}</h1>${lede ? `<p class="lede">${lede}</p>` : ''}</div>${right ? `<div class="row">${right}</div>` : ''}</div>`;
+const needSem = () => `<div class="empty">No semester yet. <button class="btn sm primary" type="button" data-act="newSem">Add a semester</button> or <button class="btn sm" type="button" data-view="plan">open a plan file</button>.</div>`;
+
+/* ---------- shell ---------- */
+function render() { semPicker(); fileUI(); show(VIEW, false); }
+function semPicker() {
+  const p = $('semPick'), list = sortedSems();
+  p.innerHTML = list.length ? list.map(s => opt(s.id, semLabel(s), P.activeSemesterId)).join('') + opt('__new', '+ Add a semester…', '') : opt('', 'No semesters yet', '') + opt('__new', '+ Add a semester…', '');
+}
+$('semPick').onchange = e => {
+  if (e.target.value === '__new') { semPicker(); return newSemester(); }
+  P.activeSemesterId = e.target.value; changed(false); render();
+};
+function nav() {
+  $('nav').innerHTML = `<h2>Plan</h2><ul>${SECTIONS.slice(0, 5).map(([k, l]) => `<li><button type="button" data-view="${k}" ${k === VIEW ? 'aria-current="page"' : ''}>${esc(l)}</button></li>`).join('')}</ul>`
+    + `<h2>Share</h2><ul>${SECTIONS.slice(5).map(([k, l]) => `<li><button type="button" data-view="${k}" ${k === VIEW ? 'aria-current="page"' : ''}>${esc(l)}</button></li>`).join('')}</ul>`;
+}
+function show(v, focus = true) {
+  VIEW = v; nav();
+  try { history.replaceState(null, '', '#' + v); } catch (e) {}
+  $('main').innerHTML = `<div class="view">${(VIEWS[v] || VIEWS.overview)()}</div>`;
+  (AFTER[v] || (() => {}))();
+  if (focus) { $('main').querySelector('h1')?.focus(); window.scrollTo(0, 0); }
+}
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-view],[data-act]'); if (!t) return;
+  if (t.dataset.view) { if ($('dlg').open) $('dlg').close(); show(t.dataset.view); }
+  else ACTS[t.dataset.act]?.(t.dataset.arg, t);
+});
+document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); savePlan(); } });
+$('saveBtn').onclick = () => savePlan();
+function setMode(m) { document.documentElement.dataset.mode = m; $('modeBtn').textContent = m === 'dark' ? 'Light mode' : 'Dark mode'; try { localStorage.setItem('labSemesterMode', m); } catch (e) {} }
+$('modeBtn').onclick = () => setMode(document.documentElement.dataset.mode === 'dark' ? 'light' : 'dark');
+window.addEventListener('beforeunload', e => { if (F.dirty && F.name) { e.preventDefault(); e.returnValue = ''; } });
+
+/* ---------- what needs a look (overview + each section's banner) ---------- */
+function issues() {
+  const s = sem(), out = [];
+  if (!s) return out;
+  const add = (level, text, view, act) => out.push({ level, text, view, act });
+  if (!s.start || !s.end) add('bad', `${semLabel(s)} has no first or last day of classes yet.`, 'calendar');
+  if (s.type !== 'summer' && (!s.finalsStart || !s.finalsEnd)) add('warn', 'Finals week is not set.', 'calendar');
+  const u = s.type === 'fall' ? ungFall(s.year) : null;
+  if (u && (s.start !== u.start || s.end !== u.end || s.finalsStart !== u.finalsStart || s.finalsEnd !== u.finalsEnd))
+    add('warn', `Dates differ from UNG's Fall calendar (classes ${fmtMD(u.start)}–${fmtMD(u.end)}, finals ${fmtMD(u.finalsStart)}–${fmtMD(u.finalsEnd)}). Check which is right; nothing is changed until you choose.`, 'calendar');
+  const cs = courses();
+  if (!cs.length) add('warn', 'No courses imported for this semester.', 'courses');
+  else {
+    const noCampus = cs.filter(c => isLang(c.SUBJ) && !pivotOf(c.LOCATION)).length;
+    if (noCampus) add('warn', `${noCampus} language section${noCampus > 1 ? 's need' : ' needs'} a campus (online or off-campus sections count toward one campus's budget and tutors).`, 'courses');
+    const n4201 = cs.filter(inNesbitt4201), A = roomsOf().assign, un = n4201.filter(c => !A[c.CRN]).length, clash = roomClashes().size;
+    if (un) add('warn', `${un} class${un > 1 ? 'es' : ''} in Nesbitt 4201 without a room (4201A or 4207).`, 'rooms');
+    if (clash) add('bad', `${clash} classes are double-booked in the same room.`, 'rooms');
+    const nf = n4201.filter(c => !finalsFor(c).examDay).length;
+    if (nf && s.type !== 'summer') add('warn', `${nf} final exam time${nf > 1 ? 's' : ''} to enter by hand (not on UNG's schedule).`, 'rooms');
+  }
+  const off = offered(s);
+  if (!off.length) add('warn', 'No lab classes chosen for the lab calendar.', 'labs');
+  else {
+    const pl = placedLabs(s);
+    const bad = pl.filter(p => p.block && p.cls); bad.forEach(p => add('bad', `${p.cls.name} ${p.lab.label} is due ${fmtWMD(p.date)}: ${p.block.name}.`, 'labs'));
+    pl.filter(p => p.outside).forEach(p => add('bad', `${p.classKey.split('_')[0]} ${p.lab.label} sits in week ${p.week}, past the end of the term.`, 'labs'));
+    off.forEach(c => { if (!pl.some(p => p.classKey === c.key)) add('warn', `${c.name} has no labs on the calendar yet.`, 'labs'); });   // classes have different numbers of labs on purpose: only an empty one is flagged
+  }
+  if (F.dirty) add('warn', F.name ? `Changes are not saved to ${F.name} yet.` : 'This plan is only in this browser. Save it as a plan file in the shared folder so the other coordinators can open it.', null, 'save');
+  return out;
+}
+const issueList = list => list.length ? `<ul class="issues">${list.map(i => `<li><span class="tag ${i.level}">${i.level === 'bad' ? 'Fix' : 'Check'}</span><span>${esc(i.text)}</span>${i.view ? `<button class="btn sm" type="button" data-view="${i.view}">Open</button>` : i.act ? `<button class="btn sm primary" type="button" data-act="${i.act}">Save plan</button>` : '<span></span>'}</li>`).join('')}</ul>`
+  : '<div class="empty">Nothing needs a look.</div>';
+
+const VIEWS = {}, AFTER = {}, ACTS = {};
+ACTS.save = () => savePlan();
+
+/* ---------- overview ---------- */
+VIEWS.overview = () => {
+  const s = sem();
+  if (!s) return head('Language Lab', 'Plan the semester', 'Courses, rooms, the academic calendar and lab due dates in one place. The plan stays in this browser and in a plan file your team keeps in a shared folder.') + needSem();
+  const cs = courses(), lang = cs.filter(c => isLang(c.SUBJ)), n4201 = cs.filter(inNesbitt4201), A = roomsOf().assign, pl = placedLabs(s), wk = weeksOf(s).length;
+  return head(semLabel(s), 'Semester overview', s.start ? `Classes ${fmtLong(s.start)} to ${fmtLong(s.end)}${s.finalsStart ? `; finals ${fmtMD(s.finalsStart)}–${fmtMD(s.finalsEnd)}` : ''}.` : 'Dates not set yet.')
+    + `<div class="stats"><div class="stat"><b>${wk || '–'}</b><span>Weeks of classes</span></div><div class="stat"><b>${lang.length}</b><span>Language sections</span></div>`
+    + `<div class="stat"><b>${n4201.filter(c => A[c.CRN]).length}/${n4201.length}</b><span>Nesbitt 4201 classes with a room</span></div><div class="stat"><b>${pl.length}</b><span>Labs and workshops placed</span></div></div>`
+    + `<h2 class="sec">Needs a look</h2>${issueList(issues())}`;
+};
+
+/* ---------- academic calendar ---------- */
+VIEWS.calendar = () => {
+  const s = sem(), list = sortedSems();
+  const cards = list.map(x => `<button class="semcard" type="button" data-act="editSem" data-arg="${esc(x.id)}" ${x.id === P.activeSemesterId ? 'aria-current="true"' : ''}><h3>${esc(semLabel(x))}</h3>`
+    + `<span class="muted small">${x.start ? `${fmtMD(x.start)} – ${fmtMD(x.end)}, ${x.year}` : 'No dates yet'}</span><span class="chips">${x.id === P.activeSemesterId ? '<span class="tag ok">Showing</span>' : ''}${(x.holidays || []).length ? `<span class="tag">${x.holidays.length} holidays</span>` : ''}${(x.breaks || []).length ? `<span class="tag">${x.breaks.length} break${x.breaks.length > 1 ? 's' : ''}</span>` : ''}</span></button>`).join('');
+  return head('Academic calendar', 'Semesters', 'Term dates, holidays, breaks and finals. Lab due dates and room finals read from here.', `<button class="btn primary" type="button" data-act="newSem">Add a semester</button>`)
+    + (list.length ? `<h2 class="sr">Semesters in the plan</h2><div class="semcards">${cards}</div>` : needSem())
+    + (s ? `<div class="card"><h2>${esc(semLabel(s))} at a glance</h2><p class="lede">Select a semester above to edit it.</p>${monthsHTML(s)}</div>` : '');
+};
+function monthsHTML(s) {
+  const [a, b] = termSpan(s); if (!a || !b) return '<div class="empty">Add the first and last day of classes to see the calendar.</div>';
+  const last = [s.finalsEnd, b, ...Object.values(s.sessions || {}).map(x => x.finalsEnd)].filter(Boolean).sort().pop();
+  let m = new Date(pd(a).getFullYear(), pd(a).getMonth(), 1); const stop = pd(last); let html = '';
+  while (m <= stop) {
+    const y = m.getFullYear(), mo = m.getMonth(), days = new Date(y, mo + 1, 0).getDate(), lead = m.getDay();
+    let g = ['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => `<span class="dh" aria-hidden="true">${d}</span>`).join('') + '<span></span>'.repeat(lead);
+    for (let d = 1; d <= days; d++) {
+      const ds = iso(new Date(y, mo, d)), bl = blocked(s, ds), inTerm = ds >= a && ds <= b, first = ds === a;
+      const cls = bl ? bl.kind : inTerm ? 'in' : '';
+      g += `<span class="d ${cls}${first ? ' first' : ''}" title="${esc(fmtWMD(ds) + (bl ? ': ' + bl.name : first ? ': first day of classes' : ''))}">${d}</span>`;
+    }
+    html += `<div class="month"><h3>${m.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</h3><div class="mgrid">${g}</div></div>`;
+    m = new Date(y, mo + 1, 1);
+  }
+  return `<div class="months">${html}</div><p class="legend"><span><i style="background:var(--chip)"></i>Classes</span><span><i style="background:var(--bad-bg)"></i>Holiday</span><span><i style="background:var(--warn-bg)"></i>Break</span><span><i style="background:var(--accent)"></i>Finals</span><span><i style="outline:2px solid var(--gold);outline-offset:-2px"></i>First day</span></p>`;
+}
+ACTS.newSem = () => newSemester();
+function newSemester() {
+  const y = new Date().getFullYear(), last = sortedSems()[0];
+  const next = last ? (last.type === 'fall' ? ['spring', last.year + 1] : last.type === 'spring' ? ['summer', last.year] : ['fall', last.year]) : ['spring', y + 1];
+  pane('Add a semester', 'Academic calendar', `<div class="two">${fld('n-type', 'Term', sel('n-type', next[0], [['spring', 'Spring'], ['summer', 'Summer'], ['fall', 'Fall']]))}${fld('n-year', 'Year', `<input type="number" id="n-year" min="2024" max="2040" value="${next[1]}">`)}</div>`
+    + `<p class="hint" id="n-note"></p>`,
+    `<span></span><div class="row"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" type="button" id="n-go">Add</button></div>`);
+  const note = () => { const t = val('n-type'), yr = +val('n-year'); $('n-note').textContent = t === 'fall' ? (ungFall(yr) ? `Dates, Labor Day and Fall Break come from UNG's Fall calendar for ${yr}.` : `UNG's Fall calendar has no ${yr} column: enter the dates.`) : `Holidays for ${yr} are filled in (${standardHolidays(t, yr).map(h => h.name).join(', ')}). Add the dates${t === 'spring' ? ' and Spring Break' : t === 'summer' ? ' for each session' : ''}.`; };
+  $('n-type').onchange = note; $('n-year').oninput = note; note();
+  $('n-go').onclick = () => {
+    const t = val('n-type'), yr = +val('n-year'); if (!yr) return toast('Enter the year.');
+    if (semById(`${t}-${yr}`)) return toast(`${TYPE_LABEL[t]} ${yr} is already in the plan.`);
+    const s = makeSemester(t, yr); P.semesters.push(s); P.activeSemesterId = s.id; $('dlg').close(); changed(false); render(); editSem(s.id);
+  };
+}
+ACTS.editSem = id => editSem(id);
+function editSem(id) {
+  const s = semById(id); if (!s) return;
+  if (P.activeSemesterId !== id) { P.activeSemesterId = id; changed(false); render(); }
+  const u = s.type === 'fall' ? ungFall(s.year) : null, cl = P.courseLists[id];
+  const sessionRows = s.type === 'summer' ? `<fieldset><legend>Sessions</legend><p class="hint" style="margin:0 0 10px">Finals are the last class meeting of each session unless you set them.</p>${SESSIONS.map(([k, l]) => { const x = (s.sessions || {})[k] || {}; return `<div class="three">${fld(`ss-${k}-s`, l + ' starts', dateIn(`ss-${k}-s`, x.start))}${fld(`ss-${k}-e`, 'Classes end', dateIn(`ss-${k}-e`, x.end))}${fld(`ss-${k}-f`, 'Finals', dateIn(`ss-${k}-f`, x.finalsStart))}</div>`; }).join('')}</fieldset>`
+    : `<fieldset><legend>Dates</legend><div class="two">${fld('s-start', 'First day of classes', dateIn('s-start', s.start))}${fld('s-end', 'Last day of classes', dateIn('s-end', s.end))}</div><div class="two">${fld('s-fs', 'Finals start', dateIn('s-fs', s.finalsStart))}${fld('s-fe', 'Finals end', dateIn('s-fe', s.finalsEnd))}</div>`
+      + (u ? `<p class="hint" style="margin:6px 0 10px">UNG's Fall ${s.year} calendar: classes ${fmtMD(u.start)}–${fmtMD(u.end)}, finals ${fmtMD(u.finalsStart)}–${fmtMD(u.finalsEnd)}.</p><button class="btn sm" type="button" id="s-ung">Use UNG's Fall ${s.year} dates</button>` : '')
+      + (cl?.ptrm && Object.keys(cl.ptrm).length ? ` <button class="btn sm" type="button" id="s-775">Fill from COM775</button>` : '') + `</fieldset>`;
+  const hol = (s.holidays || []).map((h, i) => `<li><span>${esc(fmtWMD(h.date))}</span><span>${esc(h.name)}</span><button class="btn sm danger" type="button" data-rmh="${i}" aria-label="Remove ${esc(h.name)}">Remove</button></li>`).join('');
+  const brk = (s.breaks || []).map((b, i) => `<li><span>${esc(fmtMD(b.start))} – ${esc(fmtMD(b.end))}</span><span>${esc(b.name)}</span><button class="btn sm danger" type="button" data-rmb="${i}" aria-label="Remove ${esc(b.name)}">Remove</button></li>`).join('');
+  pane(semLabel(s), 'Academic calendar', sessionRows
+    + `<fieldset><legend>Holidays (no classes)</legend><ul class="issues" style="margin-bottom:10px">${hol || '<li><span class="muted">None</span></li>'}</ul><div class="three">${fld('h-date', 'Date', dateIn('h-date', ''))}${fld('h-name', 'Name', '<input type="text" id="h-name" placeholder="e.g. Founders Day">')}<div class="f"><span>&nbsp;</span><button class="btn" type="button" id="h-add">Add holiday</button></div></div><button class="btn sm" type="button" id="h-std">Add the standard holidays for ${s.year}</button></fieldset>`
+    + `<fieldset><legend>Breaks</legend><ul class="issues" style="margin-bottom:10px">${brk || '<li><span class="muted">None</span></li>'}</ul><div class="three">${fld('b-name', 'Name', `<input type="text" id="b-name" placeholder="${s.type === 'spring' ? 'Spring Break' : 'Break'}">`)}${fld('b-s', 'First day', dateIn('b-s', ''))}${fld('b-e', 'Last day', dateIn('b-e', ''))}</div><button class="btn" type="button" id="b-add">Add break</button></fieldset>`,
+    `<button class="btn danger" type="button" id="s-del">Delete ${esc(semLabel(s))}</button><div class="row"><button class="btn primary" type="button" data-close>Done</button></div>`);
+  const commit = () => {
+    if (s.type === 'summer') { s.sessions ||= {}; SESSIONS.forEach(([k]) => { const st = val(`ss-${k}-s`), en = val(`ss-${k}-e`), fi = val(`ss-${k}-f`) || en; if (st || en) s.sessions[k] = { start: st, end: en, finalsStart: fi, finalsEnd: fi }; else delete s.sessions[k]; }); [s.start, s.end] = termSpan(s); }
+    else { s.start = val('s-start'); s.end = val('s-end'); s.finalsStart = val('s-fs'); s.finalsEnd = val('s-fe'); }
+    changed(); };
+  $('dlg').querySelectorAll('input[type=date]').forEach(i => { if (/^(s-|ss-)/.test(i.id)) i.onchange = commit; });
+  const again = () => editSem(id);
+  $('dlg').querySelectorAll('[data-rmh]').forEach(b => b.onclick = () => { s.holidays.splice(+b.dataset.rmh, 1); changed(); again(); });
+  $('dlg').querySelectorAll('[data-rmb]').forEach(b => b.onclick = () => { s.breaks.splice(+b.dataset.rmb, 1); changed(); again(); });
+  $('h-add').onclick = () => { const d = val('h-date'), n = val('h-name'); if (!d || !n) return toast('Enter the date and the name.'); s.holidays = mergeBy([...(s.holidays || []), { date: d, name: n }], 'date'); changed(); again(); };
+  $('h-std').onclick = () => { s.holidays = mergeBy([...(s.holidays || []), ...standardHolidays(s.type, s.year)], 'date'); changed(); again(); };
+  $('b-add').onclick = () => { const n = val('b-name') || 'Break', a = val('b-s'), b = val('b-e') || a; if (!a) return toast('Enter the first day.'); if (b < a) return toast('The last day is before the first.'); (s.breaks ||= []).push({ name: n, start: a, end: b }); s.breaks.sort((x, y) => x.start.localeCompare(y.start)); changed(); again(); };
+  if ($('s-ung')) $('s-ung').onclick = () => { applyUngFall(s); changed(); again(); toast(`UNG's Fall ${s.year} dates applied.`); };
+  if ($('s-775')) $('s-775').onclick = () => { const pt = Object.entries(cl.ptrm).filter(([k]) => !/short|session|maymester|ecore/i.test(k) || s.type === 'summer'); const st = pt.map(x => x[1].start).sort()[0], en = pt.map(x => x[1].end).sort().pop(); if (st) { s.start = st; s.end = en; changed(); again(); toast(`From COM775: ${fmtMD(st)} – ${fmtMD(en)}. Check finals week.`); } };
+  $('s-del').onclick = () => {
+    if (!confirm(`Delete ${semLabel(s)} and its courses, rooms and lab calendar from this plan?`)) return;
+    P.semesters = P.semesters.filter(x => x.id !== id); delete P.courseLists[id]; delete P.rooms[id]; delete P.labCalendars[id];
+    P.activeSemesterId = sortedSems()[0]?.id || null; $('dlg').close(); changed(false); render();
+  };
+}
+
+/* ---------- language courses ---------- */
+const CF = { q: '', subj: '', camp: '', days: '', all: false };
+VIEWS.courses = () => {
+  const s = sem(); if (!s) return head('Language courses', 'Courses', '') + needSem();
+  const cl = P.courseLists[s.id], cs = courses();
+  const f = cl?.files || {};
+  const imp = `<div class="card"><h2>${cs.length ? 'Update from Banner' : 'Import from Banner'}</h2><p class="lede">Drop COM1430 (schedule detail) and COM775 (term dates, building, full instructor names) together. They are matched by CRN. A campus you chose for an online section stays when you import again.</p>`
+    + `<div class="drop big" id="c-drop"><p style="margin:0">Drop the CSV files here, or</p><input type="file" id="c-file" accept=".csv" multiple aria-label="Choose COM1430 and COM775 CSV files"></div>`
+    + `<p class="small muted" style="margin:10px 0 0">${f['1430'] ? `COM1430: ${f['1430'].rows} rows, ${new Date(f['1430'].at).toLocaleDateString()}` : 'COM1430: not yet'} · ${f['775'] ? `COM775: ${f['775'].rows} rows, ${new Date(f['775'].at).toLocaleDateString()}` : 'COM775: not yet'}</p></div>`;
+  if (!cs.length) return head(semLabel(s), 'Language courses', '') + imp;
+  const subjects = [...new Set(cs.map(c => c.SUBJ))].sort(), pats = [...new Set(cs.map(c => normDays(c.DAYS)).filter(Boolean))].sort();
+  const shown = coursesShown();
+  const rows = shown.map(c => {
+    const needs = isLang(c.SUBJ) && !pivotOf(c.LOCATION);
+    return `<tr${needs ? ' class="flag"' : ''}><td class="nowrap">${isLang(c.SUBJ) ? langTag(c.SUBJ) : ''}<b>${esc(c.SUBJ)} ${esc(c.CRSE)}.${esc(c.SEC)}</b><div class="small muted">CRN ${esc(c.CRN)}</div></td><td>${esc(c.TITLE)}</td>`
+      + `<td class="nowrap">${esc(c.DAYS || 'TBA')} ${c.TIME_FROM ? esc(fmt12(c.TIME_FROM) + '–' + fmt12(c.TIME_TO)) : ''}</td><td>${esc(c.INSTRUCTOR)}</td>`
+      + `<td><select data-loc="${esc(c.CRN)}" aria-label="Campus for ${esc(c.SUBJ + ' ' + c.CRSE + '.' + c.SEC)}">${opt('', needs ? 'Choose a campus' : '—', c.LOCATION)}${LOCATIONS.map(l => opt(l, l.replace(' Campus', ''), c.LOCATION)).join('')}</select><div class="small muted">Banner: ${esc({ A: 'Dahlonega', GA: 'Gainesville', OC: 'Oconee', 9: 'Cumming', OL: 'Online' }[c.CMP] || c.CMP || '—')}</div></td>`
+      + `<td class="nowrap small">${esc([c.BUILDING, c.ROOM].filter(Boolean).join(' '))}</td><td class="num">${c.MAXENR ?? '—'}</td></tr>`;
+  }).join('');
+  return head(semLabel(s), 'Language courses', `${cs.filter(c => isLang(c.SUBJ)).length} language sections of ${cs.length} imported.`, `<button class="btn" type="button" data-act="dlDist">Class distribution (CSV)</button>`)
+    + distributionHTML(s)
+    + `<div class="toolbar"><div class="f grow"><label for="c-q">Search</label><input type="search" id="c-q" value="${esc(CF.q)}" placeholder="CRN, course, title or instructor"></div>`
+    + `<div class="f">${'<label for="c-subj">Subject</label>' + sel('c-subj', CF.subj, subjects.map(x => [x, x]), 'All')}</div><div class="f"><label for="c-camp">Campus</label>${sel('c-camp', CF.camp, [...PIVOTS, ['none', 'Needs a campus']], 'All')}</div>`
+    + `<div class="f"><label for="c-days">Days</label>${sel('c-days', CF.days, pats.map(x => [x, x]), 'All')}</div><label class="switch" style="margin:0 0 6px"><input type="checkbox" role="switch" id="c-all" ${CF.all ? 'checked' : ''}>All subjects</label></div>`
+    + `<div class="tw"><table class="t"><caption>${shown.length} section${shown.length === 1 ? '' : 's'} shown</caption><thead><tr><th scope="col">Course</th><th scope="col">Title</th><th scope="col">Meets</th><th scope="col">Instructor</th><th scope="col">Campus</th><th scope="col">Room</th><th scope="col" class="num">Max</th></tr></thead><tbody>${rows || '<tr><td colspan="7" class="muted">No sections match.</td></tr>'}</tbody></table></div>`
+    + imp;
+};
+function coursesShown() {
+  const q = CF.q.toLowerCase();
+  return courses().filter(c => (CF.all || isLang(c.SUBJ)) && (!CF.subj || c.SUBJ === CF.subj) && (!CF.days || normDays(c.DAYS) === CF.days)
+    && (!CF.camp || (CF.camp === 'none' ? !pivotOf(c.LOCATION) : pivotOf(c.LOCATION) === CF.camp))
+    && (!q || `${c.CRN} ${c.SUBJ} ${c.CRSE}.${c.SEC} ${c.SUBJ}${c.CRSE} ${c.TITLE} ${c.INSTRUCTOR}`.toLowerCase().includes(q)))
+    .sort((a, b) => `${a.SUBJ}${a.CRSE}${a.SEC}`.localeCompare(`${b.SUBJ}${b.CRSE}${b.SEC}`, undefined, { numeric: true }));
+}
+function distribution() {
+  const by = {}, tot = {}, camp = {}; let unmapped = 0;
+  LANG_ORDER.forEach(l => { by[l] = {}; tot[l] = 0; }); PIVOTS.forEach(([p]) => camp[p] = 0);
+  courses().filter(c => LANG_ORDER.includes(c.SUBJ.toUpperCase())).forEach(c => { const l = c.SUBJ.toUpperCase(), p = pivotOf(c.LOCATION); tot[l]++; if (!p) { unmapped++; return; } by[l][p] = (by[l][p] || 0) + 1; camp[p]++; });
+  const grand = Object.values(camp).reduce((a, b) => a + b, 0);
+  const first = p => courses().filter(c => +c.CRSE <= 1002 && pivotOf(c.LOCATION) === p);
+  const quick = PIVOTS.map(([p, l]) => ({ p, l, core: first(p).filter(c => ['SPAN', 'FREN', 'PORT', 'ITAL', 'GRMN'].includes(c.SUBJ)).length, span: first(p).filter(c => c.SUBJ === 'SPAN').length }));
+  return { by, tot, camp, grand, unmapped, quick };
+}
+function distributionHTML() {
+  const d = distribution(), pct = (n, t) => t ? (n / t * 100).toFixed(1) + '%' : '–';
+  const rows = LANG_ORDER.filter(l => d.tot[l]).map(l => `<tr><th scope="row">${langTag(l)}${esc(LANG[l][0])}</th><td class="num">${d.tot[l]}</td>${PIVOTS.map(([p]) => `<td class="num">${d.by[l][p] || 0} <span class="muted small">${pct(d.by[l][p] || 0, d.camp[p])}</span></td>`).join('')}</tr>`).join('');
+  return `<div class="card"><h2>Distribution and budget</h2><p class="lede">Sections per language and campus (campus from the Campus column, so online sections count where you place them). The percentage is the language's share of that campus.</p>`
+    + `<div class="tw"><table class="t"><thead><tr><th scope="col">Language</th><th scope="col" class="num">Sections</th>${PIVOTS.map(([, l]) => `<th scope="col" class="num">${l}</th>`).join('')}</tr></thead><tbody>${rows || '<tr><td colspan="5" class="muted">No language sections.</td></tr>'}</tbody>`
+    + `<tfoot><tr><td>Total</td><td class="num">${d.grand + d.unmapped}</td>${PIVOTS.map(([p]) => `<td class="num">${d.camp[p]}</td>`).join('')}</tr></tfoot></table></div>`
+    + `<p class="small muted" style="margin:10px 0 0">First-year sections (1001–1002): ${d.quick.map(q => `${q.l} ${q.core} (Spanish ${q.span})`).join(' · ')}${d.unmapped ? ` · <b>${d.unmapped} without a campus are not counted.</b>` : ''}</p></div>`;
+}
+AFTER.courses = () => {
+  const drop = $('c-drop'), take = async files => {
+    const got = {}; for (const f of files) { const rows = parseCSV(await readFile(f)), k = kindOfCSV(rows); if (k) got[k] = rows; else toast(`${f.name} is not COM1430 or COM775 (columns not recognized).`, 5000); }
+    if (!got['1430'] && !got['775']) return;
+    if (!got['1430'] && !courses().length) return toast('Add COM1430 too: it has the class list.', 5000);
+    const l = importCourses(P.activeSemesterId, got['1430'], got['775']); changed(); toast(`${l.rows.length} sections imported${got['775'] ? '' : ' (add COM775 for term dates and full instructor names)'}.`, 5000);
+  };
+  if (drop) { $('c-file').onchange = e => take([...e.target.files]); ['dragenter', 'dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); })); ['dragleave', 'drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); })); drop.addEventListener('drop', e => take([...e.dataTransfer.files])); }
+  const refilter = () => { const pos = $('c-q')?.selectionStart; CF.q = val('c-q'); CF.subj = val('c-subj'); CF.camp = val('c-camp'); CF.days = val('c-days'); CF.all = val('c-all'); show('courses', false); const q = $('c-q'); if (q && document.activeElement !== q && pos != null && refilter.from === 'q') { q.focus(); q.setSelectionRange(pos, pos); } };
+  if ($('c-q')) { $('c-q').oninput = () => { refilter.from = 'q'; clearTimeout(refilter.t); refilter.t = setTimeout(refilter, 200); }; ['c-subj', 'c-camp', 'c-days', 'c-all'].forEach(id => $(id).onchange = () => { refilter.from = id; refilter(); $(id).focus(); }); }
+  document.querySelectorAll('[data-loc]').forEach(x => x.onchange = () => { const c = courses().find(y => y.CRN === x.dataset.loc); c.LOCATION = x.value; c.LOCATION_SET = true; changed(false); const sc = window.scrollY; show('courses', false); window.scrollTo(0, sc); document.querySelector(`[data-loc="${CSS.escape(c.CRN)}"]`)?.focus(); });
+};
+ACTS.dlDist = () => { const s = sem(); download(`class-distribution${s ? '-' + s.id : ''}.csv`, distributionCSV(), 'text/csv'); };
+function distributionCSV() {
+  const cell = v => { v = v == null ? '' : String(v); return /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v; };
+  const fd = s => { if (!s) return ''; const [y, m, d] = s.split('-'); return `${+d}-${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][+m - 1]}-${y.slice(2)}`; };
+  const cs = courses().filter(c => LANG_ORDER.includes(c.SUBJ.toUpperCase())).sort((a, b) => `${a.SUBJ}${a.CRSE}${a.SEC}`.localeCompare(`${b.SUBJ}${b.CRSE}${b.SEC}`, undefined, { numeric: true }));
+  const ch = ['Status', 'Part of Term', 'CRN', 'Subj', 'Crse', 'Sec', 'Cmp', 'Cred', 'Title', 'Days', 'Time', 'Instructor', 'Building/Room', 'Location', 'Grading Campus', 'Start/End Dates'];
+  const cr = cs.map(c => ['', c.PART_OF_TERM, c.CRN, c.SUBJ, c.CRSE, c.SEC, c.CMP, c.CRED, c.TITLE, c.DAYS, c.TIME_FROM && c.TIME_TO ? `${fmt12(c.TIME_FROM)}-${fmt12(c.TIME_TO)}` : 'TBA', c.INSTRUCTOR, c.BLDGRM_RAW || [c.BUILDING, c.ROOM].filter(Boolean).join('-'), c.LOCATION, pivotOf(c.LOCATION), c.START && c.END ? `${fd(c.START)} to ${fd(c.END)}` : '']);
+  const d = distribution(), dh = ['Language', 'Total', ...PIVOTS.map(p => p[0]), ...PIVOTS.map(p => 'Percent' + p[0]), ...PIVOTS.map(p => 'PTot' + p[0])], p2 = (n, t) => t ? (n / t * 100).toFixed(2) + '%' : '0.00%';
+  const dr = LANG_ORDER.map(l => { const t = PIVOTS.reduce((a, [p]) => a + (d.by[l][p] || 0), 0); return [l, d.tot[l], ...PIVOTS.map(([p]) => d.by[l][p] || 0), ...PIVOTS.map(([p]) => p2(d.by[l][p] || 0, d.camp[p])), ...PIVOTS.map(([p]) => p2(d.by[l][p] || 0, t))]; });
+  dr.push(['TOTAL', d.grand, ...PIVOTS.map(([p]) => d.camp[p]), ...PIVOTS.map(() => ''), ...PIVOTS.map(([p]) => p2(d.camp[p], d.grand))]);
+  const lines = [[...ch, '', ...dh].map(cell).join(',')];
+  for (let i = 0; i < Math.max(cr.length, dr.length); i++) lines.push([...(cr[i] || ch.map(() => '')), '', ...(dr[i] || dh.map(() => ''))].map(cell).join(','));
+  lines.push('', 'Quick Counters (CRSE ≤ 1002)', ['Campus', 'SPAN+FREN+PORT+ITAL+GRMN', 'SPAN only'].map(cell).join(','), ...d.quick.map(q => [q.l, q.core, q.span].map(cell).join(',')));
+  if (d.unmapped) lines.push('', cell(`${d.unmapped} section(s) left out of the counts: no campus chosen. Choose one in the Semester console, then download again.`));
+  return lines.join('\r\n');
+}
+
+/* ---------- room scheduling ---------- */
+let ROOMVIEW = '';
+VIEWS.rooms = () => {
+  const s = sem(); if (!s) return head('Room scheduling', 'Rooms', '') + needSem();
+  const list = courses().filter(inNesbitt4201).sort((a, b) => normDays(a.DAYS).localeCompare(normDays(b.DAYS)) || mins(a.TIME_FROM) - mins(b.TIME_FROM));
+  if (!list.length) return head(semLabel(s), 'Room scheduling', 'Classes Banner puts in Nesbitt 4201 are split between 4201A and 4207 here.') + `<div class="empty">No classes in Nesbitt 4201 yet. <button class="btn sm" type="button" data-view="courses">Import courses</button></div>`;
+  const A = roomsOf().assign, O = roomsOf().finalsOverrides, clash = roomClashes(), prev = prevWith(s, x => Object.keys(P.rooms[x.id]?.assign || {}).length);
+  const rows = list.map(c => {
+    const r = A[c.CRN] || '', f = finalsFor(c), o = O[c.CRN];
+    const fin = f.examDay ? `${f.examDay} ${fmt12(f.examStart)}–${fmt12(f.examEnd)}<div class="small muted">${f.source === 'manual' ? 'entered by hand' : esc(f.source)}${o ? ` · <button class="btn sm" type="button" data-unfin="${esc(c.CRN)}">Use the schedule</button>` : ''}</div>`
+      : `<div class="small" style="color:var(--warn)">${esc(f.note)}</div>${s.type === 'summer' ? '' : `<div class="row" style="margin-top:4px">${sel('fd-' + c.CRN, o?.day, ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => [d, d]), 'Day', `data-fin="${esc(c.CRN)}" aria-label="Exam day"`)}<input type="time" data-fin="${esc(c.CRN)}" data-k="start" value="${esc(o?.start || '')}" aria-label="Exam start" style="width:auto"><input type="time" data-fin="${esc(c.CRN)}" data-k="end" value="${esc(o?.end || '')}" aria-label="Exam end" style="width:auto"></div>`}`;
+    return `<tr${clash.has(c.CRN) ? ' class="flag"' : ''}><td class="nowrap">${isLang(c.SUBJ) ? langTag(c.SUBJ) : ''}<b>${esc(c.SUBJ)} ${esc(c.CRSE)}.${esc(c.SEC)}</b><div class="small muted">CRN ${esc(c.CRN)}${clash.has(c.CRN) ? ' · <b style="color:var(--bad)">double-booked</b>' : ''}</div></td>`
+      + `<td class="nowrap">${esc(normDays(c.DAYS))} ${esc(fmt12(c.TIME_FROM))}–${esc(fmt12(c.TIME_TO))}</td><td class="num">${c.MAXENR ?? '—'}</td><td>${esc(c.INSTRUCTOR)}</td>`
+      + `<td><div class="seg" role="group" aria-label="Room for ${esc(c.SUBJ + ' ' + c.CRSE + '.' + c.SEC)}">${ROOMS.map(([v, l]) => `<button type="button" data-room="${esc(c.CRN)}" data-v="${v}" aria-pressed="${r === v}" title="${esc(l)}">${v}</button>`).join('')}</div></td><td>${fin}</td></tr>`;
+  }).join('');
+  const done = list.filter(c => A[c.CRN]).length;
+  return head(semLabel(s), 'Room scheduling', `${list.length} classes registered in Nesbitt 4201 · ${done} with a room · ${list.length - done} without${clash.size ? ` · <b style="color:var(--bad)">${clash.size} double-booked</b>` : ''}.`,
+    prev ? `<button class="btn" type="button" data-act="copyRooms" data-arg="${esc(prev.id)}">Copy rooms from ${esc(semLabel(prev))}</button>` : '')
+    + `<div class="tw"><table class="t"><caption>4201A is the larger room, 4207 the smaller. Final exam times come from UNG's final exam schedule.</caption><thead><tr><th scope="col">Class</th><th scope="col">Meets</th><th scope="col" class="num">Max</th><th scope="col">Instructor</th><th scope="col">Room</th><th scope="col">Final exam</th></tr></thead><tbody>${rows}</tbody></table></div>`
+    + `<div class="card" style="margin-top:16px"><h2>The week</h2><div class="toolbar"><div class="seg" role="group" aria-label="Which room">${[['', 'Both rooms'], ...ROOMS.map(([v]) => [v, v])].map(([v, l]) => `<button type="button" data-rv="${v}" aria-pressed="${ROOMVIEW === v}">${l}</button>`).join('')}</div>`
+    + `${ROOMS.map(([v]) => `<button class="btn sm" type="button" data-act="printRoom" data-arg="${v}">Printable ${v} schedule</button>`).join('')}</div>${weekGrid(list.filter(c => A[c.CRN] && (!ROOMVIEW || A[c.CRN] === ROOMVIEW)), clash)}</div>`;
+};
+function weekGrid(list, clash = new Set(), T0 = 8 * 60, T1 = 21 * 60) {
+  const A = roomsOf().assign, H = 44, px = m => (m - T0) / 60 * H, h = (T1 - T0) / 60 * H;
+  const ts = list.map(c => [mins(c.TIME_FROM), mins(c.TIME_TO)]).filter(([a]) => a >= 0);
+  if (ts.length) { T0 = Math.min(T0, Math.floor(Math.min(...ts.map(x => x[0])) / 60) * 60); T1 = Math.max(Math.ceil(Math.max(...ts.map(x => x[1])) / 60) * 60, T0 + 4 * 60); }
+  let hrs = ''; for (let m = T0; m <= T1; m += 60) hrs += `<span class="tl" style="top:${px(m)}px">${fmt12(`${String(m / 60).padStart(2, '0')}:00`)}</span>`;
+  const cols = WD.map(d => {
+    const bl = []; list.forEach(c => { if (parseDays(c.DAYS).includes(d)) bl.push(c); });
+    bl.sort((a, b) => mins(a.TIME_FROM) - mins(b.TIME_FROM)); const lanes = []; const placed = bl.map(c => { const f = mins(c.TIME_FROM), t = mins(c.TIME_TO); let l = lanes.findIndex(e => e <= f); if (l < 0) { l = lanes.length; lanes.push(t); } else lanes[l] = t; return { c, f, t, l }; });
+    const w = 100 / Math.max(1, lanes.length);
+    let lines = ''; for (let m = T0; m <= T1; m += 60) lines += `<span class="hr" style="top:${px(m)}px"></span>`;
+    return `<div class="col" style="height:${px(T1)}px">${lines}${placed.map(({ c, f, t, l }) => `<div class="blk${clash.has(c.CRN) ? ' clash' : ''}" style="top:${px(f)}px;height:${Math.max(px(t) - px(f), 22)}px;left:calc(${l * w}% + 2px);width:calc(${w}% - 4px);background:${langColor(c.SUBJ)}" title="${esc(`${c.SUBJ} ${c.CRSE}.${c.SEC}, ${fmt12(c.TIME_FROM)}–${fmt12(c.TIME_TO)}, ${A[c.CRN]}`)}"><b>${esc(c.SUBJ + ' ' + c.CRSE)}</b>${esc(A[c.CRN] + ' · ' + fmt12(c.TIME_FROM))}</div>`).join('')}</div>`;
+  }).join('');
+  return list.length ? `<div class="wk" role="img" aria-label="Weekly room schedule, ${list.length} classes"><div class="hd">Time</div>${WD.map(d => `<div class="hd">${d}</div>`).join('')}<div class="col" style="height:${px(T1)}px;border-left:0">${hrs}</div>${cols}</div>` : '<div class="empty">No classes in this room yet.</div>';
+}
+AFTER.rooms = () => {
+  const keep = () => { const y = window.scrollY; show('rooms', false); window.scrollTo(0, y); };
+  document.querySelectorAll('[data-room]').forEach(b => b.onclick = () => { const A = roomsOf().assign; if (A[b.dataset.room] === b.dataset.v) delete A[b.dataset.room]; else A[b.dataset.room] = b.dataset.v; changed(false); keep(); document.querySelector(`[data-room="${CSS.escape(b.dataset.room)}"][data-v="${b.dataset.v}"]`)?.focus(); });
+  document.querySelectorAll('[data-rv]').forEach(b => b.onclick = () => { ROOMVIEW = b.dataset.rv; keep(); });
+  document.querySelectorAll('[data-fin]').forEach(x => x.onchange = () => { const O = roomsOf().finalsOverrides, k = x.dataset.fin, o = O[k] ||= {}; if (x.tagName === 'SELECT') o.day = x.value; else o[x.dataset.k] = x.value; changed(false); if (o.day && o.start && o.end) keep(); });
+  document.querySelectorAll('[data-unfin]').forEach(b => b.onclick = () => { delete roomsOf().finalsOverrides[b.dataset.unfin]; changed(false); keep(); });
+};
+ACTS.copyRooms = id => { const r = copyRooms(id, P.activeSemesterId); changed(); toast(`${r.copied} room${r.copied === 1 ? '' : 's'} copied from ${semLabel(semById(id))}${r.missed.length ? `. No match last term: ${r.missed.slice(0, 5).join(', ')}${r.missed.length > 5 ? '…' : ''}` : '.'}`, 7000); };
+const prevWith = (s, has) => [...P.semesters].filter(x => x.id !== s.id && semOrder(x) < semOrder(s) && has(x)).sort((a, b) => (b.type === s.type) - (a.type === s.type) || semOrder(b) - semOrder(a))[0] || null;
+function roomScheduleOut(s = sem()) {
+  const A = roomsOf(s.id).assign;
+  return { generated: new Date().toISOString(), rooms: ROOMS.map(r => r[0]), courses: courses(s.id).filter(inNesbitt4201).map(c => { const f = finalsFor(c, s.id), l = c.SUBJ.toLowerCase().slice(0, 4), il = isLang(c.SUBJ) && c.SUBJ !== 'MLAN';
+    return { CRN: c.CRN, SUBJ: c.SUBJ, CRSE: c.CRSE, SEC: c.SEC, INSTRUCTOR: c.INSTRUCTOR, DAYS: normDays(c.DAYS), TIME_FROM: toHHMM(c.TIME_FROM), TIME_TO: toHHMM(c.TIME_TO), MAXENR: c.MAXENR, ROOM: A[c.CRN] || null,
+      IS_LANGUAGE: il, LANG: il ? l : null, START: c.START, END: c.END, FINALS_DAY: f.examDay, FINALS_START: f.examStart, FINALS_END: f.examEnd, FINALS_SOURCE: f.source, FINALS_NOTE: f.note }; }) };
+}
+ACTS.printRoom = room => { const s = sem(), list = courses().filter(c => inNesbitt4201(c) && roomsOf().assign[c.CRN] === room); download(`room-${room}-${s.id}.html`, docPage(`Room ${room}: ${semLabel(s)}`, `<h1>Room ${room}, ${esc(semLabel(s))}</h1><p class="sub">Weekly pattern, ${list.length} classes · made ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>${weekGrid(list)}`), 'text/html'); };
+
+/* ---------- lab calendar ---------- */
+VIEWS.labs = () => {
+  const s = sem(); if (!s) return head('Lab calendar', 'Lab due dates', '') + needSem();
+  if (!s.start && s.type !== 'summer') return head(semLabel(s), 'Lab calendar', '') + `<div class="empty">Set the term dates first. <button class="btn sm" type="button" data-act="editSem" data-arg="${esc(s.id)}">Open ${esc(semLabel(s))}</button></div>`;
+  const lc = labCal(s), off = offered(s), prev = prevWith(s, x => Object.keys(P.labCalendars[x.id]?.placements || {}).length || Object.values(P.labCalendars[x.id]?.classesOffered || {}).some(Boolean));
+  const fromCourses = LAB_LANGS.flatMap(([code]) => LAB_LEVELS.map(lv => `${code}${lv}`)).filter(k => courses().some(c => `${c.SUBJ}${c.CRSE}` === k));
+  const sess = s.type === 'summer' ? `<p class="small" style="margin:0 0 10px"><b>Sessions with labs:</b> ${SESSIONS.map(([k, l]) => { const x = s.sessions?.[k]; return `<label class="chipbox"${x?.start ? '' : ' title="Add this session\'s dates in the Academic calendar"'}><input type="checkbox" data-sess="${k}" ${lc.sessionToggles[k] ? 'checked' : ''} ${x?.start ? '' : 'disabled'}>${l}</label>`; }).join(' ')}</p>` : '';
+  const pick = `<div class="classpick">${LAB_LANGS.map(([code, label, color]) => `<div class="lrow"><span class="lname">${langTag(code)}${label}</span>${LAB_LEVELS.flatMap(lv => activeSessions(s).map(se => { const k = classKey(code, lv, se); return `<label class="chipbox"><input type="checkbox" data-cls="${k}" ${lc.classesOffered[k] ? 'checked' : ''}>${code}${lv}${se === REGULAR ? '' : ' · ' + SESSION_LABEL[se]}</label>`; })).join('')}</div>`).join('')}</div>`;
+  const due = off.length ? `<div class="tw"><table class="t"><thead><tr><th scope="col">Class</th><th scope="col">Due day</th><th scope="col">Due time</th></tr></thead><tbody>${off.map(c => { const d = lc.dueDayTimes[c.key] || {}; return `<tr><th scope="row">${langTag(c.code)}${esc(c.name)}</th><td>${sel('dd-' + c.key, d.day, DAY_FULL.slice(1).concat('Sunday').map(x => [x, x]), null, `data-dd="${c.key}" data-k="day" aria-label="Due day for ${esc(c.name)}"`)}</td><td>${sel('dt-' + c.key, d.time, [...new Set([...DUE_TIMES, d.time].filter(Boolean))].map(x => [x, x]), null, `data-dd="${c.key}" data-k="time" aria-label="Due time for ${esc(c.name)}"`)}</td></tr>`; }).join('')}</tbody></table></div>`
+    + `<div class="row" style="margin-top:10px"><span class="small muted">Same for every class:</span>${sel('all-day', '', DAY_FULL.slice(1).concat('Sunday').map(x => [x, x]), 'Day', 'aria-label="Due day for every class"')}${sel('all-time', '', DUE_TIMES.map(x => [x, x]), 'Time', 'aria-label="Due time for every class"')}<button class="btn sm" type="button" data-act="allDue">Apply</button></div>` : '<div class="empty">Choose classes in step 1.</div>';
+  return head(semLabel(s), 'Lab calendar', 'Which classes have labs, when they are due, and which week each lab is due. Lab Hub pages read the result (lab-due-dates.json).',
+    (prev ? `<button class="btn primary" type="button" data-act="copyLabs" data-arg="${esc(prev.id)}">Copy from ${esc(semLabel(prev))}…</button>` : '') + `<button class="btn" type="button" data-act="copyLabs" data-arg="">Copy from another semester…</button>`)
+    + ((b => b.length ? issueList(b) : '')(issues().filter(i => i.view === 'labs' && i.level === 'bad')))
+    + `<div class="card"><h2><span class="step">1</span>Classes with labs</h2>${sess}${pick}${fromCourses.length ? `<p class="small" style="margin:10px 0 0"><button class="btn sm" type="button" data-act="clsFromCourses">Match the imported courses</button> <span class="muted">${esc(fromCourses.join(', '))}</span></p>` : ''}</div>`
+    + `<div class="card"><h2><span class="step">2</span>Due day and time</h2>${due}</div>`
+    + `<div class="card"><h2><span class="step">3</span>Due weeks</h2><p class="lede">Drag a lab onto a week, or select a cell to choose its labs. Each cell shows that week's due date. Red cells are holidays, amber are breaks, gray is finals.</p>`
+    + `<div class="tray" aria-label="Labs and workshops">${lc.labTypes.map(l => `<span class="pill" draggable="true" data-drag="${esc(l.id)}" style="background:${esc(l.color)}">${esc(l.label)}<button class="x" type="button" data-act="rmType" data-arg="${esc(l.id)}" aria-label="Remove ${esc(l.label)}">✕</button></span>`).join('')}`
+    + `<button class="btn sm" type="button" data-act="addType">+ Lab or workshop</button><span style="flex:1"></span><button class="btn sm" type="button" data-act="autoFill">Auto-fill</button><button class="btn sm danger" type="button" data-act="clearGrid">Clear</button></div>${gridHTML(s)}</div>`
+    + `<div class="card"><h2><span class="step">4</span>Share</h2><p class="lede">The proposal is a document for instructors (week table and one list per language). lab-due-dates.json goes to D2L with the other outputs.</p><div class="row"><button class="btn primary" type="button" data-act="proposal">Download the proposal</button><button class="btn" type="button" data-act="dlOut" data-arg="lab-due-dates.json">lab-due-dates.json</button></div></div>`;
+};
+function gridHTML(s) {
+  const lc = labCal(s), off = offered(s), weeks = weeksOf(s);
+  if (!off.length) return '<div class="empty">Choose classes in step 1.</div>';
+  if (!weeks.length) return '<div class="empty">Set the term dates in the Academic calendar.</div>';
+  const label = id => lc.labTypes.find(l => l.id === id);
+  return `<div class="tw" style="max-height:70vh"><table class="lab"><caption class="sr">Lab due weeks, ${weeks.length} weeks by ${off.length} classes</caption><thead><tr><th class="wkh" scope="col">Week</th>${off.map(c => `<th scope="col" style="border-top:4px solid ${c.color}">${esc(c.name)}<div class="small muted" style="font-weight:500">${esc(lc.dueDayTimes[c.key]?.day?.slice(0, 3) || '')} ${esc(lc.dueDayTimes[c.key]?.time || '')}</div></th>`).join('')}</tr></thead><tbody>`
+    + weeks.map(w => `<tr><th class="wkh" scope="row">Week ${w.idx}<div class="small muted" style="font-weight:500">${fmtMD(w.start)} – ${fmtMD(w.end)}</div></th>${off.map(c => {
+      if (!inWindow(s, w, c.session)) return '<td class="out" aria-label="Not in this session"></td>';
+      const d = dueInWeek(s, w, c.key), b = d ? blocked(s, d) : null, ids = lc.placements[`${w.idx}_${c.key}`] || [];
+      return `<td class="cell ${b ? b.kind : ''}${b && ids.length ? ' bad-place' : ''}" tabindex="0" data-cell="${w.idx}|${c.key}" aria-label="${esc(`${c.name}, week ${w.idx}${d ? ', due ' + fmtWMD(d) : ''}${b ? ', ' + b.name : ''}${ids.length ? ', ' + ids.map(i => label(i)?.label).join(', ') : ', no lab'}`)}"><span class="due">${d ? fmtWMD(d).replace(',', '') : ''}${b ? ' · ' + esc(b.name) : ''}</span>${ids.map(i => { const l = label(i); return l ? `<span class="pill" draggable="true" data-drag="${esc(i)}" data-from="${w.idx}|${c.key}" style="background:${esc(l.color)}">${esc(l.label)}</span>` : ''; }).join('')}</td>`;
+    }).join('')}</tr>`).join('') + '</tbody></table></div>';
+}
+AFTER.labs = () => {
+  const s = sem(); if (!s) return; const lc = labCal(s);
+  const keep = () => { const y = window.scrollY, g = document.querySelector('.lab')?.closest('.tw'), gx = g?.scrollLeft, gy = g?.scrollTop; show('labs', false); window.scrollTo(0, y); const g2 = document.querySelector('.lab')?.closest('.tw'); if (g2) { g2.scrollLeft = gx; g2.scrollTop = gy; } };
+  document.querySelectorAll('[data-sess]').forEach(x => x.onchange = () => { lc.sessionToggles[x.dataset.sess] = x.checked; changed(false); keep(); });
+  document.querySelectorAll('[data-cls]').forEach(x => x.onchange = () => { const k = x.dataset.cls; lc.classesOffered[k] = x.checked; if (x.checked && !lc.dueDayTimes[k]) lc.dueDayTimes[k] = { day: 'Wednesday', time: '11:59 PM' }; changed(false); keep(); document.querySelector(`[data-cls="${k}"]`)?.focus(); });
+  document.querySelectorAll('[data-dd]').forEach(x => x.onchange = () => { (lc.dueDayTimes[x.dataset.dd] ||= { day: 'Wednesday', time: '11:59 PM' })[x.dataset.k] = x.value; changed(false); keep(); });
+  let drag = null;
+  document.querySelectorAll('[data-drag]').forEach(p => { p.ondragstart = e => { drag = { id: p.dataset.drag, from: p.dataset.from || '' }; e.dataTransfer.effectAllowed = drag.from ? 'move' : 'copy'; e.dataTransfer.setData('text/plain', drag.id); }; });
+  document.querySelectorAll('[data-cell]').forEach(td => {
+    td.ondragover = e => { e.preventDefault(); td.classList.add('over'); }; td.ondragleave = () => td.classList.remove('over');
+    td.ondrop = e => { e.preventDefault(); td.classList.remove('over'); if (!drag) return; const [w, k] = td.dataset.cell.split('|'), to = `${w}_${k}`;
+      if (drag.from) { const [fw, fk] = drag.from.split('|'), from = `${fw}_${fk}`; if (from === to) return; lc.placements[from] = (lc.placements[from] || []).filter(x => x !== drag.id); if (!lc.placements[from].length) delete lc.placements[from]; }
+      (lc.placements[to] ||= []); if (!lc.placements[to].includes(drag.id)) lc.placements[to].push(drag.id); drag = null; changed(false); keep(); };
+    const open = () => cellPane(s, td.dataset.cell); td.onclick = e => { if (!e.target.closest('.pill')) open(); }; td.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } };
+  });
+};
+function cellPane(s, cell) {
+  const lc = labCal(s), [w, k] = cell.split('|'), c = offered(s).find(x => x.key === k), week = weeksOf(s)[w - 1], d = dueInWeek(s, week, k), b = d ? blocked(s, d) : null, pk = `${w}_${k}`, cur = lc.placements[pk] || [];
+  pane(`${c.name}, week ${w}`, semLabel(s), `<p class="lede" style="margin:0 0 14px">Due ${d ? esc(fmtLong(d)) : 'this week'}${lc.dueDayTimes[k]?.time ? ', ' + esc(lc.dueDayTimes[k].time) : ''}.${b ? ` <b style="color:var(--bad)">${esc(b.name)}: no classes that day.</b>` : ''}</p>`
+    + `<fieldset><legend>Due this week</legend><div class="checks">${lc.labTypes.map(l => { const elsewhere = Object.entries(lc.placements).find(([p, ids]) => p !== pk && p.endsWith('_' + k) && ids.includes(l.id)); return `<label><input type="checkbox" data-pt="${esc(l.id)}" ${cur.includes(l.id) ? 'checked' : ''}><span><b>${esc(l.label)}</b>${elsewhere ? `<span class="small muted"> · also in week ${splitPlace(elsewhere[0])[0]}</span>` : ''}</span></label>`; }).join('')}</div></fieldset>`,
+    `<span></span><button class="btn primary" type="button" data-close>Done</button>`);
+  $('dlg').querySelectorAll('[data-pt]').forEach(x => x.onchange = () => { const ids = lc.placements[pk] ||= []; if (x.checked) { if (!ids.includes(x.dataset.pt)) ids.push(x.dataset.pt); } else lc.placements[pk] = ids.filter(i => i !== x.dataset.pt); if (!lc.placements[pk].length) delete lc.placements[pk]; changed(); });
+}
+ACTS.allDue = () => { const s = sem(), lc = labCal(s), d = val('all-day'), t = val('all-time'); if (!d && !t) return toast('Choose a day or a time.'); offered(s).forEach(c => { const x = lc.dueDayTimes[c.key] ||= { day: 'Wednesday', time: '11:59 PM' }; if (d) x.day = d; if (t) x.time = t; }); changed(); };
+ACTS.clsFromCourses = () => { const s = sem(), lc = labCal(s); let n = 0; LAB_LANGS.forEach(([code]) => LAB_LEVELS.forEach(lv => { if (courses().some(c => `${c.SUBJ}${c.CRSE}` === code + lv)) activeSessions(s).forEach(se => { const k = classKey(code, lv, se); if (!lc.classesOffered[k]) { lc.classesOffered[k] = true; lc.dueDayTimes[k] ||= { day: 'Wednesday', time: '11:59 PM' }; n++; } }); })); changed(); toast(n ? `${n} class${n > 1 ? 'es' : ''} added from the course list.` : 'Every class in the course list is already chosen.'); };
+ACTS.addType = () => {
+  const s = sem(), lc = labCal(s), n = lc.labTypes.filter(l => !/workshop/i.test(l.label)).length + 1;
+  pane('Add a lab or workshop', 'Lab calendar', fld('t-name', 'Name', `<input type="text" id="t-name" value="Lab ${n}">`, 'A name with "Workshop" in it shows in green.'), `<span></span><div class="row"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" type="button" id="t-go">Add</button></div>`);
+  $('t-name').select(); $('t-go').onclick = () => { const l = val('t-name'); if (!l) return; let id = l.toLowerCase().replace(/[^a-z0-9]+/g, '') || 'lab', i = 2; while (lc.labTypes.some(x => x.id === id)) id = id.replace(/-\d+$/, '') + '-' + i++; lc.labTypes.push({ id, label: l, color: /workshop/i.test(l) ? WORKSHOP_GREEN : LAB_BLUE }); $('dlg').close(); changed(); };
+};
+ACTS.rmType = id => { const s = sem(), lc = labCal(s), l = lc.labTypes.find(x => x.id === id), n = Object.values(lc.placements).filter(v => v.includes(id)).length; if (!confirm(`Remove ${l.label}${n ? ` and its ${n} placement${n > 1 ? 's' : ''}` : ''}?`)) return; lc.labTypes = lc.labTypes.filter(x => x.id !== id); Object.keys(lc.placements).forEach(k => { lc.placements[k] = lc.placements[k].filter(x => x !== id); if (!lc.placements[k].length) delete lc.placements[k]; }); changed(); };
+ACTS.autoFill = () => { const s = sem(); if (Object.keys(labCal(s).placements).length && !confirm('Auto-fill adds labs to weeks that are still empty for each class, one per week from week 2, skipping holidays, breaks and finals. Continue?')) return; autoFill(s); changed(); toast('Auto-filled. Check the weeks before sharing.'); };
+ACTS.clearGrid = () => { const s = sem(); if (!confirm('Remove every lab from the weeks? Classes, due days and the lab list stay.')) return; labCal(s).placements = {}; changed(); };
+ACTS.copyLabs = fromId => {
+  const s = sem(), cands = sortedSems().filter(x => x.id !== s.id && P.labCalendars[x.id]);
+  if (!cands.length) return toast('No other semester has a lab calendar yet. Import one under Plan file.', 5000);
+  fromId = fromId || cands[0].id;
+  const body = () => `${fld('cp-from', 'Copy from', sel('cp-from', fromId, cands.map(x => [x.id, semLabel(x)])))}`
+    + `<fieldset><legend>What to copy</legend><div class="checks"><label><input type="checkbox" id="cp-cls" checked><span><b>Classes with labs, due days and times</b></span></label><label><input type="checkbox" id="cp-types" checked><span><b>The list of labs and workshops</b></span></label><label><input type="checkbox" id="cp-pl" checked><span><b>Due weeks</b> <span class="muted">(same week number: Lab 2 in week 4 stays in week 4)</span></span></label><label><input type="checkbox" id="cp-move" checked><span><b>Move a due date that lands on a holiday, break or finals to the next open week</b></span></label></div></fieldset>`
+    + `<p class="small muted">This replaces what ${esc(semLabel(s))} has for the parts you check. Undo by closing without copying.</p><div id="cp-rep"></div>`;
+  pane(`Copy the lab calendar into ${semLabel(s)}`, 'Lab calendar', body(), `<span></span><div class="row"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" type="button" id="cp-go">Copy</button></div>`);
+  const opts = () => ({ classes: val('cp-cls'), types: val('cp-types'), placements: val('cp-pl'), moveBlocked: val('cp-move') });
+  const preview = () => { const { rep } = planCopy(val('cp-from'), s, opts()); $('cp-rep').innerHTML = repHTML(rep, true); };
+  ['cp-from', 'cp-cls', 'cp-types', 'cp-pl', 'cp-move'].forEach(id => $(id).onchange = preview); preview();
+  $('cp-go').onclick = () => { const { dst, rep } = planCopy(val('cp-from'), s, opts()); P.labCalendars[s.id] = dst; changed();
+    pane('Copied', semLabel(s), repHTML(rep, false), `<span></span><button class="btn primary" type="button" data-close>Check the weeks</button>`); };
+};
+function repHTML(r, preview) {
+  const li = (cls, t) => `<li class="${cls}">${esc(t)}</li>`;
+  return `<ul class="report">${li('ok', `${preview ? 'Will copy' : 'Copied'} from ${r.from}: ${r.classes} classes, ${r.types} labs and workshops, ${r.placed} due weeks.`)}`
+    + r.moved.map(t => li('warn', 'Moved: ' + t)).join('') + r.flagged.map(t => li('bad', 'On a day with no classes: ' + t)).join('')
+    + r.dropped.map(t => li('bad', 'Not placed: ' + t)).join('') + (r.skipped.length ? li('', `Skipped (class not chosen): ${r.skipped.join(', ')}`) : '') + '</ul>';
+}
+function proposalHTML(s) {
+  const lc = labCal(s), off = offered(s), weeks = weeksOf(s), pl = placedLabs(s).filter(p => p.cls && !p.outside), langs = [...new Set(off.map(c => c.code))];
+  const at = (w, k) => pl.filter(p => p.week === w && p.classKey === k);
+  const weekTable = `<table><caption>Due dates by week</caption><thead><tr><th scope="col">Week</th>${off.map(c => `<th scope="col">${esc(c.name)}<br><small>${esc(lc.dueDayTimes[c.key]?.day || '')} ${esc(lc.dueDayTimes[c.key]?.time || '')}</small></th>`).join('')}</tr></thead><tbody>`
+    + weeks.map(w => `<tr><th scope="row">${w.idx}<br><small>${fmtMD(w.start)}–${fmtMD(w.end)}</small></th>${off.map(c => { const b = blocked(s, dueInWeek(s, w, c.key)); return `<td${b ? ` class="${b.kind}"` : ''}>${at(w.idx, c.key).map(p => `<b>${esc(p.lab.label)}</b><br>${esc(fmtWMD(p.date))}`).join('<br>') || (b ? `<small>${esc(b.name)}</small>` : '')}</td>`; }).join('')}</tr>`).join('') + '</tbody></table>';
+  const perLang = langs.map(code => { const cs = off.filter(c => c.code === code); return `<section><h2>${esc(LAB_LANGS.find(l => l[0] === code)[1])}</h2>${cs.map(c => `<h3>${esc(c.name)}: due ${esc(lc.dueDayTimes[c.key]?.day || '')}s, ${esc(lc.dueDayTimes[c.key]?.time || '')}</h3><ul>${pl.filter(p => p.classKey === c.key).map(p => `<li><b>${esc(p.lab.label)}</b>: ${esc(fmtLong(p.date))}</li>`).join('') || '<li>No labs placed.</li>'}</ul>`).join('')}</section>`; }).join('');
+  const hol = [...(s.holidays || []).map(h => `${fmtWMD(h.date)}: ${h.name}`), ...(s.breaks || []).map(b => `${fmtMD(b.start)}–${fmtMD(b.end)}: ${b.name}`), s.finalsStart ? `${fmtMD(s.finalsStart)}–${fmtMD(s.finalsEnd)}: Finals` : ''].filter(Boolean);
+  return docPage(`Lab due dates: ${semLabel(s)}`, `<h1>Lab due dates, ${esc(semLabel(s))}</h1><p class="sub">Proposal from the Language Lab · ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} · classes ${esc(fmtMD(s.start))}–${esc(fmtMD(s.end))}</p><p class="sub">No classes: ${esc(hol.join(' · '))}</p>${weekTable}${perLang}`);
+}
+ACTS.proposal = () => { const s = sem(); if (!offered(s).length) return toast('Choose classes first.'); download(`lab-due-dates-proposal-${s.id}.html`, proposalHTML(s), 'text/html'); };
+/* a self-contained document page (instructors' copies): same tokens, light and dark, prints cleanly */
+function docPage(title, body) {
+  const wk = document.querySelector('style').textContent.match(/\.wk[\s\S]*?\.wk \.blk\.clash[^\n]*/)?.[0] || '';
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(title)}</title><style>
+:root{--text:#1F2937;--sub:#5A6472;--line:#DCDDD8;--chip:#EEF0F3;--surface:#fff;--bg:#F7F7F5;--accent:#1A3A6B;--accent-ink:#fff;--bad:#A12A2A;--bad-bg:#F9E3E3;--warn:#8A4B08;--warn-bg:#FBEEDB;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--text:#F7F7F5;--sub:#C9CFD8;--line:#2B4670;--chip:#1C3864;--surface:#132C52;--bg:#0E1F3A;--accent:#F7F7F5;--accent-ink:#132C52;--bad:#F4A3A3;--bad-bg:#4A1E26;--warn:#F2C47E;--warn-bg:#4A3415;color-scheme:dark}}
+*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}body{margin:0;padding:24px;font:15px/1.45 "DM Sans",Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}main{max-width:1200px;margin:0 auto}
+h1{font:700 26px/1.2 Georgia,serif;margin:0 0 4px}h2{font:700 20px Georgia,serif;margin:26px 0 8px}h3{font-size:16px;margin:14px 0 4px}.sub{color:var(--sub);margin:0 0 6px}
+table{border-collapse:collapse;width:100%;margin-top:14px;background:var(--surface);font-size:13px}caption{text-align:left;font-weight:700;padding:6px 0}th,td{border:1px solid var(--line);padding:5px 7px;vertical-align:top;text-align:left}thead th{background:var(--chip)}small{color:var(--sub)}
+td.holiday{background:var(--bad-bg)}td.break{background:var(--warn-bg)}td.finals{background:var(--chip)}ul{margin:4px 0 0}
+${wk}
+@page{size:landscape;margin:.4in}@media print{body{padding:0;background:#fff}}</style></head><body><main>${body}</main></body></html>`;
+}
+
+/* ---------- outputs for D2L ---------- */
+const OUTPUTS = [
+  ['academic-calendar.json', 'Every semester\'s dates, holidays, breaks and finals. Read by the work schedule, room schedule and hub home pages.', () => JSON.stringify({ semesters: P.semesters, activeSemesterId: P.activeSemesterId }, null, 2), () => P.semesters.length ? '' : 'No semesters yet'],
+  ['room-schedule.json', 'Nesbitt 4201 classes with their room (4201A or 4207) and final exam time. Read by the room schedule page.', () => JSON.stringify(roomScheduleOut(), null, 2), () => !courses().filter(inNesbitt4201).length ? 'No Nesbitt 4201 classes' : roomClashes().size ? 'Double-booked classes' : ''],
+  ['lab-due-dates.json', 'Each class\'s lab due dates. Read by the grade due dates page.', () => JSON.stringify(labDueDatesOut(sem()), null, 2), () => !labDueDatesOut(sem()).classes.length ? 'No labs placed' : placedLabs(sem()).some(p => p.block) ? 'A due date falls on a day with no classes' : ''],
+  ['class-distribution.csv', 'Language sections by campus, with the budget percentages (same columns as the Class Distribution sheet).', () => distributionCSV(), () => !courses().length ? 'No courses' : distribution().unmapped ? `${distribution().unmapped} sections without a campus` : ''],
+];
+VIEWS.outputs = () => {
+  const s = sem(); if (!s) return head('Outputs for D2L', 'Files for the Lab Hub', '') + needSem();
+  return head(semLabel(s), 'Outputs for D2L', 'Download these and upload them to the Lab Hub in D2L (current/data/), replacing the old ones. They are made fresh from the plan each time.', `<button class="btn primary" type="button" data-act="zip">Download all (.zip)</button>`)
+    + `<div class="outs">${OUTPUTS.map(([n, d, , st]) => { const w = st(); return `<div class="out"><div><b>${esc(n)}</b> ${w ? `<span class="tag warn">${esc(w)}</span>` : '<span class="tag ok">Ready</span>'}<p>${esc(d)}</p></div><button class="btn" type="button" data-act="dlOut" data-arg="${esc(n)}">Download</button></div>`; }).join('')}</div>`
+    + `<h2 class="sec">Documents</h2><div class="outs"><div class="out"><div><b>Lab due date proposal</b><p>For instructors: due dates by week and per language.</p></div><button class="btn" type="button" data-act="proposal">Download</button></div>`
+    + ROOMS.map(([r]) => `<div class="out"><div><b>Room ${r} weekly schedule</b><p>To print and post by the door.</p></div><button class="btn" type="button" data-act="printRoom" data-arg="${r}">Download</button></div>`).join('') + '</div>';
+};
+ACTS.dlOut = n => { const o = OUTPUTS.find(x => x[0] === n); download(n, o[2](), n.endsWith('.csv') ? 'text/csv' : 'application/json'); };
+ACTS.zip = async () => {
+  try {
+    if (!window.JSZip) await new Promise((res, rej) => { const sc = document.createElement('script'); sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'; sc.onload = res; sc.onerror = () => rej(new Error('The ZIP tool did not load (offline?). Download the files one by one.')); document.head.append(sc); });
+    const z = new JSZip(), d = z.folder('current').folder('data'); OUTPUTS.forEach(([n, , make]) => d.file(n, make()));
+    const blob = await z.generateAsync({ type: 'blob' }), a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `lab-hub-data-${sem().id}.zip`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  } catch (e) { toast(e.message, 6000); }
+};
+
+/* ---------- plan file & imports ---------- */
+VIEWS.plan = () => head('Plan file', 'Share the plan', 'The plan lives in this browser and in one file your team keeps in a shared OneDrive or Teams folder. Whoever opens that file sees everyone\'s saved work.')
+  + `<div class="card"><h2>The plan file</h2><p class="lede">${F.name ? `This browser is working on <b>${esc(F.name)}</b>${F.dirty ? ', with changes not saved yet' : ''}.` : 'Not saved to a file yet.'} ${F.supported ? 'Saving writes straight into the file; if someone else saved it after you opened it, you are asked first.' : 'This browser can\'t save into a file directly: Save downloads a copy to put in the shared folder (Edge or Chrome can save in place).'}</p>`
+  + `<div class="row">${F.supported ? '<button class="btn primary" type="button" data-act="openPlan">Open the plan file</button>' : ''}<button class="btn" type="button" data-act="save">${F.name ? 'Save' : 'Save as a plan file'}</button>${F.supported ? '<button class="btn" type="button" data-act="saveAs">Save a copy as…</button>' : ''}${F.supported ? '' : '<label class="btn">Open a plan file<input type="file" id="pl-open" accept=".json" class="sr"></label>'}</div></div>`
+  + `<div class="card"><h2>Bring in what you already have</h2><p class="lede">Files the Lab Hub Generator made: the semester plan it saves, or the D2L files (academic-calendar.json first, then room-schedule.json and lab-due-dates.json for that semester). Courses come from Banner on the Language courses page.</p>`
+  + `<div class="drop big" id="imp-drop"><p style="margin:0">Drop files here, or</p><input type="file" id="imp-file" accept=".json" multiple aria-label="Choose files to import"></div><ul class="report" id="imp-rep"></ul></div>`
+  + `<div class="card"><h2>Lab Hub Generator</h2><p class="lede">The generator keeps the lab assistants' work (shifts, availability, grading, class visits). Its <b>Load semester plan</b> button reads this plan file, so its courses, rooms, calendar and lab due dates match yours. Plan those four here; the generator only reads them.</p></div>`
+  + `<div class="card"><h2>Start over</h2><p class="lede">Clears the plan from this browser. The plan file is not touched.</p><button class="btn danger" type="button" data-act="reset">Clear this browser's copy</button></div>`;
+ACTS.openPlan = () => openPlanFile();
+ACTS.saveAs = () => savePlan(true);
+ACTS.reset = async () => { if (!confirm('Clear the plan from this browser? Anything not saved to the plan file is lost.')) return; P = blankPlan(); Object.assign(F, { handle: null, name: '', lastModified: 0, dirty: false }); await DB.del('plan'); await DB.del('handle'); render(); };
+AFTER.plan = () => {
+  const drop = $('imp-drop'), rep = $('imp-rep');
+  const take = async files => {
+    const items = []; for (const f of files) { try { items.push([f.name, JSON.parse(await readFile(f))]); } catch (e) { rep.insertAdjacentHTML('beforeend', `<li class="bad">${esc(f.name)}: not a JSON file.</li>`); } }
+    items.sort((a, b) => rank(a[1]) - rank(b[1])); // calendar before the files that need its weeks
+    for (const [n, o] of items) { try { rep.insertAdjacentHTML('beforeend', `<li class="ok">${esc(n)}: ${esc(importAny(o))}</li>`); } catch (e) { rep.insertAdjacentHTML('beforeend', `<li class="bad">${esc(n)}: ${esc(e.message)}</li>`); } }
+    changed(false); semPicker();
+  };
+  if (drop) { $('imp-file').onchange = e => take([...e.target.files]); ['dragenter', 'dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); })); ['dragleave', 'drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); })); drop.addEventListener('drop', e => take([...e.dataTransfer.files])); }
+  if ($('pl-open')) $('pl-open').onchange = async e => { try { P = checkPlan(JSON.parse(await readFile(e.target.files[0]))); F.name = e.target.files[0].name; F.dirty = false; await DB.set('plan', P); render(); toast(`Opened ${F.name}`); } catch (er) { toast(er.message, 6000); } };
+};
+const rank = o => o?.kind === KIND ? 0 : Array.isArray(o?.semesters) ? 1 : 2;
+function importAny(o) {
+  if (o?.kind === KIND) { // another plan file: add its semesters, keep ours where both have one
+    let n = 0; o.semesters.forEach(s => { if (!semById(s.id)) { P.semesters.push(s); ['courseLists', 'rooms', 'labCalendars'].forEach(k => { if (o[k]?.[s.id]) P[k][s.id] = o[k][s.id]; }); n++; } });
+    P.activeSemesterId ||= o.activeSemesterId; return `${n} semester${n === 1 ? '' : 's'} added${n < o.semesters.length ? ` (${o.semesters.length - n} already here, kept as they are)` : ''}.`;
+  }
+  if (Array.isArray(o?.semesters)) { // academic-calendar.json
+    let a = 0, u = 0; o.semesters.forEach(s => { const i = P.semesters.findIndex(x => x.id === s.id); const t = { holidays: [], breaks: [], sessions: s.type === 'summer' ? {} : null, ...s, label: semLabel(s) }; if (i < 0) { P.semesters.push(t); a++; } else { P.semesters[i] = { ...P.semesters[i], ...t }; u++; } });
+    if (o.activeSemesterId && semById(o.activeSemesterId)) P.activeSemesterId = o.activeSemesterId; else P.activeSemesterId ||= sortedSems()[0]?.id;
+    return `${a} semester${a === 1 ? '' : 's'} added, ${u} updated.`;
+  }
+  if (Array.isArray(o?.courses) && Array.isArray(o?.rooms)) { // room-schedule.json: rooms by CRN (and the classes, if no course list yet)
+    const s = sem(); if (!s) throw new Error('Import academic-calendar.json first.');
+    const list = P.courseLists[s.id] ||= { rows: [], importedAt: '', files: {}, ptrm: {} };
+    if (!list.rows.length) list.rows = o.courses.map(c => ({ _id: c.CRN, CRN: c.CRN, SUBJ: c.SUBJ, CRSE: c.CRSE, SEC: c.SEC, CMP: '', CRED: '', TITLE: '', DAYS: c.DAYS, TIME_FROM: c.TIME_FROM, TIME_TO: c.TIME_TO, INSTRUCTOR: c.INSTRUCTOR, BUILDING: 'Nesbitt', ROOM: '4201', BLDGRM_RAW: '', LOCATION: 'Gainesville Campus', PART_OF_TERM: '', START: c.START, END: c.END, MAXENR: c.MAXENR }));
+    const R = roomsOf(s.id); let n = 0; o.courses.forEach(c => { if (c.ROOM) { R.assign[c.CRN] = c.ROOM; n++; } if (c.FINALS_SOURCE === 'manual') R.finalsOverrides[c.CRN] = { day: c.FINALS_DAY, start: c.FINALS_START, end: c.FINALS_END }; });
+    return `${n} room${n === 1 ? '' : 's'} for ${semLabel(s)}.`;
+  }
+  if (Array.isArray(o?.classes) && o.semester) { // lab-due-dates.json: real dates back to week numbers
+    const s = semById(o.semester); if (!s) throw new Error(`${o.semester} is not in the plan: import its academic-calendar.json first.`);
+    const lc = labCal(s), weeks = weeksOf(s); let placed = 0, out = 0; const miss = [];
+    o.classes.forEach(c => {
+      const code = String(c.subject || '').toUpperCase(), lv = String(c.level || ''), se = c.session || REGULAR;
+      if (!LAB_LANGS.some(l => l[0] === code) || !LAB_LEVELS.includes(lv)) { miss.push(c.class_label || code + lv); return; }
+      const k = classKey(code, lv, se); lc.classesOffered[k] = true; if (s.type === 'summer') lc.sessionToggles[se] = true;
+      if (c.due_day) lc.dueDayTimes[k] = { day: c.due_day, time: c.due_time || '11:59 PM' };
+      (c.labs || []).forEach(l => {
+        const w = weeks.find(x => x.days.includes(l.date)); if (!w) { out++; return; }
+        const m = String(l.label || 'lab').match(/^(.*?)\s*(\d+)$/), id = ((m ? m[1] : l.label) || 'lab').trim().toLowerCase().replace(/\s+/g, '') + (m ? m[2] : '');
+        if (!lc.labTypes.some(t => t.id === id)) lc.labTypes.push({ id, label: l.label || id, color: /workshop/i.test(l.label || '') ? WORKSHOP_GREEN : LAB_BLUE });
+        const pk = `${w.idx}_${k}`; (lc.placements[pk] ||= []); if (!lc.placements[pk].includes(id)) { lc.placements[pk].push(id); placed++; }
+      });
+    });
+    lc.labTypes.sort((a, b) => (/workshop/i.test(a.label) - /workshop/i.test(b.label)) || a.label.localeCompare(b.label, undefined, { numeric: true }));
+    return `${semLabel(s)}: ${o.classes.length - miss.length} classes, ${placed} due dates${out ? `, ${out} outside the term's weeks` : ''}${miss.length ? `; not a lab class: ${miss.join(', ')}` : ''}.`;
+  }
+  throw new Error('Not a file this console knows (plan file, academic-calendar.json, room-schedule.json or lab-due-dates.json).');
+}
+
+/* ---------- start ---------- */
+(async () => {
+  let m = null; try { m = localStorage.getItem('labSemesterMode'); } catch (e) {}
+  setMode(m || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+  const saved = await DB.get('plan'); if (saved?.kind === KIND) P = { ...blankPlan(), ...saved };
+  const h = await DB.get('handle');
+  const meta = await DB.get('fileMeta');
+  if (h) { F.handle = h; F.name = h.name; }
+  if (meta) { F.name = meta.name || F.name; F.lastModified = meta.lastModified || 0; F.dirty = !!meta.dirty; } else F.dirty = !!saved?.semesters?.length;
+  const want = location.hash.slice(1); if (SECTIONS.some(s => s[0] === want)) VIEW = want;
+  if (!P.activeSemesterId && P.semesters.length) P.activeSemesterId = sortedSems()[0].id;
+  render();
+})();
+
+</script>
+</body>
+</html>
