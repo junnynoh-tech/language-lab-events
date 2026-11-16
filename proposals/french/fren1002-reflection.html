@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FREN 1002 Notes and Reflection Form</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F7F7F5;--surface:#fff;--ink:#1F2937;--muted:#5A6472;--navy:#132C52;--red:#a11528;--ok:#1E6B45;--line:rgba(31,41,55,.18);--strong:rgba(31,41,55,.34);--on:#fff;}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F1115;--surface:#181B22;--ink:#F1F3F6;--muted:#B8C0CE;--navy:#9DB8EC;--red:#F2A0AB;--ok:#8FD9AE;--line:rgba(241,243,246,.16);--strong:rgba(241,243,246,.34);--on:#0F1115;}}
+:root[data-theme="dark"]{--bg:#0F1115;--surface:#181B22;--ink:#F1F3F6;--muted:#B8C0CE;--navy:#9DB8EC;--red:#F2A0AB;--ok:#8FD9AE;--line:rgba(241,243,246,.16);--strong:rgba(241,243,246,.34);--on:#0F1115;}
+*{box-sizing:border-box;} body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.55 'DM Sans',Arial,sans-serif;font-variant-numeric:lining-nums;}
+.wrap{max-width:760px;margin:0 auto;padding:20px 16px 56px;} .skip{position:absolute;left:-999px;} .skip:focus{left:0;background:var(--navy);color:var(--on);padding:8px 12px;}
+h1{font:900 1.9rem/1.15 'Playfair Display',Georgia,serif;font-variant-numeric:lining-nums;color:var(--navy);margin:0 0 4px;} h2{font:700 1.2rem/1.3 'Playfair Display',Georgia,serif;color:var(--navy);margin:0 0 8px;}
+h3{font-size:1rem;margin:12px 0 4px;color:var(--navy);}
+p{margin:0 0 10px;} .muted{color:var(--muted);font-size:.92rem;}
+.bar{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 4px;} button{font:inherit;font-weight:600;min-height:44px;padding:8px 14px;border-radius:8px;border:1.5px solid var(--strong);background:var(--surface);color:var(--ink);cursor:pointer;}
+button.main{background:var(--navy);border-color:var(--navy);color:var(--on);font-size:1.05rem;padding:10px 20px;} :focus-visible{outline:3px solid var(--red);outline-offset:2px;}
+button[disabled]{opacity:.55;cursor:progress;}
+section{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:0 0 12px;}
+label{display:block;font-size:.9rem;font-weight:600;margin:0 0 3px;}
+select{width:100%;font:inherit;min-height:44px;padding:6px 8px;background:var(--surface);color:var(--ink);border:1px solid var(--strong);border-radius:6px;}
+.req{margin:6px 0 0;padding-left:20px;font-size:.95rem;} .req li{margin:0 0 4px;}
+.status{min-height:1.4em;font-size:.95rem;font-weight:600;color:var(--ok);margin:8px 0 0;} .status.err{color:var(--red);}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px;} .top button{min-height:36px;padding:4px 10px;font-size:.9rem;}
+</style></head><body><a class="skip" href="#main">Skip to main content</a>
+<div class="wrap"><main id="main"><div class="top"><p class="muted">UNG Language Lab · FREN 1002</p><button type="button" id="theme">Dark mode</button></div>
+<h1 id="ttl">Lab notes and reflection</h1>
+<p>Optional. A PDF form for your preparation notes and your reflection. Pick your lab, download the form, and fill it in before and after your TalkAbroad conversation.</p>
+<section><label for="lab">Lab</label><select id="lab"><option value="1">Lab 1: Ma routine quotidienne</option><option value="2">Lab 2: La mode et le style</option><option value="3">Lab 3: Souvenirs d&#x27;enfance</option><option value="4">Lab 4: L&#x27;avenir et les possibilités</option></select>
+<div class="bar"><button type="button" class="main" id="form">Download the PDF form</button></div>
+<p class="status" id="status" role="status" aria-live="polite"></p>
+<h2 style="margin-top:14px">How to fill it in</h2>
+<ol class="req"><li>Open it in a program that fills in forms: <b>Adobe Acrobat Reader</b> (free, Windows, Mac, phone), <b>Preview</b> on a Mac, or <b>Microsoft Edge</b> or <b>Chrome</b>.</li>
+<li>Click a box and type. Accents: use your French keyboard (see Accents in the LAB folder).</li>
+<li>Save the file with the Save or Download button, not Print. Reopen it to check that your answers are still there.</li>
+<li>Upload it with your conversation video to the lab's <b>TalkAbroad</b> dropbox in D2L.</li></ol></section>
+<section><h2>What the form asks</h2><div id="ask"></div></section>
+</main></div>
+<script>
+var LABS=[{"n": 1, "t": "Ma routine quotidienne", "r": ["How did your routine differ from your partner's? What surprised you?", "Which reflexive verbs came naturally? Which did you have to think about?", "Was there a moment where you had to use a strategy — Répétez, s'il vous plaît or paraphrasing — to keep the conversation going?", "What would you say differently if you had the conversation again?"], "c": "", "task": []}, {"n": 2, "t": "La mode et le style", "r": ["How did your partner's shopping habits or style differ from yours?", "Did you successfully use comparatives ( plus… que, moins… que )? Give one example from your conversation.", "Were you able to use y or en ? If not, where could you have used them?", "What new vocabulary did you learn or want to learn from this conversation?"], "c": "", "task": []}, {"n": 3, "t": "Souvenirs d'enfance", "r": ["What was the most interesting memory your partner shared?", "Did you use the imparfait correctly for habitual actions and the passé composé for specific events? Give one example of each.", "Did you use savoir or connaître during the conversation? In what context?", "How did your childhood compare to your partner's? What was most different?"], "c": "", "task": []}, {"n": 4, "t": "L'avenir et les possibilités", "r": ["What future plans did you share that surprised your partner — or that surprised you about them?", "Did you use the futur simple for definite plans and the conditionnel for hypotheticals? Give one example of each.", "Which adverbs from Ch. 11 ( probablement, certainement, heureusement ) did you use or could have used?", "What would you do differently in this conversation if you had another chance?"], "c": "", "task": []}], FORM={"name": "notes and reflection", "tag": "fren1002-reflection", "file": "-notes", "date": "Conversation date", "pdfnote": "Upload it with your conversation video to the Lab {N} TalkAbroad dropbox in D2L.", "groups": [{"h": "Before the conversation", "fields": [["f-v", "Key vocabulary"], ["f-i", "A few ideas (notes, not a script)"], ["f-q", "2–3 questions for your partner"]]}, {"h": "After the conversation", "refl": true}]}, PDFLIB='https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js', sel=document.getElementById('lab'), st=document.getElementById('status');
+function say(t,err){ st.textContent=t; st.className='status'+(err?' err':''); }
+function lab(){ return LABS.find(function(x){ return String(x.n)===sel.value; }); }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
+function md(s){ return esc(s).replace(/\*([^*]+)\*/g,'<i lang="fr">$1</i>'); }
+function plain(s){ return String(s).replace(/\*/g,''); }
+// [id, label, multiline] fields; ['H', heading]; ['L', a line of text]
+function boxes(L){ var b=[['f-name','Name',0],['f-prof','Professor and class time',0],['f-date',L.date||FORM.date,0]];
+  (L.groups||FORM.groups).forEach(function(g){ b.push(['H',g.h]); if(g.text) b.push(['P',L.c]);
+    (g.lines?L.task:[]).forEach(function(x){ b.push(['L',x]); });
+    (g.fields||[]).forEach(function(f){ b.push([f[0],f[1],1]); });
+    if(g.refl) L.r.forEach(function(q,i){ b.push(['f-r'+i,(i+1)+'. '+q,1]); }); });
+  return b; }
+function render(){ var L=lab(), h='', open=false;
+  boxes(L).forEach(function(x){ if(x[0]==='H'||x[0]==='P'){ if(open) h+='</ul>'; open=false; h+=x[0]==='H'?'<h3>'+esc(x[1])+'</h3>':'<p>'+md(x[1])+'</p>'; return; }
+    if(!open){ h+='<ul class="req">'; open=true; } h+='<li>'+md(x[1])+'</li>'; });
+  document.getElementById('ask').innerHTML=h+(open?'</ul>':'');
+  document.getElementById('ttl').textContent='Lab '+L.n+': '+L.t; document.title='FREN 1002 Lab '+L.n+' · '+FORM.name; }
+
+var libP=null;
+function lib(){ if(window.PDFLib) return Promise.resolve(window.PDFLib); if(libP) return libP;
+  libP=new Promise(function(res,rej){ var s=document.createElement('script'); s.src=PDFLIB; s.onload=function(){ window.PDFLib?res(window.PDFLib):rej(); }; s.onerror=function(){ libP=null; rej(); }; document.head.appendChild(s); }); return libP; }
+function writer(doc,L,fonts,P){ // a page cursor with wrapped text, Letter size
+  var W=612,H=792,M=54, pg=null, y=0, reg=fonts[0], bold=fonts[1], cache={};
+  function ok(ch){ if(ch in cache) return cache[ch]; try{ reg.encodeText(ch); bold.encodeText(ch); cache[ch]=true; }catch(e){ cache[ch]=false; } return cache[ch]; }
+  function clean(t){ return Array.from(String(t).replace(/\r/g,'').replace(/\t/g,'  ')).map(function(c){ return c==='\n'||ok(c)?c:'?'; }).join(''); }
+  function lines(t,f,sz,w){ var out=[]; clean(t).split('\n').forEach(function(par){ var line=''; par.split(/ +/).forEach(function(word){
+      var test=line?line+' '+word:word; if(f.widthOfTextAtSize(test,sz)<=w){ line=test; return; }
+      if(line) out.push(line); while(f.widthOfTextAtSize(word,sz)>w){ var k=word.length; while(k>1&&f.widthOfTextAtSize(word.slice(0,k),sz)>w) k--; out.push(word.slice(0,k)); word=word.slice(k); } line=word; });
+    out.push(line); }); return out; }
+  function page(){ pg=doc.addPage([W,H]); y=H-M; pg.drawText(clean('UNG Language Lab · FREN 1002 · Lab '+L.n+': '+L.t),{x:M,y:H-30,size:8,font:reg,color:P.rgb(.4,.4,.4)}); }
+  function need(h){ if(!pg||y-h<M){ page(); } }
+  function text(t,o){ o=o||{}; var f=o.bold?bold:reg, sz=o.size||10.5, lh=sz*1.35, ls=lines(t,f,sz,W-2*M-(o.indent||0));
+    ls.forEach(function(l){ need(lh); y-=lh; pg.drawText(l,{x:M+(o.indent||0),y:y+3,size:sz,font:f,color:o.color||P.rgb(0,0,0)}); }); }
+  return {W:W,M:M,page:page,need:need,text:text,gap:function(h){ y-=h; },get y(){return y;},set y(v){y=v;},get pg(){return pg;}};
+}
+function makeForm(){ var b=document.getElementById('form'), L=lab(); b.disabled=true; b.textContent='Making the form…'; say('');
+  lib().then(function(P){ return P.PDFDocument.create().then(function(doc){ return Promise.all([doc.embedFont(P.StandardFonts.Helvetica),doc.embedFont(P.StandardFonts.HelveticaBold)]).then(function(fonts){
+    var w=writer(doc,L,fonts,P), form=doc.getForm(), navy=P.rgb(.07,.17,.32), grey=P.rgb(.35,.35,.35);
+    doc.setTitle('FREN 1002 Lab '+L.n+' '+FORM.name); doc.setSubject(FORM.tag+' lab='+L.n);
+    w.page(); w.text('Lab '+L.n+': '+L.t,{bold:true,size:17,color:navy});
+    w.text('Fill this in with Adobe Acrobat Reader (free), Preview on a Mac, Microsoft Edge or Chrome, and save it. '+FORM.pdfnote.replace('{N}',L.n),{size:9,color:grey}); w.gap(4);
+    boxes(L).forEach(function(x){ if(x[0]==='H'){ w.gap(10); w.text(x[1],{bold:true,size:13,color:navy}); return; }
+      if(x[0]==='P'){ w.text(plain(x[1]),{size:10}); return; } if(x[0]==='L'){ w.text('• '+plain(x[1]),{indent:8,size:10}); return; }
+      var h=x[2]?96:22; w.gap(6); w.need(14+h); w.text(plain(x[1]),{bold:true,size:10});
+      var t=form.createTextField(x[0]); if(x[2]) t.enableMultiline();
+      t.addToPage(w.pg,{x:w.M,y:w.y-h-2,width:w.W-2*w.M,height:h,font:fonts[0],borderColor:P.rgb(.6,.6,.6),borderWidth:1}); t.setFontSize(10); w.y=w.y-h-2; });
+    form.updateFieldAppearances(fonts[0]); return doc.save(); }); }); })
+  .then(function(bytes){ var n='FREN1002-Lab'+L.n+FORM.file+'.pdf', u=URL.createObjectURL(new Blob([bytes],{type:'application/pdf'})), a=document.createElement('a');
+      a.href=u; a.download=n; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){ URL.revokeObjectURL(u); },4000);
+      say('Saved '+n+'. Fill it in, save it, then upload it to D2L.'); })
+  .catch(function(){ say('Couldn’t make the form. Check your internet connection and try again.',true); })
+  .then(function(){ b.disabled=false; b.textContent='Download the PDF form'; }); }
+
+var q=new URLSearchParams(location.search).get('lab'); if(q && [].some.call(sel.options,function(o){ return o.value===q; })) sel.value=q;
+sel.onchange=function(){ render(); say(''); }; document.getElementById('form').onclick=makeForm;
+function setTheme(t){ document.documentElement.dataset.theme=t; document.getElementById('theme').textContent=t==='dark'?'Light mode':'Dark mode'; }
+document.getElementById('theme').onclick=function(){ setTheme(document.documentElement.dataset.theme==='dark'?'light':'dark'); };
+setTheme(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'); render();
+</script></body></html>
