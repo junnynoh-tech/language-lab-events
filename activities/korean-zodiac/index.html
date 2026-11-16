@@ -1,0 +1,612 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- Copy of events/activities/languages-around-the-world-holidays/korean-booth/zodiac-finder/index.html in TeachingOS (edit there, then copy here). -->
+<title>What's Your 띠?</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Korean zodiac finder: type your birth year to meet your 띠 animal, its year color, compatibility and fun facts.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&family=Gaegu:wght@700&display=swap">
+<style>
+/* Layout: a Korean kids' workbook page. Celadon paper, colored-pencil drawings, saekdong stripe bands,
+   finder on the left, result card on the right (stacks on phones). */
+:root {
+  --paper: #F1F5EF;      /* celadon-tinted page */
+  --sheet: #FFFFFF;      /* cards */
+  --art: #FFFDF7;        /* drawing paper behind every illustration (light in both themes) */
+  --ink: #22283F;        /* meok navy */
+  --muted: #565E73;
+  --line: rgba(34,40,63,.14);
+  --line-strong: rgba(34,40,63,.30);
+  --red: #B93A2B;  --yellow: #E8B12E;  --blue: #2F5FA7;  --jade: #23806A;  --pink: #E98AA0;
+  --tint-red: #FBE7E3; --tint-blue: #E6EEFA; --tint-jade: #E1F2EC; --tint-yellow: #FCF2D6;
+  --shadow: 0 1px 0 rgba(34,40,63,.06), 0 8px 24px -12px rgba(34,40,63,.25);
+  --display: "Jua", "Gowun Dodum", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --body: "Gowun Dodum", "Apple SD Gothic Neo", "Malgun Gothic", "Segoe UI", sans-serif;
+  --hand: "Gaegu", "Gowun Dodum", "Comic Sans MS", cursive;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #121828; --sheet: #1B2236; --art: #F3EEE2; --ink: #EEF0F6; --muted: #AEB6CA;
+  --line: rgba(238,240,246,.14); --line-strong: rgba(238,240,246,.30);
+  --red: #F08572; --yellow: #F2C75B; --blue: #8DB0EA; --jade: #6CCBB0; --pink: #F2A3B5;
+  --tint-red: rgba(240,133,114,.14); --tint-blue: rgba(141,176,234,.14); --tint-jade: rgba(108,203,176,.14); --tint-yellow: rgba(242,199,91,.14);
+  --shadow: 0 1px 0 rgba(0,0,0,.3), 0 10px 28px -14px rgba(0,0,0,.7);
+  color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --paper: #121828; --sheet: #1B2236; --art: #F3EEE2; --ink: #EEF0F6; --muted: #AEB6CA;
+  --line: rgba(238,240,246,.14); --line-strong: rgba(238,240,246,.30);
+  --red: #F08572; --yellow: #F2C75B; --blue: #8DB0EA; --jade: #6CCBB0; --pink: #F2A3B5;
+  --tint-red: rgba(240,133,114,.14); --tint-blue: rgba(141,176,234,.14); --tint-jade: rgba(108,203,176,.14); --tint-yellow: rgba(242,199,91,.14);
+  --shadow: 0 1px 0 rgba(0,0,0,.3), 0 10px 28px -14px rgba(0,0,0,.7);
+  color-scheme: dark; }
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { background: var(--paper); }
+body { margin: 0; color: var(--ink); font: 400 1.02rem/1.6 var(--body); -webkit-text-size-adjust: 100%; }
+body::after { /* paper grain */
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: .5;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 .07 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+.gut { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.wrap { max-width: 1240px; margin: 0 auto; position: relative; z-index: 1; }
+:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; border-radius: 10px; }
+button { font: inherit; color: inherit; }
+[lang="ko"] { word-break: keep-all; }
+.say { font-family: var(--hand); font-size: 1.08em; color: var(--muted); letter-spacing: .01em; }
+
+/* saekdong stripe (the rainbow sleeve of a child's Seollal hanbok) */
+.saekdong { height: 12px; background: linear-gradient(90deg,
+  #D9473B 0 16.6%, #F2B937 0 33.2%, #3E9C6E 0 49.8%, #3F6DB5 0 66.4%, #E88FA8 0 83%, #FFFFFF 0 100%);
+  background-size: 180px 100%; border-bottom: 1px solid var(--line); }
+
+/* ---------- header ---------- */
+header { position: relative; overflow: hidden; }
+.sky { position: absolute; inset: 0; pointer-events: none; }
+.flake { position: absolute; top: -12px; width: 7px; height: 7px; border-radius: 50%; background: var(--blue); opacity: .18; animation: fall linear infinite; }
+.pouch { position: absolute; width: 34px; animation: bob 5s ease-in-out infinite; opacity: .9; }
+@keyframes fall { to { transform: translate3d(30px, 260px, 0); } }
+@keyframes bob { 0%,100% { transform: translateY(0) rotate(-6deg); } 50% { transform: translateY(-8px) rotate(5deg); } }
+.head { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 24px; align-items: center; padding-block: 26px 22px; position: relative; }
+.eyebrow { font: 700 .82rem var(--body); letter-spacing: .1em; text-transform: uppercase; color: var(--jade); margin: 0 0 4px; }
+h1 { font: 400 clamp(2.4rem, 6.4vw, 4.4rem)/1.02 var(--display); margin: 0; letter-spacing: -.01em; }
+h1 .q { color: var(--red); }
+.lede { margin: 8px 0 0; max-width: 46ch; color: var(--muted); font-size: 1.08rem; }
+.lede b { color: var(--ink); }
+.qr { display: flex; gap: 14px; align-items: center; background: var(--sheet); border: 1px solid var(--line); border-radius: 18px; padding: 12px 16px 12px 12px; box-shadow: var(--shadow); }
+.qr .code { width: 112px; height: 112px; background: #fff; border-radius: 10px; padding: 6px; display: grid; place-items: center; }
+.qr .code img, .qr .code canvas { width: 100% !important; height: auto !important; display: block; }
+.qr p { margin: 0; font-size: .92rem; line-height: 1.35; max-width: 17ch; }
+.qr strong { font: 400 1.1rem var(--display); display: block; margin-bottom: 4px; }
+.qr .url { font-size: .74rem; color: var(--muted); word-break: break-all; display: block; margin-top: 6px; }
+.kiosk-btn { margin-top: 8px; min-height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line-strong); background: transparent; cursor: pointer; font-size: .82rem; }
+.kiosk-btn[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+/* ---------- main finder ---------- */
+main { padding-block: 8px 40px; }
+.stage { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 22px; align-items: start; }
+.panel { background: var(--sheet); border: 1px solid var(--line); border-radius: 24px; box-shadow: var(--shadow); }
+.finder { padding: 20px; }
+.step { font: 400 1.25rem var(--display); margin: 0 0 10px; display: flex; align-items: center; gap: 10px; }
+.step .n { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--yellow); color: #2A2208; font-size: 1rem; flex: none; }
+.yearrow { display: flex; gap: 8px; align-items: stretch; }
+.yearrow button { width: 54px; border-radius: 14px; border: 1px solid var(--line-strong); background: var(--paper); font: 400 1.6rem var(--display); cursor: pointer; }
+#year { flex: 1; min-width: 0; text-align: center; font: 400 2.4rem/1 var(--display); padding: 10px; border-radius: 14px; border: 2px solid var(--ink); background: var(--art); color: #22283F; font-variant-numeric: tabular-nums; }
+.seol { display: flex; gap: 10px; align-items: flex-start; margin: 12px 0 0; font-size: .93rem; color: var(--muted); cursor: pointer; }
+.seol input { width: 22px; height: 22px; margin: 2px 0 0; accent-color: var(--red); flex: none; }
+.hint { min-height: 1.4em; font-size: .9rem; color: var(--red); margin: 6px 0 0; }
+.grid12 { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; margin-top: 18px; }
+.chip { display: grid; justify-items: center; gap: 2px; padding: 8px 4px 9px; border-radius: 16px; border: 1px solid var(--line); background: var(--paper); cursor: pointer; transition: transform .15s ease, background .15s ease, border-color .15s ease; }
+.chip:hover { transform: translateY(-2px); }
+.chip .pic { width: 100%; max-width: 74px; aspect-ratio: 1; border-radius: 50%; background: var(--art); }
+.chip .ko { font: 400 1.05rem/1.1 var(--display); }
+.chip .en { font-size: .74rem; color: var(--muted); line-height: 1.1; }
+.chip[aria-pressed="true"] { background: var(--tint-yellow); border-color: var(--yellow); box-shadow: inset 0 0 0 2px var(--yellow); }
+
+/* ---------- result card ---------- */
+.result { padding: 0; overflow: hidden; }
+.hero { display: grid; grid-template-columns: minmax(150px, 220px) minmax(0,1fr); gap: 20px; align-items: center; padding: 22px 22px 18px; position: relative; isolation: isolate; }
+.hero::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--yr-tint, var(--tint-yellow)); }
+.bigpic { width: 100%; max-width: 220px; aspect-ratio: 1; border-radius: 50%; background: var(--art); border: 3px solid var(--yr, var(--yellow)); box-shadow: 0 0 0 6px var(--sheet); position: relative; }
+.bigpic svg { animation: idle 4.5s ease-in-out infinite; transform-origin: 50% 80%; }
+@keyframes idle { 0%,100% { transform: rotate(-2deg) translateY(0); } 50% { transform: rotate(2deg) translateY(-3px); } }
+.yrtag { display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px 4px 6px; border-radius: 999px; background: var(--sheet); border: 1px solid var(--line); font-size: .9rem; }
+.yrtag .dot { width: 18px; height: 18px; border-radius: 50%; background: var(--yr-swatch, #ccc); border: 2px solid var(--line-strong); }
+.name { font: 400 clamp(3rem, 7vw, 4.6rem)/1 var(--display); margin: 10px 0 2px; }
+.name-en { font-size: 1.15rem; color: var(--muted); margin: 0; }
+.bubble { margin-top: 14px; display: inline-flex; align-items: center; gap: 12px; flex-wrap: wrap; background: var(--sheet); border: 2px solid var(--ink); border-radius: 22px 22px 22px 6px; padding: 10px 12px 10px 16px; }
+.bubble .k { font: 400 1.45rem var(--display); }
+.listen { min-height: 40px; padding: 0 14px; border-radius: 999px; border: 0; background: var(--ink); color: var(--paper); cursor: pointer; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; }
+.facts { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 0; border-top: 1px solid var(--line); }
+.fact { padding: 16px 20px; border-bottom: 1px solid var(--line); min-width: 0; }
+.fact:nth-child(odd) { border-right: 1px solid var(--line); }
+.fact h3 { margin: 0 0 4px; font: 400 1.08rem var(--display); display: flex; align-items: center; gap: 8px; }
+.fact h3 svg { width: 26px; height: 26px; flex: none; }
+.fact p { margin: 0; font-size: .97rem; }
+.fact .kw { display: inline-block; margin-top: 6px; padding: 2px 10px; border-radius: 999px; background: var(--tint-jade); font-size: .9rem; }
+.love { padding: 16px 20px 20px; }
+.love h3 { margin: 0 0 10px; font: 400 1.08rem var(--display); }
+.rels { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; }
+.rel { border: 1px solid var(--line); border-radius: 16px; padding: 10px 12px; min-width: 0; background: var(--paper); }
+.rel .tag { display: flex; align-items: center; gap: 6px; font: 400 1rem var(--display); }
+.rel .tag svg { width: 22px; height: 22px; flex: none; }
+.rel .tag small { font: 400 .78rem var(--body); color: var(--muted); }
+.rel .who { display: flex; gap: 6px; margin: 8px 0 4px; flex-wrap: wrap; }
+.mini { width: 46px; height: 46px; border-radius: 50%; background: var(--art); border: 1px solid var(--line); cursor: pointer; padding: 0; }
+.rel p { margin: 0; font-size: .84rem; color: var(--muted); line-height: 1.35; }
+.swap { animation: swap .45s cubic-bezier(.2,.8,.3,1); }
+@keyframes swap { from { opacity: .2; transform: translateX(18px); } to { opacity: 1; transform: none; } }
+
+/* ---------- sections below ---------- */
+section.band { margin-top: 34px; }
+h2 { font: 400 clamp(1.6rem, 3.6vw, 2.2rem)/1.15 var(--display); margin: 0 0 4px; text-wrap: balance; }
+.sub { margin: 0 0 16px; color: var(--muted); }
+.match { display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr); gap: 14px; align-items: center; padding: 20px; }
+.pick { display: grid; justify-items: center; gap: 8px; min-width: 0; }
+.pick .pic { width: 120px; height: 120px; border-radius: 50%; background: var(--art); border: 2px solid var(--line-strong); }
+.pick select { width: 100%; max-width: 220px; min-height: 46px; border-radius: 12px; border: 1px solid var(--line-strong); background: var(--paper); color: var(--ink); font: 400 1.05rem var(--body); padding: 0 10px; }
+.verdict { text-align: center; max-width: 30ch; }
+.verdict .big { font: 400 2rem/1.1 var(--display); display: flex; align-items: center; justify-content: center; gap: 8px; }
+.verdict .big svg { width: 34px; height: 34px; }
+.verdict .say { display: block; }
+.verdict p { margin: 6px 0 0; }
+
+.info { display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: 22px; }
+.card { padding: 20px; }
+.pencils { display: grid; gap: 10px; margin-top: 8px; }
+.pencil { display: grid; grid-template-columns: 150px minmax(0,1fr); gap: 12px; align-items: center; }
+.pencil svg { width: 150px; height: 30px; }
+.pencil .t { font-size: .95rem; line-height: 1.3; }
+.pencil .t b { font-family: var(--display); font-weight: 400; font-size: 1.1rem; }
+.example { margin-top: 14px; padding: 12px 14px; border-radius: 14px; background: var(--tint-red); font-size: .95rem; }
+.scene { width: 100%; height: auto; display: block; border-radius: 18px; background: var(--art); border: 1px solid var(--line); }
+.seolfacts { list-style: none; padding: 0; margin: 14px 0 0; display: grid; gap: 10px; }
+.seolfacts li { display: grid; grid-template-columns: 34px minmax(0,1fr); gap: 10px; align-items: start; font-size: .96rem; }
+.seolfacts svg { width: 34px; height: 34px; }
+footer { padding-block: 18px 34px; color: var(--muted); font-size: .88rem; position: relative; z-index: 1; }
+footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 20px; border-top: 1px dashed var(--line-strong); padding-top: 14px; }
+
+/* display (kiosk) mode: bigger touch targets, auto-tour when idle */
+.kiosk .chip .pic { max-width: 86px; }
+.tour-note { display: none; font-size: .85rem; color: var(--muted); margin: 10px 20px 0; }
+.kiosk.touring .tour-note { display: block; }
+
+@media (max-width: 960px) {
+  .stage, .info { grid-template-columns: minmax(0,1fr); }
+  .head { grid-template-columns: minmax(0,1fr); }
+  .qr { justify-self: start; }
+}
+@media (max-width: 600px) {
+  .hero { grid-template-columns: minmax(0,1fr); justify-items: center; text-align: center; }
+  .bigpic { max-width: 190px; }
+  .facts { grid-template-columns: minmax(0,1fr); }
+  .fact:nth-child(odd) { border-right: 0; }
+  .rels { grid-template-columns: minmax(0,1fr); }
+  .match { grid-template-columns: minmax(0,1fr); }
+  .pick .pic { width: 100px; height: 100px; }
+  .pencil { grid-template-columns: 110px minmax(0,1fr); }
+  .pencil svg { width: 110px; }
+  .kiosk-btn { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .flake, .pouch, .bigpic svg, .swap { animation: none !important; }
+  .chip { transition: none; }
+}
+</style>
+
+<!-- shared pencil filters (rendered, but zero-size so Safari keeps them) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <filter id="pencil" x="-8%" y="-8%" width="116%" height="116%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="1.5 0.06" numOctaves="2" seed="11" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 -2.4 1.42" result="streak"/>
+      <feComposite in="streak" in2="SourceAlpha" operator="in" result="hatch"/>
+      <feMerge result="tex"><feMergeNode in="SourceGraphic"/><feMergeNode in="hatch"/></feMerge>
+      <feTurbulence type="turbulence" baseFrequency="0.04" numOctaves="2" seed="4" result="w"/>
+      <feDisplacementMap in="tex" in2="w" scale="2.4" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+</svg>
+
+<div class="saekdong" aria-hidden="true"></div>
+<header class="gut">
+  <div class="sky" id="sky" aria-hidden="true"></div>
+  <div class="wrap head">
+    <div>
+      <p class="eyebrow">Korean booth · Languages Around the World</p>
+      <h1><span lang="ko">무슨 띠예요</span><span class="q">?</span></h1>
+      <p class="lede"><b>What's your 띠 (<span class="say">ddee</span>)?</b> In Korea, the year you were born has an animal. Type your birth year to meet yours.</p>
+    </div>
+    <div>
+      <div class="qr">
+        <div class="code" id="qr" role="img" aria-label="QR code that opens this page on your phone"></div>
+        <p><strong>Take it with you</strong>Scan to open this on your phone.<span class="url" id="qr-url"></span></p>
+      </div>
+      <button class="kiosk-btn" id="kiosk" type="button" aria-pressed="false">Display mode (iPad)</button>
+    </div>
+  </div>
+</header>
+
+<main class="gut">
+  <div class="wrap">
+    <div class="stage">
+      <section class="panel finder" aria-labelledby="find-h">
+        <h2 class="step" id="find-h"><span class="n">1</span>Your birth year</h2>
+        <div class="yearrow">
+          <button type="button" id="minus" aria-label="One year earlier">−</button>
+          <input id="year" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" value="2004" aria-label="Birth year" autocomplete="off">
+          <button type="button" id="plus" aria-label="One year later">+</button>
+        </div>
+        <label class="seol" for="early"><input type="checkbox" id="early"><span>My birthday is in <b>January or early February</b>, before Seollal that year. (The animal changes at Seollal, not on January 1.)</span></label>
+        <p class="hint" id="hint" aria-live="polite"></p>
+        <h2 class="step" style="margin-top:14px"><span class="n">2</span>…or tap any animal</h2>
+        <div class="grid12" id="grid" role="group" aria-label="The twelve zodiac animals"></div>
+      </section>
+
+      <section class="panel result" aria-live="polite" aria-labelledby="res-name">
+        <div id="result"></div>
+        <p class="tour-note">Touring all 12 animals. Tap anywhere to stop.</p>
+      </section>
+    </div>
+
+    <section class="band" aria-labelledby="match-h">
+      <h2 id="match-h"><span lang="ko">궁합</span> check: are you a match?</h2>
+      <p class="sub">Pick your animal and a friend's. <span lang="ko">궁합</span> (<span class="say">goong-hahp</span>) means "how well two people fit."</p>
+      <div class="panel match">
+        <div class="pick"><div class="pic" id="pa"></div><select id="sa" aria-label="Your animal"></select></div>
+        <div class="verdict" id="verdict"></div>
+        <div class="pick"><div class="pic" id="pb"></div><select id="sb" aria-label="Your friend's animal"></select></div>
+      </div>
+    </section>
+
+    <section class="band info" aria-label="How the Korean zodiac works">
+      <div class="panel card">
+        <h2>Every year has a color, too</h2>
+        <p class="sub">Look at the <b>last digit</b> of the year. Koreans name each year by color + animal, using the five traditional colors (<span lang="ko">오방색</span>).</p>
+        <div class="pencils" id="pencils"></div>
+        <div class="example" id="example"></div>
+      </div>
+      <div class="panel card">
+        <h2>The animal changes at <span lang="ko">설날</span></h2>
+        <p class="sub">Seollal (<span class="say">suhl-lahl</span>) is the Korean Lunar New Year.</p>
+        <svg class="scene" id="scene" viewBox="0 0 400 230" role="img" aria-label="Two children in hanbok greet their grandmother on Seollal; one bows, one holds a lucky pouch."></svg>
+        <ul class="seolfacts" id="seolfacts"></ul>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer class="gut">
+  <div class="wrap">
+    <span>Just for fun: the <span lang="ko">띠</span> is a folk tradition, not science.</span>
+    <span>Languages Around the World · November 18, 2026 · <a href="../" style="color:inherit">More Language Lab activities</a></span>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+(() => {
+const $ = id => document.getElementById(id);
+const SHARE_URL = /github\.io$/.test(location.hostname)
+  ? location.href.split('#')[0]
+  : 'https://junnynoh-tech.github.io/language-lab-events/activities/korean-zodiac/';
+
+/* ---------- drawing kit: colored-pencil look ---------- */
+const S = 'stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"';
+const c = (x, y, r, f, s) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${f}" stroke="${s}" ${S}/>`;
+const e = (x, y, rx, ry, f, s, rot = 0) => `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="${f}" stroke="${s}" ${S}${rot ? ` transform="rotate(${rot} ${x} ${y})"` : ''}/>`;
+const p = (d, f, s, w) => `<path d="${d}" fill="${f}" stroke="${s}" ${w ? `stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round"` : S}/>`;
+const EYE = '#2E2420';
+const eyes = (y = 66, dx = 12, cx = 60) => `<ellipse cx="${cx - dx}" cy="${y}" rx="3.6" ry="4.4" fill="${EYE}"/><ellipse cx="${cx + dx}" cy="${y}" rx="3.6" ry="4.4" fill="${EYE}"/><circle cx="${cx - dx + 1.3}" cy="${y - 1.6}" r="1.3" fill="#fff"/><circle cx="${cx + dx + 1.3}" cy="${y - 1.6}" r="1.3" fill="#fff"/>`;
+const blush = (y = 75, dx = 19, cx = 60) => `<ellipse cx="${cx - dx}" cy="${y}" rx="6.5" ry="3.8" fill="#F28C95" opacity=".55"/><ellipse cx="${cx + dx}" cy="${y}" rx="6.5" ry="3.8" fill="#F28C95" opacity=".55"/>`;
+const smile = (y = 77, cx = 60) => p(`M${cx - 5} ${y} q2.5 3.2 5 0 q2.5 3.2 5 0`, 'none', EYE, 2);
+const art = (inner, label) => `<svg viewBox="0 0 120 120" role="img" aria-label="${label}"><g filter="url(#pencil)" transform="rotate(-28 60 60)"><g transform="rotate(28 60 60)">${inner}</g></g></svg>`;
+
+const DRAW = [
+  /* rat */ () => c(33,42,15,'#BDB8C8','#6F6A7E') + c(87,42,15,'#BDB8C8','#6F6A7E') + c(33,42,8,'#F6B9C6','#F6B9C6') + c(87,42,8,'#F6B9C6','#F6B9C6')
+     + c(60,68,33,'#CBC6D4','#6F6A7E') + eyes(64) + blush(75,20) + e(60,74,4.6,3.4,'#E9879B','#B85A6E')
+     + p('M60 77 v4','none',EYE,2) + p('M54 82 q6 3 12 0','none',EYE,2)
+     + p('M30 72 h-12 M31 77 l-11 4 M90 72 h12 M89 77 l11 4','none','#6F6A7E',1.6),
+  /* ox */ () => p('M36 44 q-14 -10 -6 -26 q2 12 14 16 z','#F4E6C3','#9C8357') + p('M84 44 q14 -10 6 -26 q-2 12 -14 16 z','#F4E6C3','#9C8357')
+     + e(24,60,11,6,'#A86F45','#6B4126',-20) + e(96,60,11,6,'#A86F45','#6B4126',20)
+     + e(60,64,33,31,'#B97E52','#6B4126') + p('M52 36 q8 -6 16 0 q-4 6 -8 4 q-4 2 -8 -4 z','#8A5634','#6B4126')
+     + eyes(58,13) + blush(68,22) + e(60,82,21,13,'#ECCDAC','#9C7350') + e(53,82,2.6,3.4,'#6B4126','#6B4126') + e(67,82,2.6,3.4,'#6B4126','#6B4126'),
+  /* tiger */ () => c(33,38,12,'#F3A23C','#9A5A12') + c(87,38,12,'#F3A23C','#9A5A12') + c(33,39,6,'#FCE2BE','#FCE2BE') + c(87,39,6,'#FCE2BE','#FCE2BE')
+     + c(60,66,35,'#F5A945','#9A5A12')
+     + p('M60 33 v11 M49 35 l3 9 M71 35 l-3 9 M27 60 h10 M27 70 h8 M93 60 h-10 M93 70 h-8','none','#4A2E18',3)
+     + e(51,80,11,8,'#FFF6E6','#C99A62') + e(69,80,11,8,'#FFF6E6','#C99A62') + eyes(63,13) + blush(72,23)
+     + p('M55 73 h10 l-5 5 z','#E9879B','#B85A6E') + p('M56 84 q4 3 8 0','none',EYE,2),
+  /* rabbit */ () => e(46,30,8.5,25,'#FFFCF7','#B6A79E',-8) + e(74,30,8.5,25,'#FFFCF7','#B6A79E',8) + e(46,32,4,17,'#F7BFCB','#F7BFCB',-8) + e(74,32,4,17,'#F7BFCB','#F7BFCB',8)
+     + c(60,72,31,'#FFFCF7','#B6A79E') + eyes(70,12) + blush(79,19) + p('M57 77 h6 l-3 3 z','#E9879B','#B85A6E') + p('M60 80 v3 M55 84 q5 3 10 0','none',EYE,2),
+  /* dragon */ () => p('M40 40 l-6 -16 l9 8 l2 -12 l5 16 z','#F5D36B','#A9862A') + p('M80 40 l6 -16 l-9 8 l-2 -12 l-5 16 z','#F5D36B','#A9862A')
+     + p('M45 32 l7 -10 l5 9 l5 -10 l5 10 l6 -9 l4 10 z','#E9614F','#9E3428')
+     + e(60,62,32,27,'#5EB99C','#2B6E59') + e(60,82,24,14,'#A9DCC7','#2B6E59') + c(52,80,2.8,'#2B6E59','#2B6E59') + c(68,80,2.8,'#2B6E59','#2B6E59')
+     + eyes(58,13) + blush(68,23) + p('M36 84 q-16 -2 -18 10 M84 84 q16 -2 18 10','none','#2B6E59',2.2) + p('M55 90 q5 3 10 0','none',EYE,2),
+  /* snake */ () => p('M22 98 q2 -18 22 -16 h32 q22 0 22 14 q0 12 -18 12 h-40 q-18 0 -18 -10 z','#A4CF63','#557A26')
+     + p('M38 96 l5 -4 l5 4 l-5 4 z M60 96 l5 -4 l5 4 l-5 4 z M82 94 l5 -4 l5 4 l-5 4 z','#F2D46B','#A6862A',1.6)
+     + p('M48 80 q-2 -14 12 -14 q14 0 12 14 z','#A4CF63','#557A26')
+     + e(60,52,27,23,'#B2D873','#557A26') + eyes(50,11) + blush(58,18) + p('M60 64 v8 l-4 4 M60 72 l4 4','none','#D9473B',2.2),
+  /* horse */ () => p('M41 34 l-4 -16 l13 10 z','#C9864E','#7A4520') + p('M79 34 l4 -16 l-13 10 z','#C9864E','#7A4520')
+     + e(60,64,29,35,'#C9864E','#7A4520') + p('M48 30 q6 -10 12 -2 q6 -10 12 2 q-4 10 -12 8 q-8 2 -12 -8 z','#5A3418','#3E2410')
+     + e(60,88,21,14,'#EBC097','#9C6638') + e(53,88,2.6,3.6,'#5A3418','#5A3418') + e(67,88,2.6,3.6,'#5A3418','#5A3418')
+     + eyes(58,13) + blush(70,22),
+  /* sheep */ () => [[38,46],[50,36],[64,34],[78,40],[86,54],[84,70],[34,62],[36,76]].map(([x,y]) => c(x,y,13,'#FFFAF0','#BFAF92')).join('')
+     + e(32,68,11,6,'#F4D6BC','#A57B57',-12) + e(88,68,11,6,'#F4D6BC','#A57B57',12)
+     + e(60,72,23,25,'#F6DCC4','#A57B57') + c(60,46,10,'#FFFAF0','#BFAF92') + eyes(70,10) + blush(80,15) + p('M56 84 q4 3 8 0','none',EYE,2),
+  /* monkey */ () => c(25,66,12,'#9E6B45','#5E3B22') + c(95,66,12,'#9E6B45','#5E3B22') + c(25,66,6,'#F3CBA5','#F3CBA5') + c(95,66,6,'#F3CBA5','#F3CBA5')
+     + c(60,62,34,'#A8734B','#5E3B22') + p('M60 52 q-6 -10 -16 -6 q-12 6 -6 24 q2 12 8 18 q7 8 14 8 q7 0 14 -8 q6 -6 8 -18 q6 -18 -6 -24 q-10 -4 -16 6 z','#F5D0AE','#B9845A')
+     + eyes(62,10) + blush(74,17) + p('M57 70 q3 2 6 0','none',EYE,2) + p('M52 80 q8 6 16 0','none',EYE,2),
+  /* rooster */ () => p('M44 38 q-2 -16 8 -12 q2 -12 10 -4 q6 -10 12 2 q8 -2 4 14 z','#E5484D','#9E2A2E')
+     + c(60,66,32,'#FFFDF6','#BBA98E') + eyes(62,12) + blush(72,20) + p('M53 70 l7 -3 l7 3 l-7 7 z','#F3B33D','#A9771D')
+     + p('M57 77 q-3 10 3 12 q6 -2 3 -12 z','#E5484D','#9E2A2E'),
+  /* dog (Jindo) */ () => p('M34 48 l2 -26 l18 16 z','#F2DFC0','#A88654') + p('M86 48 l-2 -26 l-18 16 z','#F2DFC0','#A88654') + p('M38 42 l1 -12 l9 8 z','#F5BBC6','none',1) + p('M82 42 l-1 -12 l-9 8 z','#F5BBC6','none',1)
+     + c(60,66,32,'#F7E9D2','#A88654') + e(60,80,17,12,'#FFFCF5','#C4A57A') + e(60,74,5.5,4,'#3B2B22','#3B2B22')
+     + eyes(62,12) + c(47,55,1.8,'#C4A57A','#C4A57A') + c(73,55,1.8,'#C4A57A','#C4A57A') + blush(72,21) + p('M54 82 q6 4 12 0','none',EYE,2) + p('M58 84 q2 6 4 0','#F28C95','#C85A6A',1.4),
+  /* pig */ () => p('M34 46 l-4 -20 l18 10 z','#F7AEBB','#C66E7F') + p('M86 46 l4 -20 l-18 10 z','#F7AEBB','#C66E7F')
+     + c(60,66,34,'#FAC8D1','#C66E7F') + eyes(60,13) + blush(70,23) + e(60,78,13,9,'#F59BAA','#C66E7F')
+     + e(55,78,2.6,3.6,'#B44E62','#B44E62') + e(65,78,2.6,3.6,'#B44E62','#B44E62') + p('M55 90 q5 3 10 0','none',EYE,2),
+];
+
+/* ---------- content ---------- */
+const A = [
+  { id:'rat', ko:'쥐', say:'jwee', en:'Rat', word:['똑똑해요','ttohk-ttoh-keh-yo','clever'],
+    me:'Quick-thinking and resourceful. You spot chances other people miss.', study:'Great at cramming smart: you find shortcuts, patterns and the fastest path to the answer.',
+    jobs:'Entrepreneur · data analyst · journalist', fact:'In the folk tale of the great race, the rat rode on the ox\'s head and jumped off first. That\'s why it leads the twelve.' },
+  { id:'ox', ko:'소', say:'soh', en:'Ox', word:['성실해요','suhng-sheel-heh-yo','hardworking'],
+    me:'Steady, patient and reliable. People trust you with the important stuff.', study:'Slow and steady wins: a little every day beats an all-nighter for you.',
+    jobs:'Engineer · doctor · agricultural scientist', fact:'Korean saying: 소 잃고 외양간 고친다, "fixing the barn after losing the cow" (acting too late).' },
+  { id:'tiger', ko:'호랑이', say:'hoh-rahng-ee', en:'Tiger', word:['용감해요','yohng-gahm-heh-yo','brave'],
+    me:'Bold, protective and a natural leader. You stand up for your friends.', study:'You love a challenge: set a goal, pick a friendly rival, then race.',
+    jobs:'Team captain · lawyer · firefighter', fact:'Tigers star in Korean folk tales, and Korea picked tigers as Olympic mascots: Hodori (1988) and Soohorang (2018).' },
+  { id:'rabbit', ko:'토끼', say:'toh-kkee', en:'Rabbit', word:['다정해요','dah-juhng-heh-yo','warm and kind'],
+    me:'Gentle, tactful and artistic. You make everyone feel welcome.', study:'You do best in a calm, cozy spot with soft music and a neat desk.',
+    jobs:'Designer · counselor · nurse', fact:'Look at the full moon: Koreans see a rabbit pounding rice cakes there (달토끼, the moon rabbit).' },
+  { id:'dragon', ko:'용', say:'yohng', en:'Dragon', word:['자신감 있어요','jah-sheen-gahm ee-ssuh-yo','confident'],
+    me:'Energetic, ambitious and full of big ideas. You light up a room.', study:'You aim high and learn best by leading the group project.',
+    jobs:'Director · founder · pilot', fact:'Korean saying: 개천에서 용 난다, "a dragon rises from a little stream" (big success from humble beginnings).' },
+  { id:'snake', ko:'뱀', say:'behm', en:'Snake', word:['지혜로워요','jee-heh-roh-wuh-yo','wise'],
+    me:'Calm, thoughtful and intuitive. You think before you speak.', study:'Deep focus is your superpower: you read past the textbook.',
+    jobs:'Researcher · psychologist · strategist', fact:'2025 was 푸른 뱀, the Blue Snake year.' },
+  { id:'horse', ko:'말', say:'mahl', en:'Horse', word:['활발해요','hwahl-bahl-heh-yo','lively'],
+    me:'Energetic, free-spirited and social. You are always on the move.', study:'Learn by doing: short bursts, then a walk, then another burst.',
+    jobs:'Travel guide · athlete · sales', fact:'2026 is 붉은 말, the Red Horse year.' },
+  { id:'sheep', ko:'양', say:'yahng', en:'Sheep', word:['차분해요','chah-boon-heh-yo','calm'],
+    me:'Calm, caring and creative. Friends come to you to relax.', study:'Study groups and creative projects (art, music, writing) bring out your best.',
+    jobs:'Artist · teacher · chef', fact:'Seollal on February 7, 2027 starts 붉은 양, the Red Sheep year.' },
+  { id:'monkey', ko:'원숭이', say:'wuhn-soong-ee', en:'Monkey', word:['재치 있어요','jeh-chee ee-ssuh-yo','witty'],
+    me:'Playful, curious and a quick problem-solver. Never boring.', study:'You learn fast but get bored fast: switch subjects and keep it fun.',
+    jobs:'Inventor · comedian · software developer', fact:'Korean saying: 원숭이도 나무에서 떨어진다, "even monkeys fall from trees" (everyone makes mistakes).' },
+  { id:'rooster', ko:'닭', say:'dahk', en:'Rooster', word:['부지런해요','boo-jee-ruhn-heh-yo','diligent, an early bird'],
+    me:'Organized, honest and up with the sun. You say what you think.', study:'Color-coded notes, a planner and a plan: that\'s you.',
+    jobs:'Accountant · editor · event planner', fact:'Korean saying: 닭 쫓던 개 지붕 쳐다보듯, "like a dog that chased a rooster, staring up at the roof" (left empty-handed).' },
+  { id:'dog', ko:'개', say:'geh', en:'Dog', word:['충실해요','choong-sheel-heh-yo','loyal'],
+    me:'Loyal, fair and protective. A friend for life.', study:'A study buddy keeps you on track, and you keep them on track too.',
+    jobs:'Social worker · police officer · veterinarian', fact:'Korea\'s Jindo dog (진돗개) is famous for loyalty and is protected as a Natural Monument.' },
+  { id:'pig', ko:'돼지', say:'dweh-jee', en:'Pig', word:['너그러워요','nuh-geu-ruh-wuh-yo','generous'],
+    me:'Generous, easygoing and great fun. You share everything.', study:'Relaxed but steady: promise yourself a snack after each chapter.',
+    jobs:'Chef · host · banker', fact:'In Korea a pig means good fortune. Dream of a pig (돼지꿈) and people say: buy a lottery ticket!' },
+];
+A.forEach((a, i) => a.svg = art(DRAW[i](), `${a.en} (${a.ko}), colored-pencil drawing`));
+
+/* year color by last digit (the heavenly stems) */
+const COLORS = [
+  { d:'0 · 1', ko:'흰', say:'heen', en:'White', el:'metal', sw:'#FFFFFF', tint:'var(--tint-blue)', ring:'#B9C2D3' },
+  { d:'2 · 3', ko:'검은', say:'guh-meun', en:'Black', el:'water', sw:'#2B2F3A', tint:'var(--tint-blue)', ring:'#2B2F3A' },
+  { d:'4 · 5', ko:'푸른', say:'poo-reun', en:'Blue', el:'wood', sw:'#2F6DB5', tint:'var(--tint-blue)', ring:'#2F6DB5' },
+  { d:'6 · 7', ko:'붉은', say:'bool-geun', en:'Red', el:'fire', sw:'#D9473B', tint:'var(--tint-red)', ring:'#D9473B' },
+  { d:'8 · 9', ko:'황금', say:'hwahng-geum', en:'Golden', el:'earth', sw:'#E8B12E', tint:'var(--tint-yellow)', ring:'#E8B12E' },
+];
+const colorOf = y => COLORS[Math.floor((((y % 10) + 10) % 10) / 2)];
+const animalOf = y => (((y - 4) % 12) + 12) % 12;
+
+/* compatibility (folk tables): samhap, yukhap, chung (clash), wonjin */
+const WONJIN = [[0,7],[1,6],[2,9],[3,8],[4,11],[5,10]];
+function rel(a, b) {
+  if (a === b) return 'twin';
+  if (a % 4 === b % 4) return 'best';
+  if ((a + b) % 12 === 1) return 'pair';
+  if (Math.abs(a - b) === 6) return 'tease';
+  if (WONJIN.some(([x, y]) => (x === a && y === b) || (x === b && y === a))) return 'tease';
+  return 'friend';
+}
+const ICON = {
+  best: '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M10 25 C3 19 2 13 6 10 c3-2 6 0 7 3 c1-3 4-5 7-3 c4 3 3 9-4 15z" fill="#E5484D" stroke="#9E2A2E" stroke-width="1.6"/><path d="M21 15 c-3-3-3-6-1-7 c1.6-.8 3 .3 3.4 1.5 c.5-1.2 2-2.3 3.5-1.4 c2 1.3 1.7 4.4-2 7.8z" fill="#F28C95" stroke="#9E2A2E" stroke-width="1.4"/></svg>',
+  pair: '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 27 C6 20 4 13 8 9.5 c3-2.6 7-1 8 2.5 c1-3.5 5-5.1 8-2.5 c4 3.5 2 10.5-8 17.5z" fill="#F28C95" stroke="#B85A6E" stroke-width="1.6"/></svg>',
+  twin: '<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="11" cy="16" r="7" fill="#F2B937" stroke="#A6862A" stroke-width="1.6"/><circle cx="21" cy="16" r="7" fill="#F2B937" stroke="#A6862A" stroke-width="1.6" opacity=".85"/></svg>',
+  friend: '<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="11" fill="#9ED3BF" stroke="#2B6E59" stroke-width="1.6"/><path d="M11 18 q5 5 10 0" fill="none" stroke="#2B6E59" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="13" r="1.4" fill="#2B6E59"/><circle cx="20" cy="13" r="1.4" fill="#2B6E59"/></svg>',
+  tease: '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M18 3 L8 18 h7 l-3 11 l12-16 h-7 z" fill="#F2B937" stroke="#A6862A" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+};
+const REL = {
+  best:  { ko:'찰떡궁합', say:'chahl-dduhk goong-hahp', en:'Best match', why:'Literally "sticky rice-cake match": you stick together. Same harmony group (삼합).' },
+  pair:  { ko:'단짝', say:'dahn-jjahk', en:'Perfect pair', why:'A one-of-a-kind partner. Traditional "six harmonies" pair (육합).' },
+  twin:  { ko:'쌍둥이', say:'ssahng-doong-ee', en:'Twins', why:'Same animal: you get each other without trying.' },
+  friend:{ ko:'친구', say:'cheen-goo', en:'Good friends', why:'No special rule here. Just be nice!' },
+  tease: { ko:'티격태격', say:'tee-gyuhk-teh-gyuhk', en:'Bicker & grow', why:'Opposites: you squabble, then learn a lot from each other.' },
+};
+
+/* ---------- render ---------- */
+let cur = 8, curYear = 2004;
+const grid = $('grid');
+grid.innerHTML = A.map((a, i) => `<button type="button" class="chip" data-i="${i}" aria-pressed="false"><span class="pic">${a.svg}</span><span class="ko" lang="ko">${a.ko}</span><span class="en">${a.en}</span></button>`).join('');
+grid.addEventListener('click', ev => { const b = ev.target.closest('.chip'); if (b) { stopTour(); curYear = null; $('year').value = ''; $('hint').textContent = ''; show(+b.dataset.i, true); } });
+
+function mini(i) { return `<button type="button" class="mini" data-i="${i}" title="${A[i].en}" aria-label="See ${A[i].en}">${A[i].svg}</button>`; }
+
+function show(i, push) {
+  cur = i; const a = A[i];
+  grid.querySelectorAll('.chip').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.i === i)));
+  const col = curYear != null ? colorOf(curYear) : null;
+  const yearLine = col
+    ? `<span class="yrtag"><span class="dot" style="background:${col.sw}"></span><span><span lang="ko">${col.ko} ${a.ko}</span> · ${col.en} ${a.en} · ${curYear}</span></span>`
+    : `<span class="yrtag"><span class="dot" style="background:var(--yellow)"></span>Years: ${years(i)}</span>`;
+  const others = A.map((_, j) => j).filter(j => j !== i);
+  const groups = { best: [], pair: [], tease: [] };
+  others.forEach(j => { const r = rel(i, j); if (groups[r]) groups[r].push(j); });
+  const relCard = k => `<div class="rel"><div class="tag">${ICON[k]}<span><span lang="ko">${REL[k].ko}</span> <small>${REL[k].en}</small></span></div><div class="who">${groups[k].map(mini).join('')}</div><p>${REL[k].why}</p></div>`;
+  const box = $('result');
+  box.style.setProperty('--yr', col ? col.ring : 'var(--yellow)');
+  box.style.setProperty('--yr-tint', col ? col.tint : 'var(--tint-yellow)');
+  box.innerHTML = `
+    <div class="hero swap">
+      <div class="bigpic">${a.svg}</div>
+      <div>
+        ${yearLine}
+        <p class="name" id="res-name"><span lang="ko">${a.ko}</span><span lang="ko">띠</span></p>
+        <p class="name-en"><span class="say">${a.say}-ddee</span> · ${a.en}</p>
+        <div class="bubble"><span><span class="k" lang="ko">저는 ${a.ko}띠예요!</span><br><span class="say">juh-neun ${a.say}-ddee-yeh-yo</span> · I'm a ${a.en.toLowerCase()}!</span>
+          <button class="listen" type="button" id="listen" hidden>▶ Listen</button></div>
+      </div>
+    </div>
+    <div class="facts">
+      <div class="fact"><h3>${ico('heart')}Personality</h3><p>${a.me}</p><span class="kw"><span lang="ko">${a.word[0]}</span> <span class="say">${a.word[1]}</span> · ${a.word[2]}</span></div>
+      <div class="fact"><h3>${ico('book')}Studies</h3><p>${a.study}</p></div>
+      <div class="fact"><h3>${ico('bag')}Job outlook</h3><p>${a.jobs}</p></div>
+      <div class="fact"><h3>${ico('star')}Did you know?</h3><p>${a.fact}</p></div>
+    </div>
+    <div class="love"><h3>Love &amp; friends</h3><div class="rels">${relCard('best')}${relCard('pair')}${relCard('tease')}</div></div>`;
+  box.querySelectorAll('.mini').forEach(m => m.addEventListener('click', () => { stopTour(); curYear = null; $('year').value = ''; show(+m.dataset.i, true); }));
+  const L = $('listen');
+  if ('speechSynthesis' in window) { L.hidden = false; L.onclick = () => { try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(`저는 ${a.ko}띠예요`); u.lang = 'ko-KR'; u.rate = .8; speechSynthesis.speak(u); } catch (_) {} }; }
+  $('sa').value = String(i); drawMatch();
+  if (push && location.hash !== '#' + a.id) history.replaceState(null, '', '#' + a.id);
+}
+function years(i) { const out = []; for (let y = 1948; y <= 2023; y++) if (animalOf(y) === i) out.push(y); return out.slice(-4).join(', '); }
+function ico(k) {
+  const m = {
+    heart: '<path d="M16 27 C6 20 4 13 8 9.5 c3-2.6 7-1 8 2.5 c1-3.5 5-5.1 8-2.5 c4 3.5 2 10.5-8 17.5z" fill="#F28C95" stroke="#B85A6E" stroke-width="1.6"/>',
+    book: '<path d="M4 8 q6-3 12 1 q6-4 12-1 v16 q-6-3-12 1 q-6-4-12-1z" fill="#9FC0EC" stroke="#2F5FA7" stroke-width="1.6" stroke-linejoin="round"/><path d="M16 9 v16" stroke="#2F5FA7" stroke-width="1.6"/>',
+    bag: '<rect x="4" y="10" width="24" height="16" rx="3" fill="#F2B937" stroke="#A6862A" stroke-width="1.6"/><path d="M12 10 v-3 h8 v3" fill="none" stroke="#A6862A" stroke-width="1.6"/>',
+    star: '<path d="M16 4 l3.5 7.5 l8 1 l-6 5.5 l1.6 8 l-7.1-4 l-7.1 4 l1.6-8 l-6-5.5 l8-1z" fill="#9ED3BF" stroke="#2B6E59" stroke-width="1.6" stroke-linejoin="round"/>',
+  };
+  return `<svg viewBox="0 0 32 32" aria-hidden="true">${m[k]}</svg>`;
+}
+
+/* year input */
+function fromYear(announce) {
+  const y = parseInt($('year').value, 10);
+  if (!(y >= 1900 && y <= 2030)) { if (announce) $('hint').textContent = 'Type a 4-digit year between 1900 and 2030.'; return; }
+  const yy = $('early').checked ? y - 1 : y;
+  curYear = yy;
+  $('hint').textContent = $('early').checked ? `Born before Seollal in ${y}, so you count as ${yy}.` : '';
+  show(animalOf(yy), true);
+}
+$('year').addEventListener('input', () => { stopTour(); $('year').value = $('year').value.replace(/\D/g, '').slice(0, 4); if ($('year').value.length === 4) fromYear(true); else $('hint').textContent = ''; });
+$('year').addEventListener('change', () => fromYear(true));
+$('early').addEventListener('change', () => { stopTour(); fromYear(false); });
+const nudge = d => { stopTour(); const y = parseInt($('year').value, 10) || 2004; $('year').value = String(Math.min(2030, Math.max(1900, y + d))); fromYear(true); };
+$('minus').addEventListener('click', () => nudge(-1));
+$('plus').addEventListener('click', () => nudge(1));
+
+/* compatibility checker */
+const opts = A.map((a, i) => `<option value="${i}">${a.ko} · ${a.en}</option>`).join('');
+$('sa').innerHTML = opts; $('sb').innerHTML = opts; $('sb').value = '0';
+function drawMatch() {
+  const a = +$('sa').value, b = +$('sb').value, r = rel(a, b), R = REL[r];
+  $('pa').innerHTML = A[a].svg; $('pb').innerHTML = A[b].svg;
+  $('verdict').innerHTML = `<div class="big">${ICON[r]}<span lang="ko">${R.ko}</span></div><span class="say">${R.say}</span><p><b>${R.en}.</b> ${R.why}</p>`;
+}
+$('sa').addEventListener('change', drawMatch); $('sb').addEventListener('change', drawMatch);
+
+/* year-color pencils */
+$('pencils').innerHTML = COLORS.map(k => `<div class="pencil">
+  <svg viewBox="0 0 150 30" aria-hidden="true"><g filter="url(#pencil)"><path d="M6 8 h112 v14 h-112 z" fill="${k.sw}" stroke="#2E2420" stroke-width="1.8" stroke-linejoin="round"/><path d="M118 8 l24 7 l-24 7 z" fill="#F3D9B1" stroke="#2E2420" stroke-width="1.8" stroke-linejoin="round"/><path d="M136 13.3 l6 1.7 l-6 1.7 z" fill="${k.sw === '#FFFFFF' ? '#B9C2D3' : k.sw}"/><path d="M6 8 v14" stroke="#2E2420" stroke-width="5"/><text x="62" y="19.5" text-anchor="middle" font-family="Jua, sans-serif" font-size="11" fill="${k.sw === '#FFFFFF' || k.sw === '#E8B12E' ? '#2E2420' : '#FFFFFF'}">${k.d}</text></g></svg>
+  <div class="t"><b lang="ko">${k.ko}</b> <span class="say">${k.say}</span> · ${k.en} <span style="color:var(--muted)">(${k.el})</span></div></div>`).join('');
+$('example').innerHTML = `<b>Try it:</b> 20<b>26</b> ends in 6 → <span lang="ko">붉은 말</span>, the <b>Red Horse</b> year. 20<b>27</b> ends in 7 and is a sheep year → <span lang="ko">붉은 양</span>, the <b>Red Sheep</b>.`;
+
+/* Seollal scene: cartoon kids in hanbok greeting grandma */
+const sleeve = (x, y, w, h) => ['#D9473B','#F2B937','#3E9C6E','#3F6DB5','#E88FA8','#FFFFFF'].map((col, k) => `<rect x="${x}" y="${y + k * h / 6}" width="${w}" height="${h / 6 + .4}" fill="${col}"/>`).join('');
+$('scene').innerHTML = `
+  <rect x="0" y="0" width="400" height="230" fill="#FFFDF7"/>
+  <g filter="url(#pencil)">
+    <path d="M0 176 H400 V230 H0 Z" fill="#F1DFC0"/>
+    <path d="M14 56 q186 -44 372 0 l-12 14 q-174 -36 -348 0 z" fill="#4C5A7A" stroke="#2E3550" stroke-width="2"/>
+    <path d="M40 70 v106 M360 70 v106" stroke="#B07A4A" stroke-width="6"/>
+    <path d="M150 82 h100 v58 h-100z" fill="#FBF6EA" stroke="#B07A4A" stroke-width="2.4"/>
+    <path d="M200 82 v58 M150 111 h100" stroke="#D9C39C" stroke-width="1.6"/>
+    <!-- folding screen dots of plum blossom -->
+    <circle cx="170" cy="96" r="4" fill="#F28C95"/><circle cx="228" cy="124" r="4" fill="#F28C95"/><circle cx="236" cy="96" r="3" fill="#F28C95"/>
+    <!-- grandma, seated on a cushion -->
+    <ellipse cx="300" cy="190" rx="54" ry="12" fill="#C8573F" stroke="#8C3A2A" stroke-width="2"/>
+    <path d="M258 188 q4 -52 42 -54 q38 2 42 54 z" fill="#3F5A8C" stroke="#25365A" stroke-width="2.4"/>
+    <path d="M274 140 q26 -16 52 0 l-6 22 q-20 10 -40 0 z" fill="#E7D6EE" stroke="#8B76A0" stroke-width="2.2"/>
+    <path d="M292 150 l8 12 l8 -12" fill="none" stroke="#C8573F" stroke-width="3"/>
+    <circle cx="300" cy="112" r="22" fill="#F7D7BC" stroke="#B9875F" stroke-width="2.2"/>
+    <path d="M278 108 q4 -22 22 -22 q18 0 22 22 q-10 -10 -22 -10 q-12 0 -22 10z" fill="#B9B6BE" stroke="#7E7B86" stroke-width="2"/>
+    <circle cx="300" cy="84" r="9" fill="#B9B6BE" stroke="#7E7B86" stroke-width="2"/><path d="M284 84 h32" stroke="#3E9C6E" stroke-width="3"/>
+    <path d="M291 112 q3 -3 6 0 M303 112 q3 -3 6 0" fill="none" stroke="#2E2420" stroke-width="2" stroke-linecap="round"/>
+    <ellipse cx="288" cy="121" rx="5" ry="3" fill="#F28C95" opacity=".6"/><ellipse cx="312" cy="121" rx="5" ry="3" fill="#F28C95" opacity=".6"/>
+    <path d="M295 124 q5 4 10 0" fill="none" stroke="#2E2420" stroke-width="2" stroke-linecap="round"/>
+    <!-- envelope of New Year money -->
+    <rect x="322" y="160" width="20" height="13" rx="2" fill="#FFFFFF" stroke="#C8573F" stroke-width="2" transform="rotate(-12 332 166)"/>
+    <!-- child bowing (big bow, kneeling) -->
+    <path d="M150 190 q8 -40 46 -36 q26 4 26 34 z" fill="#F2B937" stroke="#A6862A" stroke-width="2.4"/>
+    <g>${sleeve(196, 166, 26, 22)}</g><rect x="196" y="166" width="26" height="22" fill="none" stroke="#2E2420" stroke-width="2"/>
+    <circle cx="236" cy="178" r="17" fill="#F7D7BC" stroke="#B9875F" stroke-width="2.2"/>
+    <path d="M220 172 q8 -16 28 -6 q-4 -2 -12 2 q-10 2 -16 4z" fill="#2E2420"/>
+    <path d="M232 184 q3 2 6 0" fill="none" stroke="#2E2420" stroke-width="2" stroke-linecap="round"/>
+    <!-- standing child with saekdong sleeves holding a lucky pouch -->
+    <path d="M70 186 l10 -54 h28 l10 54 z" fill="#E88FA8" stroke="#B85A6E" stroke-width="2.4"/>
+    <path d="M78 132 h32 v20 h-32z" fill="#FFF6E2" stroke="#A6862A" stroke-width="2"/>
+    <g>${sleeve(62, 134, 16, 26)}</g><rect x="62" y="134" width="16" height="26" fill="none" stroke="#2E2420" stroke-width="2"/>
+    <g>${sleeve(110, 134, 16, 26)}</g><rect x="110" y="134" width="16" height="26" fill="none" stroke="#2E2420" stroke-width="2"/>
+    <path d="M118 160 q-12 6 -8 20 q12 6 24 0 q4 -14 -8 -20 z" fill="#D9473B" stroke="#8C2B22" stroke-width="2"/><path d="M116 162 h12" stroke="#F2B937" stroke-width="3"/>
+    <circle cx="94" cy="110" r="22" fill="#F7D7BC" stroke="#B9875F" stroke-width="2.2"/>
+    <path d="M72 106 q2 -26 22 -26 q20 0 22 26 q-6 -14 -22 -14 q-16 0 -22 14z" fill="#2E2420"/>
+    <ellipse cx="86" cy="110" rx="3" ry="3.6" fill="#2E2420"/><ellipse cx="102" cy="110" rx="3" ry="3.6" fill="#2E2420"/>
+    <ellipse cx="80" cy="119" rx="5" ry="3" fill="#F28C95" opacity=".6"/><ellipse cx="108" cy="119" rx="5" ry="3" fill="#F28C95" opacity=".6"/>
+    <path d="M89 121 q5 5 10 0" fill="none" stroke="#2E2420" stroke-width="2" stroke-linecap="round"/>
+  </g>
+  <g font-family="Jua, sans-serif">
+    <path d="M120 22 h150 q10 0 10 10 v20 q0 10 -10 10 h-118 l-14 12 l2 -12 h-20 q-10 0 -10 -10 v-20 q0 -10 10 -10z" fill="#FFFFFF" stroke="#2E2420" stroke-width="2"/>
+    <text x="195" y="48" text-anchor="middle" font-size="17" fill="#22283F">새해 복 많이 받으세요!</text>
+  </g>`;
+const SF = [
+  ['#F2B937', 'Seollal 2027 is <b>Sunday, February 7</b>. That day the Red Horse year ends and the <b>Red Sheep</b> year begins.'],
+  ['#E88FA8', '<b><span lang="ko">세배</span> (seh-beh)</b>: children bow deeply to elders and say <span lang="ko">새해 복 많이 받으세요</span>. Elders answer with good wishes and <b>New Year money</b> (<span lang="ko">세뱃돈</span>).'],
+  ['#3E9C6E', '<b><span lang="ko">떡국</span> (dduhk-gook)</b>: rice-cake soup for New Year breakfast. Traditionally, one bowl makes you a year older!'],
+  ['#3F6DB5', '<b><span lang="ko">잡채</span> (jahp-cheh)</b>: the glass-noodle dish on our table is a Seollal feast favorite. It began as a royal dish for King Gwanghaegun in the 1600s, made without noodles.'],
+];
+$('seolfacts').innerHTML = SF.map(([col, t]) => `<li><svg viewBox="0 0 34 34" aria-hidden="true"><g filter="url(#pencil)"><circle cx="17" cy="17" r="13" fill="${col}" stroke="#2E2420" stroke-width="1.8"/></g></svg><span>${t}</span></li>`).join('');
+
+/* ambient header sky: snow + floating lucky pouches (bokjumeoni) */
+const sky = $('sky');
+let flakes = '';
+for (let k = 0; k < 22; k++) flakes += `<span class="flake" style="left:${(k * 47) % 100}%;animation-duration:${9 + (k % 7)}s;animation-delay:-${(k * 1.3) % 9}s;width:${5 + (k % 4) * 2}px;height:${5 + (k % 4) * 2}px"></span>`;
+const pouch = (col, l, t, d) => `<svg class="pouch" viewBox="0 0 40 44" style="left:${l};top:${t};animation-delay:${d}s"><g filter="url(#pencil)"><path d="M20 10 q-16 6 -14 22 q14 10 28 0 q2 -16 -14 -22z" fill="${col}" stroke="#2E2420" stroke-width="1.8"/><path d="M12 11 h16" stroke="#F2B937" stroke-width="3"/><path d="M17 6 q3 -5 6 0" fill="none" stroke="#2E2420" stroke-width="1.6"/><circle cx="20" cy="26" r="4" fill="#F2B937"/></g></svg>`;
+sky.innerHTML = flakes + pouch('#D9473B', '58%', '14px', 0) + pouch('#3F6DB5', '66%', '64px', -1.6) + pouch('#E88FA8', '50%', '86px', -3);
+
+/* QR */
+$('qr-url').textContent = SHARE_URL.replace(/^https:\/\//, '');
+try { new QRCode($('qr'), { text: SHARE_URL, width: 200, height: 200, colorDark: '#22283F', colorLight: '#FFFFFF', correctLevel: QRCode.CorrectLevel.M }); }
+catch (_) { $('qr').textContent = 'QR'; }
+
+/* display mode for the iPad: keep the screen on; after 45 s idle, tour the animals */
+let kiosk = false, idleT = null, tourT = null, lock = null;
+const root = document.documentElement;
+function stopTour() { clearInterval(tourT); tourT = null; root.classList.remove('touring'); armIdle(); }
+function armIdle() { clearTimeout(idleT); if (kiosk) idleT = setTimeout(startTour, 45000); }
+function startTour() {
+  if (!kiosk || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  root.classList.add('touring'); curYear = null; $('year').value = ''; $('hint').textContent = '';
+  tourT = setInterval(() => show((cur + 1) % 12, false), 7000);
+}
+['pointerdown', 'keydown'].forEach(t => addEventListener(t, () => { if (tourT) stopTour(); else armIdle(); }, { passive: true }));
+$('kiosk').addEventListener('click', async () => {
+  kiosk = !kiosk; $('kiosk').setAttribute('aria-pressed', String(kiosk)); root.classList.toggle('kiosk', kiosk);
+  if (kiosk) { try { lock = await navigator.wakeLock?.request('screen'); } catch (_) {} armIdle(); }
+  else { clearTimeout(idleT); stopTour(); clearTimeout(idleT); try { await lock?.release(); } catch (_) {} lock = null; }
+});
+document.addEventListener('visibilitychange', async () => { if (kiosk && document.visibilityState === 'visible') { try { lock = await navigator.wakeLock?.request('screen'); } catch (_) {} } });
+
+/* start: #animal in the link wins, otherwise the sample year */
+function fromHash() { const k = A.findIndex(a => '#' + a.id === location.hash); if (k >= 0) { curYear = null; $('year').value = ''; show(k, false); return true; } return false; }
+addEventListener('hashchange', fromHash);
+if (!fromHash()) fromYear(false);
+drawMatch();
+})();
+</script>
+
+</html>

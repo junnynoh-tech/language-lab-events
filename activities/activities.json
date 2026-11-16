@@ -1,0 +1,120 @@
+{
+  "_about": "Language Lab activity library: booth and event activities to reuse. One entry per activity. status: page = a live page in this folder; used = run at an event (no page); idea = saved for later. Edit here; activities/index.html reads this file.",
+  "activities": [
+    {
+      "id": "korean-zodiac",
+      "title": "What's your 띠? Korean zodiac finder",
+      "language": "Korean",
+      "kind": "Interactive page",
+      "holiday": "Seollal (Lunar New Year)",
+      "status": "page",
+      "link": "korean-zodiac/",
+      "minutes": 2,
+      "staff": 0,
+      "supplies": "iPad or a phone (QR code on the page); optional printed zodiac cards",
+      "summary": "Visitors type their birth year, meet their zodiac animal and its year color, say \"저는 ___띠예요\", and check compatibility with a friend.",
+      "used_at": ["Languages Around the World (Holidays), Nov 18, 2026"]
+    },
+    {
+      "id": "say-it-get-a-taste",
+      "title": "Say it, get a taste",
+      "language": "Any",
+      "kind": "Language + food",
+      "holiday": "Any",
+      "status": "used",
+      "minutes": 1,
+      "staff": 1,
+      "supplies": "A phrase on the board; the booth's food",
+      "summary": "Visitors read one phrase off the board (e.g. 새해 복 많이 받으세요, \"Happy New Year\") and say it to get a sample.",
+      "used_at": ["Languages Around the World (Holidays), Nov 18, 2026"]
+    },
+    {
+      "id": "wish-wall",
+      "title": "New Year wish wall (소원)",
+      "language": "Any",
+      "kind": "Craft-light",
+      "holiday": "New Year",
+      "status": "used",
+      "minutes": 2,
+      "staff": 0,
+      "supplies": "Sticky notes, pens, an empty strip on the trifold",
+      "summary": "Visitors write a wish on a sticky note and add it to the board.",
+      "used_at": ["Languages Around the World (Holidays), Nov 18, 2026"]
+    },
+    {
+      "id": "sebae-bow",
+      "title": "Sebae: the New Year bow (세배)",
+      "language": "Korean",
+      "kind": "Culture",
+      "holiday": "Seollal (Lunar New Year)",
+      "status": "used",
+      "minutes": 1,
+      "staff": 1,
+      "supplies": "Take-home cards as \"New Year money\" (세뱃돈); chocolate coins if ordered ahead",
+      "summary": "Watch and try the bow, say 새해 복 많이 받으세요, receive New Year money and a blessing.",
+      "used_at": ["Languages Around the World (Holidays), Nov 18, 2026"]
+    },
+    {
+      "id": "yut-throw",
+      "title": "Throw the yut: your New Year animal (윷)",
+      "language": "Korean",
+      "kind": "Game",
+      "holiday": "Seollal (Lunar New Year)",
+      "status": "idea",
+      "minutes": 1,
+      "staff": 0,
+      "supplies": "4 craft sticks (one side marked), a towel to throw on, the result chart",
+      "summary": "Toss four sticks, count the flat sides: 도 pig, 개 dog, 걸 sheep, 윷 cow, 모 horse. Needs sticks bought ahead."
+    },
+    {
+      "id": "gonggi",
+      "title": "Gonggi (공기)",
+      "language": "Korean",
+      "kind": "Game",
+      "holiday": "Any",
+      "status": "idea",
+      "minutes": 2,
+      "staff": 0,
+      "supplies": "A gonggi set (5 stones)",
+      "summary": "Toss one stone, grab one off the table, catch the first before it lands."
+    },
+    {
+      "id": "ddakji",
+      "title": "Ddakji (딱지)",
+      "language": "Korean",
+      "kind": "Game",
+      "holiday": "Any",
+      "status": "idea",
+      "minutes": 2,
+      "staff": 0,
+      "supplies": "6–10 paper tiles folded ahead (folding at the table is slow)",
+      "summary": "Throw a folded paper tile to flip your opponent's."
+    },
+    {
+      "id": "taste-twin",
+      "title": "Find Your Taste Twin",
+      "language": "Many",
+      "kind": "Food + culture",
+      "holiday": "Any",
+      "status": "used",
+      "minutes": 5,
+      "staff": 1,
+      "supplies": "Taste Twin cards (4 per sheet), pens, candy at each table",
+      "summary": "Tick the flavors you notice in each candy; your top flavor names your \"taste twin\" countries, then compare with their flavor maps.",
+      "used_at": ["Lingo Café & Candies Around the World, Oct 28, 2026"]
+    },
+    {
+      "id": "ask-taste-thank",
+      "title": "Ask · Taste · Thank",
+      "language": "Many",
+      "kind": "Language + food",
+      "holiday": "Any",
+      "status": "used",
+      "minutes": 1,
+      "staff": 0,
+      "supplies": "One phrase card per table",
+      "summary": "Ask for the food, name a flavor, say \"Delicious!\" and thank you in each table's language.",
+      "used_at": ["Lingo Café & Candies Around the World, Oct 28, 2026"]
+    }
+  ]
+}

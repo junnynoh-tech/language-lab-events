@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Language Lab Activities</title>
+<meta name="description" content="Booth and event activities the UNG Language Lab has run or saved for future events.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&family=DM+Sans:wght@400;500;700&family=Noto+Sans+KR:wght@500&display=swap">
+<style>
+/* Layout: the events site's masthead band, then a filter row and a card grid read from activities.json. */
+:root {
+  --bg: #F7F7F5; --surface: #FFFFFF; --ink: #1F2937; --muted: #5A6472;
+  --navy: #1A3A6B; --gold: #8A6D2E; --band-bg: #1A3A6B; --band-text: #FFFFFF; --band-gold: #D9B968;
+  --border: rgba(31,41,55,.14); --border-strong: rgba(31,41,55,.28);
+  --page-bg: #E3F1EA; --page-tx: #1F5E45; --used-bg: #DBEAFE; --used-tx: #1A3A6B; --idea-bg: #FEF3C7; --idea-tx: #92400E;
+  --serif: "Source Serif 4", Georgia, serif; --sans: "DM Sans", "Noto Sans KR", "Segoe UI", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0F1115; --surface: #181B22; --ink: #F1F3F6; --muted: #B8C0CE; --navy: #7B9FE0; --gold: #D9B968;
+  --border: rgba(241,243,246,.14); --border-strong: rgba(241,243,246,.28);
+  --page-bg: rgba(74,222,128,.16); --page-tx: #86EFAC; --used-bg: rgba(123,159,224,.16); --used-tx: #A9C3EE; --idea-bg: rgba(251,191,36,.16); --idea-tx: #FCD34D;
+  color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0F1115; --surface: #181B22; --ink: #F1F3F6; --muted: #B8C0CE; --navy: #7B9FE0; --gold: #D9B968;
+  --border: rgba(241,243,246,.14); --border-strong: rgba(241,243,246,.28);
+  --page-bg: rgba(74,222,128,.16); --page-tx: #86EFAC; --used-bg: rgba(123,159,224,.16); --used-tx: #A9C3EE; --idea-bg: rgba(251,191,36,.16); --idea-tx: #FCD34D;
+  color-scheme: dark; }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 1.0625rem/1.55 var(--sans); }
+.gut { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.wrap { max-width: 1120px; margin: 0 auto; }
+:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.mast { background: var(--band-bg); color: var(--band-text); padding-block: 26px 22px; }
+.mast h1 { margin: 0; font: 700 clamp(1.7rem, 3.4vw, 2.3rem)/1.1 var(--serif); }
+.mast p { margin: 6px 0 0; color: var(--band-gold); font-weight: 500; }
+.mast a { color: var(--band-text); }
+main { padding-block: 20px 40px; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 18px; }
+.filters .lbl { font-size: .9rem; font-weight: 700; color: var(--muted); margin-right: 2px; }
+.chip { min-height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--border-strong); background: var(--surface); color: var(--ink); font: 600 .95rem var(--sans); cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--navy); border-color: var(--navy); color: var(--bg); }
+select { min-height: 44px; border-radius: 10px; border: 1px solid var(--border-strong); background: var(--surface); color: var(--ink); font: 500 .95rem var(--sans); padding: 0 10px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 14px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.card h2 { margin: 0; font: 700 1.2rem/1.25 var(--serif); }
+.card h2 a { color: inherit; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag { font: 700 .78rem var(--sans); letter-spacing: .05em; text-transform: uppercase; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); }
+.tag.page { background: var(--page-bg); color: var(--page-tx); border-color: transparent; }
+.tag.used { background: var(--used-bg); color: var(--used-tx); border-color: transparent; }
+.tag.idea { background: var(--idea-bg); color: var(--idea-tx); border-color: transparent; }
+.card p { margin: 0; }
+dl { margin: 4px 0 0; display: grid; grid-template-columns: auto minmax(0,1fr); gap: 2px 12px; font-size: .95rem; }
+dt { color: var(--muted); font-weight: 700; }
+dd { margin: 0; }
+.open { margin-top: auto; align-self: flex-start; min-height: 44px; display: inline-flex; align-items: center; padding: 0 16px; border-radius: 8px; background: var(--band-bg); color: var(--band-text); font-weight: 700; text-decoration: none; }
+.empty, .err { color: var(--muted); }
+footer { padding-block: 0 30px; color: var(--muted); font-size: .95rem; }
+</style>
+</head>
+<body>
+<header class="mast gut"><div class="wrap">
+  <h1>Language Lab activities</h1>
+  <p>Booth and event activities we've run, plus ideas saved for later. <a href="../">See upcoming events</a></p>
+</div></header>
+<main class="gut"><div class="wrap">
+  <div class="filters" role="group" aria-label="Filter activities">
+    <span class="lbl">Show</span>
+    <button class="chip" type="button" data-s="all" aria-pressed="true">All</button>
+    <button class="chip" type="button" data-s="page" aria-pressed="false">Pages to open</button>
+    <button class="chip" type="button" data-s="used" aria-pressed="false">Used at events</button>
+    <button class="chip" type="button" data-s="idea" aria-pressed="false">Ideas for later</button>
+    <label class="lbl" for="lang" style="margin-left:8px">Language</label>
+    <select id="lang"><option value="">All</option></select>
+  </div>
+  <div class="grid" id="list" aria-live="polite"></div>
+</div></main>
+<footer class="gut"><div class="wrap">No student data is stored here.</div></footer>
+<script>
+(async () => {
+  const list = document.getElementById('list'), lang = document.getElementById('lang');
+  const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const LABEL = { page: 'Page', used: 'Used', idea: 'Idea' };
+  let items = [], status = 'all';
+  try { items = (await (await fetch('activities.json', { cache: 'no-cache' })).json()).activities || []; }
+  catch (_) { list.innerHTML = '<p class="err">The activity list didn\'t load. Refresh the page to try again.</p>'; return; }
+  [...new Set(items.map(a => a.language))].sort().forEach(l => lang.insertAdjacentHTML('beforeend', `<option>${esc(l)}</option>`));
+  function draw() {
+    const shown = items.filter(a => (status === 'all' || a.status === status) && (!lang.value || a.language === lang.value));
+    list.innerHTML = shown.length ? shown.map(a => `<article class="card">
+      <div class="meta"><span class="tag ${esc(a.status)}">${LABEL[a.status] || esc(a.status)}</span><span class="tag">${esc(a.language)}</span><span class="tag">${esc(a.kind)}</span></div>
+      <h2>${a.link ? `<a href="${esc(a.link)}">${esc(a.title)}</a>` : esc(a.title)}</h2>
+      <p>${esc(a.summary)}</p>
+      <dl><dt>Holiday</dt><dd>${esc(a.holiday)}</dd><dt>Time</dt><dd>about ${esc(a.minutes)} min per visitor</dd>
+      <dt>Staff</dt><dd>${a.staff ? esc(a.staff) + ' person' : 'self-serve'}</dd><dt>Supplies</dt><dd>${esc(a.supplies)}</dd>
+      ${a.used_at ? `<dt>Used at</dt><dd>${a.used_at.map(esc).join('<br>')}</dd>` : ''}</dl>
+      ${a.link ? `<a class="open" href="${esc(a.link)}">Open the activity</a>` : ''}</article>`).join('')
+      : '<p class="empty">No activities match these filters.</p>';
+  }
+  document.querySelectorAll('.chip').forEach(b => b.addEventListener('click', () => {
+    status = b.dataset.s; document.querySelectorAll('.chip').forEach(x => x.setAttribute('aria-pressed', String(x === b))); draw();
+  }));
+  lang.addEventListener('change', draw);
+  draw();
+})();
+</script>
+</body>
+</html>
