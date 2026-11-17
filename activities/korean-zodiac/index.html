@@ -510,8 +510,8 @@ $('sa').addEventListener('change', drawMatch); $('sb').addEventListener('change'
 /* year-color pencils */
 $('pencils').innerHTML = COLORS.map((k, n) => `<div class="pencil" data-c="${n}"><span class="dg" aria-label="years ending in ${k.d.replace(' · ', ' or ')}">${k.d}</span>
   <svg viewBox="0 0 150 30" aria-hidden="true"><g filter="url(#pencil)"><path d="M6 8 h112 v14 h-112 z" fill="${k.sw}" stroke="#2E2420" stroke-width="1.8" stroke-linejoin="round"/><path d="M118 8 l24 7 l-24 7 z" fill="#F3D9B1" stroke="#2E2420" stroke-width="1.8" stroke-linejoin="round"/><path d="M136 13.3 l6 1.7 l-6 1.7 z" fill="${k.sw === '#FFFFFF' ? '#B9C2D3' : k.sw}"/><path d="M6 8 v14" stroke="#2E2420" stroke-width="5"/></g></svg>
-  <div class="t"><b lang="ko">${k.ko}</b> <span class="say">${k.say}</span> · ${k.en} <span style="color:var(--muted)">(${k.el})</span></div></div>`).join('');
-$('example').innerHTML = `<b>Try it:</b> 20<b>26</b> ends in 6 → <span lang="ko">붉은 말</span>, the <b>Red Horse</b> year. 20<b>27</b> ends in 7 and is a sheep year → <span lang="ko">붉은 양</span>, the <b>Red Sheep</b>.`;
+  <div class="t"><b lang="ko">${k.ko}</b> <span class="say">${k.say}</span> · ${k.en}</div></div>`).join('');
+$('example').innerHTML = `<b>Try it:</b> 20<b>26</b> ends in 6 → <span lang="ko">붉은 말</span>, the <b>Red Horse</b> year. 20<b>27</b> ends in 7 and is a sheep year → <span lang="ko">붉은 양</span>, the <b>Red Sheep</b>.<br><br><b>Why it matters:</b> five colors and twelve animals repeat every <b>60 years</b>. When you turn 60, your exact color and animal come back, so Koreans throw a big 60th-birthday party, <span lang="ko">환갑</span> (<span class="say">hwahn-gahp</span>), and japchae is on the table there too.`;
 
 const SF = [
   ['spot-hanbok', 'Seollal 2027 is <b>Sunday, February 7</b>. That day the Red Horse year ends and the <b>Red Sheep</b> year begins. Families dress up in hanbok.'],
