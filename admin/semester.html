@@ -361,6 +361,16 @@ table.t tr.todo td { background: var(--warn-bg); }
 table.lab { width: auto; }
 table.lab thead th:not(.wkh), table.lab td { min-width: 150px; }
 
+/* deleting classes: select, then confirm (2026-11-20) */
+.selbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; min-height: 44px; padding: 6px 12px; margin: 0 0 8px; border-radius: 10px; border: 1px dashed var(--line); }
+.selbar.on { border: 1px solid var(--bad); background: var(--bad-bg); }
+.selbar.on .btn.danger { margin-left: auto; }
+td.pick, th.pick { width: 34px; text-align: center !important; }
+.pick input { width: 18px; height: 18px; min-height: 0; accent-color: var(--accent); cursor: pointer; }
+table.t tr.picked td { background: var(--chip); }
+.del-list { max-height: 45vh; overflow: auto; margin: 0; padding-left: 20px; font-size: 15px; }
+.del-list li + li { margin-top: 4px; }
+
 </style>
 </head>
 <body>
@@ -1049,6 +1059,7 @@ function editSem(id) {
 /* ---------- language courses (redesigned 2026-11-20): Banner files on top, 1001–1002 filter, sortable columns (same as
    the Lab Hub Generator's table), charts that follow the filters ---------- */
 const CF = { q: '', subj: '', loc: '', days: '', level: 'first', all: false, sort: 'LOCATION', dir: 1 };
+const PICKED = new Set(); // CRNs selected for deleting (this page only)
 const COLS = [['CRN', 'CRN'], ['SUBJ', 'Subj'], ['CRSE', 'Crse'], ['SEC', 'Sec'], ['CMP', 'Cmp'], ['CRED', 'Cred'], ['TITLE', 'Title'], ['DAYS', 'Days'], ['TIME_FROM', 'Time'],
   ['INSTRUCTOR', 'Instructor'], ['BUILDING', 'Building'], ['ROOM', 'Room'], ['LOCATION', 'Campus'], ['START', 'Start'], ['END', 'End']];
 const BANNER_CMP = { A: 'Dahlonega', GA: 'Gainesville', OC: 'Oconee', 9: 'Cumming', NGO: 'Online', OL: 'Online', F: 'Off campus' };
@@ -1073,9 +1084,11 @@ VIEWS.courses = () => {
   const shown = coursesShown(), needs = shown.filter(c => isLang(c.SUBJ) && !pivotOf(c.LOCATION)).length;
   const lvl = `<div class="f"><span class="lbl" id="lvl-l">Level</span><div class="seg" role="group" aria-labelledby="lvl-l"><button type="button" data-lvl="first" aria-pressed="${CF.level === 'first'}">1001–1002</button><button type="button" data-lvl="all" aria-pressed="${CF.level === 'all'}">All levels</button></div></div>`;
   const th = ([k, l]) => `<th scope="col" aria-sort="${CF.sort === k ? (CF.dir > 0 ? 'ascending' : 'descending') : 'none'}"><button type="button" class="sorter" data-sort="${k}">${l}<span aria-hidden="true">${CF.sort === k ? (CF.dir > 0 ? ' ▲' : ' ▼') : ''}</span></button></th>`;
+  [...PICKED].forEach(k => { if (!cs.some(c => c.CRN === k)) PICKED.delete(k); });
+  const pickedShown = shown.filter(c => PICKED.has(c.CRN)).length, allPicked = shown.length && pickedShown === shown.length;
   const rows = shown.map(c => {
-    const flag = isLang(c.SUBJ) && !pivotOf(c.LOCATION), name = `${c.SUBJ} ${c.CRSE}.${c.SEC}`;
-    return `<tr${flag ? ' class="flag"' : ''}><td>${esc(c.CRN)}</td><td class="nowrap">${isLang(c.SUBJ) ? langTag(c.SUBJ) : esc(c.SUBJ)}</td><td>${esc(c.CRSE)}</td><td>${esc(c.SEC)}</td>`
+    const flag = isLang(c.SUBJ) && !pivotOf(c.LOCATION), name = `${c.SUBJ} ${c.CRSE}.${c.SEC}`, on = PICKED.has(c.CRN);
+    return `<tr class="${flag ? 'flag' : ''}${on ? ' picked' : ''}"><td class="pick"><input type="checkbox" data-pick="${esc(c.CRN)}" ${on ? 'checked' : ''} aria-label="Select ${esc(name)}, CRN ${esc(c.CRN)}"></td><td>${esc(c.CRN)}</td><td class="nowrap">${isLang(c.SUBJ) ? langTag(c.SUBJ) : esc(c.SUBJ)}</td><td>${esc(c.CRSE)}</td><td>${esc(c.SEC)}</td>`
       + `<td>${esc(BANNER_CMP[c.CMP] || c.CMP || '')}</td><td class="num">${esc(c.CRED)}</td><td>${esc(c.TITLE)}</td><td class="nowrap">${esc(c.DAYS || 'TBA')}</td>`
       + `<td class="nowrap">${c.TIME_FROM ? esc(fmt12(c.TIME_FROM) + '–' + fmt12(c.TIME_TO)) : 'TBA'}</td><td>${esc(c.INSTRUCTOR)}</td><td>${esc(c.BUILDING)}</td><td>${esc(c.ROOM)}</td>`
       + `<td><select data-loc="${esc(c.CRN)}" aria-label="Campus for ${esc(name)}">${opt('', flag ? 'Choose a campus' : '—', c.LOCATION)}${LOCATIONS.map(l => opt(l, l.replace(' Campus', ''), c.LOCATION)).join('')}</select></td>`
@@ -1090,9 +1103,10 @@ VIEWS.courses = () => {
     + `<label class="switch" style="margin:0 0 6px"><input type="checkbox" role="switch" id="c-all" ${CF.all ? 'checked' : ''}>Other subjects too</label></div>`
     + (needs ? `<p class="note warn" role="status">${needs} section${needs > 1 ? 's need' : ' needs'} a campus (shaded). Choose one in the Campus column so it counts toward that campus.</p>` : '')
     + chartsHTML(shown)
-    + `<div class="tw"><table class="t compact"><caption>${shown.length} section${shown.length === 1 ? '' : 's'} shown${CF.level === 'first' ? ' (1001–1002)' : ''}. Select a column heading to sort.</caption><thead><tr>${COLS.map(th).join('')}</tr></thead>`
-    + `<tbody>${rows || `<tr><td colspan="${COLS.length}" class="muted">No sections match these filters.</td></tr>`}</tbody></table></div>`
-    + `<details class="card" style="margin-top:16px"><summary><b>Budget numbers by language and campus</b> (all language sections)</summary>${distributionHTML()}</details>`;
+    + `<div class="selbar${PICKED.size ? ' on' : ''}" role="status">${PICKED.size ? `<b>${PICKED.size} class${PICKED.size === 1 ? '' : 'es'} selected</b>${PICKED.size > pickedShown ? `<span class="muted small">(${PICKED.size - pickedShown} hidden by the filters)</span>` : ''}<button class="btn sm" type="button" data-act="unpick">Clear selection</button><button class="btn sm danger" type="button" data-act="delPicked">Delete selected…</button>` : '<span class="muted small">Tick classes to delete them (for example cancelled sections or ones the Lab doesn\'t serve).</span>'}</div>`
+    + `<div class="tw"><table class="t compact"><caption>${shown.length} section${shown.length === 1 ? '' : 's'} shown${CF.level === 'first' ? ' (1001–1002)' : ''}. Select a column heading to sort.</caption><thead><tr><th scope="col" class="pick"><input type="checkbox" id="pick-all" ${allPicked ? 'checked' : ''} aria-label="Select all ${shown.length} sections shown"></th>${COLS.map(th).join('')}</tr></thead>`
+    + `<tbody>${rows || `<tr><td colspan="${COLS.length + 1}" class="muted">No sections match these filters.</td></tr>`}</tbody></table></div>`
+    + `<details class="card" style="margin-top:16px"><summary><b>Budget numbers by language and campus</b> (1001–1002 only: the lab fee)</summary>${distributionHTML()}</details>`;
 };
 function coursesShown() {
   const q = CF.q.toLowerCase(), k = CF.sort;
@@ -1105,7 +1119,9 @@ function coursesShown() {
 /* two charts of the sections shown: sections per campus (split by language) and each budget campus's share.
    Every number is printed (no color-only reading); each chart has a text summary for screen readers. */
 function chartsHTML(list) {
-  const lang = list.filter(c => isLang(c.SUBJ)); if (!lang.length) return '';
+  // both charts count 1001–1002 only (the lab fee), and follow the Language, Campus, Days and Search filters
+  const lang = list.filter(c => isLang(c.SUBJ) && ['1001', '1002'].includes(String(c.CRSE).trim()));
+  if (!lang.length) return `<p class="muted small" style="margin:0 0 14px">No 1001–1002 sections match these filters, so there's nothing to chart.</p>`;
   const langs = LANG_ORDER.filter(l => lang.some(c => c.SUBJ === l));
   const per = CAMPUS_ORDER.map(cp => { const here = lang.filter(c => campusName(c.LOCATION) === cp); return { cp, n: here.length, by: langs.map(l => [l, here.filter(c => c.SUBJ === l).length]).filter(x => x[1]) }; }).filter(x => x.n);
   const max = Math.max(...per.map(x => x.n));
@@ -1113,19 +1129,20 @@ function chartsHTML(list) {
     + x.by.map(([l, n]) => `<span class="bar-seg" style="flex:${n};background:${langColor(l)}" title="${esc(LANG[l][0])}: ${n}">${n / max > .16 ? `${esc(l)} ${n}` : ''}</span>`).join('')
     + `</span></span><b class="bar-n">${x.n}</b></div>`).join('');
   const sum1 = per.map(x => `${x.cp} ${x.n} (${x.by.map(([l, n]) => `${LANG[l][0]} ${n}`).join(', ')})`).join('; ');
-  const piv = PIVOTS.map(([p, l]) => ({ p, l, n: lang.filter(c => pivotOf(c.LOCATION) === p).length })), tot = piv.reduce((a, x) => a + x.n, 0);
+  const fee = lang;
+  const piv = PIVOTS.map(([p, l]) => ({ p, l, n: fee.filter(c => pivotOf(c.LOCATION) === p).length })), tot = piv.reduce((a, x) => a + x.n, 0);
   const pc = n => tot ? Math.round(n / tot * 100) : 0, PCOL = { DAH: 'var(--c-dah)', GVL: 'var(--c-gvl)', OCN: 'var(--c-ocn)' };
   const share = tot ? `<div class="share" aria-hidden="true">${piv.filter(x => x.n).map(x => `<span style="flex:${x.n};background:${PCOL[x.p]}">${pc(x.n) >= 22 ? `${x.l} ${pc(x.n)}%` : pc(x.n) >= 9 ? `${pc(x.n)}%` : ''}</span>`).join('')}</div>`
     + `<ul class="share-key">${piv.map(x => `<li><span class="sw" style="background:${PCOL[x.p]}" aria-hidden="true"></span>${esc(x.l)}: <b>${x.n}</b> section${x.n === 1 ? '' : 's'} (${pc(x.n)}%)</li>`).join('')}</ul>` : '<p class="muted small">No sections have a campus yet.</p>';
-  return `<div class="charts"><figure class="card chart"><figcaption><b>Sections by campus</b><span class="muted small"> · ${CF.level === 'first' ? '1001–1002' : 'all levels'}, split by language</span></figcaption>`
+  return `<div class="charts"><figure class="card chart"><figcaption><b>Sections by campus</b><span class="muted small"> · 1001–1002 sections, split by language</span></figcaption>`
     + `<div class="bars" role="img" aria-label="Sections by campus: ${esc(sum1)}.">${bars}</div>`
     + `<ul class="share-key">${langs.map(l => `<li><span class="sw" style="background:${langColor(l)}" aria-hidden="true"></span>${esc(LANG[l][0])}: <b>${lang.filter(c => c.SUBJ === l).length}</b></li>`).join('')}</ul></figure>`
-    + `<figure class="card chart"><figcaption><b>Budget split</b><span class="muted small"> · share of these sections per budget campus (Cumming counts with Gainesville, Blue Ridge with Dahlonega)</span></figcaption>${share}</figure></div>`;
+    + `<figure class="card chart"><figcaption><b>Budget split</b><span class="muted small"> · 1001–1002 sections only (the lab fee), per budget campus; Cumming counts with Gainesville, Blue Ridge with Dahlonega</span></figcaption>${share}</figure></div>`;
 }
 function distribution() {
   const by = {}, tot = {}, camp = {}; let unmapped = 0;
   LANG_ORDER.forEach(l => { by[l] = {}; tot[l] = 0; }); PIVOTS.forEach(([p]) => camp[p] = 0);
-  courses().filter(c => LANG_ORDER.includes(c.SUBJ.toUpperCase())).forEach(c => { const l = c.SUBJ.toUpperCase(), p = pivotOf(c.LOCATION); tot[l]++; if (!p) { unmapped++; return; } by[l][p] = (by[l][p] || 0) + 1; camp[p]++; });
+  courses().filter(c => LANG_ORDER.includes(c.SUBJ.toUpperCase()) && ['1001', '1002'].includes(String(c.CRSE).trim())).forEach(c => { const l = c.SUBJ.toUpperCase(), p = pivotOf(c.LOCATION); tot[l]++; if (!p) { unmapped++; return; } by[l][p] = (by[l][p] || 0) + 1; camp[p]++; });
   const grand = Object.values(camp).reduce((a, b) => a + b, 0);
   const first = p => courses().filter(c => +c.CRSE <= 1002 && pivotOf(c.LOCATION) === p);
   const quick = PIVOTS.map(([p, l]) => ({ p, l, core: first(p).filter(c => ['SPAN', 'FREN', 'PORT', 'ITAL', 'GRMN'].includes(c.SUBJ)).length, span: first(p).filter(c => c.SUBJ === 'SPAN').length }));
@@ -1134,7 +1151,7 @@ function distribution() {
 function distributionHTML() {
   const d = distribution(), pct = (n, t) => t ? (n / t * 100).toFixed(1) + '%' : '–';
   const rows = LANG_ORDER.filter(l => d.tot[l]).map(l => `<tr><th scope="row">${langTag(l)}${esc(LANG[l][0])}</th><td class="num">${d.tot[l]}</td>${PIVOTS.map(([p]) => `<td class="num">${d.by[l][p] || 0} <span class="muted small">${pct(d.by[l][p] || 0, d.camp[p])}</span></td>`).join('')}</tr>`).join('');
-  return `<div class="card"><h2>Distribution and budget</h2><p class="lede">Sections per language and campus (campus from the Campus column, so online sections count where you place them). The percentage is the language's share of that campus.</p>`
+  return `<div class="card"><h2>Distribution and budget</h2><p class="lede">1001 and 1002 sections only, since the lab fee comes from those courses. Campus comes from the Campus column, so online sections count where you place them. The percentage is the language's share of that campus.</p>`
     + `<div class="tw"><table class="t"><thead><tr><th scope="col">Language</th><th scope="col" class="num">Sections</th>${PIVOTS.map(([, l]) => `<th scope="col" class="num">${l}</th>`).join('')}</tr></thead><tbody>${rows || '<tr><td colspan="5" class="muted">No language sections.</td></tr>'}</tbody>`
     + `<tfoot><tr><td>Total</td><td class="num">${d.grand + d.unmapped}</td>${PIVOTS.map(([p]) => `<td class="num">${d.camp[p]}</td>`).join('')}</tr></tfoot></table></div>`
     + `<p class="small muted" style="margin:10px 0 0">First-year sections (1001–1002): ${d.quick.map(q => `${q.l} ${q.core} (Spanish ${q.span})`).join(' · ')}${d.unmapped ? ` · <b>${d.unmapped} without a campus are not counted.</b>` : ''}</p></div>`;
@@ -1152,13 +1169,31 @@ AFTER.courses = () => {
   if ($('c-q')) { $('c-q').oninput = () => { refilter.from = 'q'; clearTimeout(refilter.t); refilter.t = setTimeout(refilter, 250); }; ['c-subj', 'c-loc', 'c-days', 'c-all'].forEach(id => $(id).onchange = () => { refilter.from = id; refilter(); }); }
   document.querySelectorAll('[data-lvl]').forEach(b => b.onclick = () => { CF.level = b.dataset.lvl; keep(`[data-lvl="${CF.level}"]`); });
   document.querySelectorAll('[data-sort]').forEach(b => b.onclick = () => { const k = b.dataset.sort; CF.dir = CF.sort === k ? -CF.dir : 1; CF.sort = k; keep(`[data-sort="${k}"]`); });
+  const redraw = sel => { const y = window.scrollY; show('courses', false); window.scrollTo(0, y); document.querySelector(sel)?.focus(); };
+  document.querySelectorAll('[data-pick]').forEach(x => x.onchange = () => { if (x.checked) PICKED.add(x.dataset.pick); else PICKED.delete(x.dataset.pick); redraw(`[data-pick="${CSS.escape(x.dataset.pick)}"]`); });
+  if ($('pick-all')) $('pick-all').onchange = () => { coursesShown().forEach(c => $('pick-all').checked ? PICKED.add(c.CRN) : PICKED.delete(c.CRN)); redraw('#pick-all'); };
   document.querySelectorAll('[data-loc]').forEach(x => x.onchange = () => { const c = courses().find(y => y.CRN === x.dataset.loc); c.LOCATION = x.value; c.LOCATION_SET = true; changed(false); const sc = window.scrollY; show('courses', false); window.scrollTo(0, sc); document.querySelector(`[data-loc="${CSS.escape(c.CRN)}"]`)?.focus(); });
+};
+ACTS.unpick = () => { PICKED.clear(); const y = window.scrollY; show('courses', false); window.scrollTo(0, y); };
+ACTS.delPicked = () => {
+  const s = sem(), list = courses().filter(c => PICKED.has(c.CRN)); if (!list.length) return;
+  const n = list.length, word = `${n} class${n === 1 ? '' : 'es'}`;
+  pane(`Delete ${word}?`, semLabel(s), `<p class="lede" style="margin:0 0 12px">These are removed from ${esc(semLabel(s))}, with their room assignments. Importing COM1430 again brings them back. A copy of the plan from before is kept on the Plan file page.</p>`
+    + `<ul class="del-list">${list.map(c => `<li><b>${esc(c.SUBJ)} ${esc(c.CRSE)}.${esc(c.SEC)}</b> · CRN ${esc(c.CRN)} · ${esc(c.TITLE)}${c.INSTRUCTOR ? ' · ' + esc(c.INSTRUCTOR) : ''}</li>`).join('')}</ul>`,
+    `<span></span><div class="row"><button class="btn" type="button" data-close>Cancel</button><button class="btn danger" type="button" id="del-go">Delete ${word}</button></div>`);
+  $('dlg').querySelector('[data-close]')?.focus();
+  $('del-go').onclick = async () => {
+    await backupLocal(`before deleting ${word}`);
+    const l = P.courseLists[s.id]; l.rows = l.rows.filter(c => !PICKED.has(c.CRN));
+    const R = roomsOf(s.id); PICKED.forEach(k => { delete R.assign[k]; delete R.finalsOverrides[k]; });
+    PICKED.clear(); $('dlg').close(); changed(); toast(`${word.charAt(0).toUpperCase() + word.slice(1)} deleted.`);
+  };
 };
 ACTS.dlDist = () => { const s = sem(); download(`class-distribution${s ? '-' + s.id : ''}.csv`, distributionCSV(), 'text/csv'); };
 function distributionCSV() {
   const cell = v => { v = v == null ? '' : String(v); return /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v; };
   const fd = s => { if (!s) return ''; const [y, m, d] = s.split('-'); return `${+d}-${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][+m - 1]}-${y.slice(2)}`; };
-  const cs = courses().filter(c => LANG_ORDER.includes(c.SUBJ.toUpperCase())).sort((a, b) => `${a.SUBJ}${a.CRSE}${a.SEC}`.localeCompare(`${b.SUBJ}${b.CRSE}${b.SEC}`, undefined, { numeric: true }));
+  const cs = courses().filter(c => LANG_ORDER.includes(c.SUBJ.toUpperCase()) && ['1001', '1002'].includes(String(c.CRSE).trim())).sort((a, b) => `${a.SUBJ}${a.CRSE}${a.SEC}`.localeCompare(`${b.SUBJ}${b.CRSE}${b.SEC}`, undefined, { numeric: true }));
   const ch = ['Status', 'Part of Term', 'CRN', 'Subj', 'Crse', 'Sec', 'Cmp', 'Cred', 'Title', 'Days', 'Time', 'Instructor', 'Building/Room', 'Location', 'Grading Campus', 'Start/End Dates'];
   const cr = cs.map(c => ['', c.PART_OF_TERM, c.CRN, c.SUBJ, c.CRSE, c.SEC, c.CMP, c.CRED, c.TITLE, c.DAYS, c.TIME_FROM && c.TIME_TO ? `${fmt12(c.TIME_FROM)}-${fmt12(c.TIME_TO)}` : 'TBA', c.INSTRUCTOR, c.BLDGRM_RAW || [c.BUILDING, c.ROOM].filter(Boolean).join('-'), c.LOCATION, pivotOf(c.LOCATION), c.START && c.END ? `${fd(c.START)} to ${fd(c.END)}` : '']);
   const d = distribution(), dh = ['Language', 'Total', ...PIVOTS.map(p => p[0]), ...PIVOTS.map(p => 'Percent' + p[0]), ...PIVOTS.map(p => 'PTot' + p[0])], p2 = (n, t) => t ? (n / t * 100).toFixed(2) + '%' : '0.00%';
@@ -1391,7 +1426,7 @@ const OUTPUTS = [
   ['academic-calendar.json', 'Every semester\'s dates, holidays, breaks and finals. Read by the work schedule, room schedule and hub home pages.', () => JSON.stringify({ semesters: P.semesters, activeSemesterId: P.activeSemesterId }, null, 2), () => P.semesters.length ? '' : 'No semesters yet'],
   ['room-schedule.json', 'Nesbitt 4201 classes with their room (4201A or 4207) and final exam time. Read by the room schedule page.', () => JSON.stringify(roomScheduleOut(), null, 2), () => !courses().filter(inNesbitt4201).length ? 'No Nesbitt 4201 classes' : roomClashes().size ? 'Double-booked classes' : ''],
   ['lab-due-dates.json', 'Each class\'s lab due dates. Read by the grade due dates page.', () => JSON.stringify(labDueDatesOut(sem()), null, 2), () => !labDueDatesOut(sem()).classes.length ? 'No labs placed' : placedLabs(sem()).some(p => p.block) ? 'A due date falls on a day with no classes' : ''],
-  ['class-distribution.csv', 'Language sections by campus, with the budget percentages (same columns as the Class Distribution sheet).', () => distributionCSV(), () => !courses().length ? 'No courses' : distribution().unmapped ? `${distribution().unmapped} sections without a campus` : ''],
+  ['class-distribution.csv', '1001–1002 language sections by campus (the lab fee), with the budget percentages (same columns as the Class Distribution sheet).', () => distributionCSV(), () => !courses().length ? 'No courses' : distribution().unmapped ? `${distribution().unmapped} sections without a campus` : ''],
 ];
 VIEWS.outputs = () => {
   const s = sem(); if (!s) return head('Outputs for D2L', 'Files for the Lab Hub', '') + needSem();
