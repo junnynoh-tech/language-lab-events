@@ -296,6 +296,43 @@ input[type=time], input[type=number], input[type=search] { min-height: 42px; pad
 @media (max-width: 860px) { .semsel { grid-column: 1 / -1; } .out { grid-template-columns: 1fr; } }
 @media print { .rail, .toolbar, .btn { display: none !important; } .shell { display: block; } }
 
+/* Language courses (2026-11-20): Banner files strip, compact table with sortable headings, charts */
+.imp-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 380px); gap: 16px; align-items: center; }
+.imp h2 { margin: 0 0 6px; }
+.imp-files { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; }
+.imp .drop { margin: 0; padding: 12px; min-width: 0; }
+.imp .drop input[type=file] { max-width: 100%; }
+.imp-row > * { min-width: 0; }
+.imp .drop.big { padding: 22px 14px; }
+@media (max-width: 760px) { .imp-row { grid-template-columns: 1fr; } }
+.pill { display: inline-flex; gap: 6px; align-items: center; border-radius: 999px; padding: 4px 11px; font-size: 14px; font-weight: 600; }
+.pill.ok { background: var(--ok-bg); color: var(--ok); } .pill.warn { background: var(--warn-bg); color: var(--warn); }
+.pill .muted { font-weight: 400; }
+.lbl { display: block; font-size: 15px; font-weight: 600; }
+.note.warn { background: var(--warn-bg); color: var(--warn); border-radius: 10px; padding: 8px 12px; margin: 0 0 12px; font-weight: 600; }
+table.t.compact { font-size: 14px; }
+table.t.compact th, table.t.compact td { padding: 6px 8px; }
+table.t.compact select { min-height: 32px; padding: 2px 6px; max-width: 150px; }
+.sorter { all: unset; cursor: pointer; display: inline-flex; gap: 2px; align-items: center; font: inherit; text-transform: inherit; letter-spacing: inherit; color: inherit; white-space: nowrap; }
+.sorter:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; border-radius: 4px; }
+th[aria-sort="ascending"], th[aria-sort="descending"] { color: var(--text) !important; }
+.charts { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 14px; margin: 0 0 14px; }
+@media (max-width: 900px) { .charts { grid-template-columns: 1fr; } }
+.chart { margin: 0; } .chart figcaption { margin-bottom: 12px; }
+.bars { display: grid; gap: 8px; }
+.bar-row { display: grid; grid-template-columns: 112px minmax(0, 1fr) 36px; gap: 10px; align-items: center; }
+.bar-l { font-weight: 600; font-size: 14px; }
+.bar-track { display: block; background: var(--chip); border-radius: 6px; height: 26px; }
+.bar-fill { display: flex; height: 100%; border-radius: 6px; overflow: hidden; gap: 2px; }
+.bar-seg { color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; white-space: nowrap; overflow: hidden; min-width: 3px; }
+.bar-n { text-align: right; font-variant-numeric: tabular-nums; }
+.share { display: flex; height: 34px; border-radius: 8px; overflow: hidden; gap: 2px; margin-bottom: 10px; }
+.share span { color: #fff; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; white-space: nowrap; overflow: hidden; }
+.share-key { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 14px; }
+.share-key li { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+:root { --c-gvl: #0e7aaa; --c-dah: #2f6b1c; --c-ocn: #a14f0d; }
+
 </style>
 </head>
 <body>
@@ -981,39 +1018,81 @@ function editSem(id) {
   };
 }
 
-/* ---------- language courses ---------- */
-const CF = { q: '', subj: '', camp: '', days: '', all: false };
+/* ---------- language courses (redesigned 2026-11-20): Banner files on top, 1001–1002 filter, sortable columns (same as
+   the Lab Hub Generator's table), charts that follow the filters ---------- */
+const CF = { q: '', subj: '', loc: '', days: '', level: 'first', all: false, sort: 'LOCATION', dir: 1 };
+const COLS = [['CRN', 'CRN'], ['SUBJ', 'Subj'], ['CRSE', 'Crse'], ['SEC', 'Sec'], ['CMP', 'Cmp'], ['CRED', 'Cred'], ['TITLE', 'Title'], ['DAYS', 'Days'], ['TIME_FROM', 'Time'],
+  ['INSTRUCTOR', 'Instructor'], ['BUILDING', 'Building'], ['ROOM', 'Room'], ['LOCATION', 'Campus'], ['START', 'Start'], ['END', 'End']];
+const BANNER_CMP = { A: 'Dahlonega', GA: 'Gainesville', OC: 'Oconee', 9: 'Cumming', NGO: 'Online', OL: 'Online', F: 'Off campus' };
+const campusName = loc => (loc || '').replace(/ Campus$/, '') || 'Needs a campus';
+const CAMPUS_ORDER = [...LOCATIONS.map(l => l.replace(' Campus', '')), 'Needs a campus'];
+function bannerFiles(f) {
+  const pill = (k, name, what) => f[k] ? `<span class="pill ok"><span aria-hidden="true">✓</span> ${name} · ${f[k].rows} rows · ${new Date(f[k].at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>`
+    : `<span class="pill warn"><span aria-hidden="true">!</span> ${name} not added yet <span class="muted">(${what})</span></span>`;
+  return `${pill('1430', 'COM1430', 'the class list')} ${pill('775', 'COM775', 'term dates, buildings, full instructor names')}`;
+}
 VIEWS.courses = () => {
   const s = sem(); if (!s) return head('Language courses', 'Courses', '') + needSem();
-  const cl = P.courseLists[s.id], cs = courses();
-  const f = cl?.files || {};
-  const imp = `<div class="card"><h2>${cs.length ? 'Update from Banner' : 'Import from Banner'}</h2><p class="lede">Drop COM1430 (schedule detail) and COM775 (term dates, building, full instructor names) together. They are matched by CRN. A campus you chose for an online section stays when you import again.</p>`
-    + `<div class="drop big" id="c-drop"><p style="margin:0">Drop the CSV files here, or</p><input type="file" id="c-file" accept=".csv" multiple aria-label="Choose COM1430 and COM775 CSV files"></div>`
-    + `<p class="small muted" style="margin:10px 0 0">${f['1430'] ? `COM1430: ${f['1430'].rows} rows, ${new Date(f['1430'].at).toLocaleDateString()}` : 'COM1430: not yet'} · ${f['775'] ? `COM775: ${f['775'].rows} rows, ${new Date(f['775'].at).toLocaleDateString()}` : 'COM775: not yet'}</p></div>`;
-  if (!cs.length) return head(semLabel(s), 'Language courses', '') + imp;
-  const subjects = [...new Set(cs.map(c => c.SUBJ))].sort(), pats = [...new Set(cs.map(c => normDays(c.DAYS)).filter(Boolean))].sort();
-  const shown = coursesShown();
+  const cs = courses(), f = P.courseLists[s.id]?.files || {};
+  const missing = !f['1430'] ? 'COM1430' : !f['775'] ? 'COM775' : '';
+  /* Banner files: always first, so the second file goes in right where the first one did */
+  const imp = `<section class="card imp" aria-labelledby="imp-h"><div class="imp-row"><div><h2 id="imp-h">Banner files</h2><p class="imp-files">${bannerFiles(f)}</p></div>`
+    + `<div class="drop${cs.length ? '' : ' big'}" id="c-drop"><p style="margin:0">${missing ? `<b>Next: drop ${missing}</b> here` : 'Drop updated CSV files here'}, or</p><input type="file" id="c-file" accept=".csv" multiple aria-label="Choose COM1430 and COM775 CSV files"></div></div>`
+    + `${cs.length ? '' : '<p class="small muted" style="margin:10px 0 0">Drop both CSV files at once or one at a time; they are matched by CRN. A campus you choose for an online section stays when you import again.</p>'}</section>`;
+  if (!cs.length) return head(semLabel(s), 'Language courses', 'Start with the two Banner reports for this semester.') + imp;
+  const pool = cs.filter(c => CF.all || isLang(c.SUBJ));
+  const subjects = [...new Set(pool.map(c => c.SUBJ))].sort(), pats = [...new Set(pool.map(c => normDays(c.DAYS)).filter(Boolean))].sort();
+  const shown = coursesShown(), needs = shown.filter(c => isLang(c.SUBJ) && !pivotOf(c.LOCATION)).length;
+  const lvl = `<div class="f"><span class="lbl" id="lvl-l">Level</span><div class="seg" role="group" aria-labelledby="lvl-l"><button type="button" data-lvl="first" aria-pressed="${CF.level === 'first'}">1001–1002</button><button type="button" data-lvl="all" aria-pressed="${CF.level === 'all'}">All levels</button></div></div>`;
+  const th = ([k, l]) => `<th scope="col" aria-sort="${CF.sort === k ? (CF.dir > 0 ? 'ascending' : 'descending') : 'none'}"><button type="button" class="sorter" data-sort="${k}">${l}<span aria-hidden="true">${CF.sort === k ? (CF.dir > 0 ? ' ▲' : ' ▼') : ''}</span></button></th>`;
   const rows = shown.map(c => {
-    const needs = isLang(c.SUBJ) && !pivotOf(c.LOCATION);
-    return `<tr${needs ? ' class="flag"' : ''}><td class="nowrap">${isLang(c.SUBJ) ? langTag(c.SUBJ) : ''}<b>${esc(c.SUBJ)} ${esc(c.CRSE)}.${esc(c.SEC)}</b><div class="small muted">CRN ${esc(c.CRN)}</div></td><td>${esc(c.TITLE)}</td>`
-      + `<td class="nowrap">${esc(c.DAYS || 'TBA')} ${c.TIME_FROM ? esc(fmt12(c.TIME_FROM) + '–' + fmt12(c.TIME_TO)) : ''}</td><td>${esc(c.INSTRUCTOR)}</td>`
-      + `<td><select data-loc="${esc(c.CRN)}" aria-label="Campus for ${esc(c.SUBJ + ' ' + c.CRSE + '.' + c.SEC)}">${opt('', needs ? 'Choose a campus' : '—', c.LOCATION)}${LOCATIONS.map(l => opt(l, l.replace(' Campus', ''), c.LOCATION)).join('')}</select><div class="small muted">Banner: ${esc({ A: 'Dahlonega', GA: 'Gainesville', OC: 'Oconee', 9: 'Cumming', OL: 'Online' }[c.CMP] || c.CMP || '—')}</div></td>`
-      + `<td class="nowrap small">${esc([c.BUILDING, c.ROOM].filter(Boolean).join(' '))}</td><td class="num">${c.MAXENR ?? '—'}</td></tr>`;
+    const flag = isLang(c.SUBJ) && !pivotOf(c.LOCATION), name = `${c.SUBJ} ${c.CRSE}.${c.SEC}`;
+    return `<tr${flag ? ' class="flag"' : ''}><td>${esc(c.CRN)}</td><td class="nowrap">${isLang(c.SUBJ) ? langTag(c.SUBJ) : esc(c.SUBJ)}</td><td>${esc(c.CRSE)}</td><td>${esc(c.SEC)}</td>`
+      + `<td>${esc(BANNER_CMP[c.CMP] || c.CMP || '')}</td><td class="num">${esc(c.CRED)}</td><td>${esc(c.TITLE)}</td><td class="nowrap">${esc(c.DAYS || 'TBA')}</td>`
+      + `<td class="nowrap">${c.TIME_FROM ? esc(fmt12(c.TIME_FROM) + '–' + fmt12(c.TIME_TO)) : 'TBA'}</td><td>${esc(c.INSTRUCTOR)}</td><td>${esc(c.BUILDING)}</td><td>${esc(c.ROOM)}</td>`
+      + `<td><select data-loc="${esc(c.CRN)}" aria-label="Campus for ${esc(name)}">${opt('', flag ? 'Choose a campus' : '—', c.LOCATION)}${LOCATIONS.map(l => opt(l, l.replace(' Campus', ''), c.LOCATION)).join('')}</select></td>`
+      + `<td class="nowrap">${esc(fmtMD(c.START))}</td><td class="nowrap">${esc(fmtMD(c.END))}</td></tr>`;
   }).join('');
-  return head(semLabel(s), 'Language courses', `${cs.filter(c => isLang(c.SUBJ)).length} language sections of ${cs.length} imported.`, `<button class="btn" type="button" data-act="dlDist">Class distribution (CSV)</button>`)
-    + distributionHTML(s)
-    + `<div class="toolbar"><div class="f grow"><label for="c-q">Search</label><input type="search" id="c-q" value="${esc(CF.q)}" placeholder="CRN, course, title or instructor"></div>`
-    + `<div class="f">${'<label for="c-subj">Subject</label>' + sel('c-subj', CF.subj, subjects.map(x => [x, x]), 'All')}</div><div class="f"><label for="c-camp">Campus</label>${sel('c-camp', CF.camp, [...PIVOTS, ['none', 'Needs a campus']], 'All')}</div>`
-    + `<div class="f"><label for="c-days">Days</label>${sel('c-days', CF.days, pats.map(x => [x, x]), 'All')}</div><label class="switch" style="margin:0 0 6px"><input type="checkbox" role="switch" id="c-all" ${CF.all ? 'checked' : ''}>All subjects</label></div>`
-    + `<div class="tw"><table class="t"><caption>${shown.length} section${shown.length === 1 ? '' : 's'} shown</caption><thead><tr><th scope="col">Course</th><th scope="col">Title</th><th scope="col">Meets</th><th scope="col">Instructor</th><th scope="col">Campus</th><th scope="col">Room</th><th scope="col" class="num">Max</th></tr></thead><tbody>${rows || '<tr><td colspan="7" class="muted">No sections match.</td></tr>'}</tbody></table></div>`
-    + imp;
+  const nLang = cs.filter(c => isLang(c.SUBJ)), nFirst = nLang.filter(c => ['1001', '1002'].includes(c.CRSE));
+  return head(semLabel(s), 'Language courses', `${nFirst.length} first-year (1001–1002) and ${nLang.length} language sections in all, from ${cs.length} imported.`, `<button class="btn" type="button" data-act="dlDist">Class distribution (CSV)</button>`)
+    + imp
+    + `<div class="toolbar" role="search" aria-label="Filter the courses">${lvl}<div class="f"><label for="c-subj">Language</label>${sel('c-subj', CF.subj, subjects.map(x => [x, LANG[x]?.[0] ? `${LANG[x][0]} (${x})` : x]), 'All')}</div>`
+    + `<div class="f"><label for="c-loc">Campus</label>${sel('c-loc', CF.loc, CAMPUS_ORDER.map(x => [x, x]), 'All')}</div><div class="f"><label for="c-days">Days</label>${sel('c-days', CF.days, pats.map(x => [x, x]), 'All')}</div>`
+    + `<div class="f grow"><label for="c-q">Search</label><input type="search" id="c-q" value="${esc(CF.q)}" placeholder="CRN, title or instructor"></div>`
+    + `<label class="switch" style="margin:0 0 6px"><input type="checkbox" role="switch" id="c-all" ${CF.all ? 'checked' : ''}>Other subjects too</label></div>`
+    + (needs ? `<p class="note warn" role="status">${needs} section${needs > 1 ? 's need' : ' needs'} a campus (shaded). Choose one in the Campus column so it counts toward that campus.</p>` : '')
+    + chartsHTML(shown)
+    + `<div class="tw"><table class="t compact"><caption>${shown.length} section${shown.length === 1 ? '' : 's'} shown${CF.level === 'first' ? ' (1001–1002)' : ''}. Select a column heading to sort.</caption><thead><tr>${COLS.map(th).join('')}</tr></thead>`
+    + `<tbody>${rows || `<tr><td colspan="${COLS.length}" class="muted">No sections match these filters.</td></tr>`}</tbody></table></div>`
+    + `<details class="card" style="margin-top:16px"><summary><b>Budget numbers by language and campus</b> (all language sections)</summary>${distributionHTML()}</details>`;
 };
 function coursesShown() {
-  const q = CF.q.toLowerCase();
-  return courses().filter(c => (CF.all || isLang(c.SUBJ)) && (!CF.subj || c.SUBJ === CF.subj) && (!CF.days || normDays(c.DAYS) === CF.days)
-    && (!CF.camp || (CF.camp === 'none' ? !pivotOf(c.LOCATION) : pivotOf(c.LOCATION) === CF.camp))
+  const q = CF.q.toLowerCase(), k = CF.sort;
+  const key = c => k === 'LOCATION' ? String(CAMPUS_ORDER.indexOf(campusName(c.LOCATION))) : k === 'TIME_FROM' ? String(mins(c.TIME_FROM) + 10000) : String(c[k] ?? '');
+  return courses().filter(c => (CF.all || isLang(c.SUBJ)) && (CF.level !== 'first' || ['1001', '1002'].includes(c.CRSE)) && (!CF.subj || c.SUBJ === CF.subj)
+    && (!CF.days || normDays(c.DAYS) === CF.days) && (!CF.loc || campusName(c.LOCATION) === CF.loc)
     && (!q || `${c.CRN} ${c.SUBJ} ${c.CRSE}.${c.SEC} ${c.SUBJ}${c.CRSE} ${c.TITLE} ${c.INSTRUCTOR}`.toLowerCase().includes(q)))
-    .sort((a, b) => `${a.SUBJ}${a.CRSE}${a.SEC}`.localeCompare(`${b.SUBJ}${b.CRSE}${b.SEC}`, undefined, { numeric: true }));
+    .sort((a, b) => CF.dir * key(a).localeCompare(key(b), undefined, { numeric: true }) || `${a.SUBJ}${a.CRSE}${a.SEC}`.localeCompare(`${b.SUBJ}${b.CRSE}${b.SEC}`, undefined, { numeric: true }));
+}
+/* two charts of the sections shown: sections per campus (split by language) and each budget campus's share.
+   Every number is printed (no color-only reading); each chart has a text summary for screen readers. */
+function chartsHTML(list) {
+  const lang = list.filter(c => isLang(c.SUBJ)); if (!lang.length) return '';
+  const langs = LANG_ORDER.filter(l => lang.some(c => c.SUBJ === l));
+  const per = CAMPUS_ORDER.map(cp => { const here = lang.filter(c => campusName(c.LOCATION) === cp); return { cp, n: here.length, by: langs.map(l => [l, here.filter(c => c.SUBJ === l).length]).filter(x => x[1]) }; }).filter(x => x.n);
+  const max = Math.max(...per.map(x => x.n));
+  const bars = per.map(x => `<div class="bar-row"><span class="bar-l">${esc(x.cp)}</span><span class="bar-track"><span class="bar-fill" style="width:${(x.n / max * 100).toFixed(1)}%">`
+    + x.by.map(([l, n]) => `<span class="bar-seg" style="flex:${n};background:${langColor(l)}" title="${esc(LANG[l][0])}: ${n}">${n / max > .16 ? `${esc(l)} ${n}` : ''}</span>`).join('')
+    + `</span></span><b class="bar-n">${x.n}</b></div>`).join('');
+  const sum1 = per.map(x => `${x.cp} ${x.n} (${x.by.map(([l, n]) => `${LANG[l][0]} ${n}`).join(', ')})`).join('; ');
+  const piv = PIVOTS.map(([p, l]) => ({ p, l, n: lang.filter(c => pivotOf(c.LOCATION) === p).length })), tot = piv.reduce((a, x) => a + x.n, 0);
+  const pc = n => tot ? Math.round(n / tot * 100) : 0, PCOL = { DAH: 'var(--c-dah)', GVL: 'var(--c-gvl)', OCN: 'var(--c-ocn)' };
+  const share = tot ? `<div class="share" aria-hidden="true">${piv.filter(x => x.n).map(x => `<span style="flex:${x.n};background:${PCOL[x.p]}">${pc(x.n) >= 22 ? `${x.l} ${pc(x.n)}%` : pc(x.n) >= 9 ? `${pc(x.n)}%` : ''}</span>`).join('')}</div>`
+    + `<ul class="share-key">${piv.map(x => `<li><span class="sw" style="background:${PCOL[x.p]}" aria-hidden="true"></span>${esc(x.l)}: <b>${x.n}</b> section${x.n === 1 ? '' : 's'} (${pc(x.n)}%)</li>`).join('')}</ul>` : '<p class="muted small">No sections have a campus yet.</p>';
+  return `<div class="charts"><figure class="card chart"><figcaption><b>Sections by campus</b><span class="muted small"> · ${CF.level === 'first' ? '1001–1002' : 'all levels'}, split by language</span></figcaption>`
+    + `<div class="bars" role="img" aria-label="Sections by campus: ${esc(sum1)}.">${bars}</div>`
+    + `<ul class="share-key">${langs.map(l => `<li><span class="sw" style="background:${langColor(l)}" aria-hidden="true"></span>${esc(LANG[l][0])}: <b>${lang.filter(c => c.SUBJ === l).length}</b></li>`).join('')}</ul></figure>`
+    + `<figure class="card chart"><figcaption><b>Budget split</b><span class="muted small"> · share of these sections per budget campus (Cumming counts with Gainesville, Blue Ridge with Dahlonega)</span></figcaption>${share}</figure></div>`;
 }
 function distribution() {
   const by = {}, tot = {}, camp = {}; let unmapped = 0;
@@ -1040,8 +1119,11 @@ AFTER.courses = () => {
     const l = importCourses(P.activeSemesterId, got['1430'], got['775']); changed(); toast(`${l.rows.length} sections imported${got['775'] ? '' : ' (add COM775 for term dates and full instructor names)'}.`, 5000);
   };
   if (drop) { $('c-file').onchange = e => take([...e.target.files]); ['dragenter', 'dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); })); ['dragleave', 'drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); })); drop.addEventListener('drop', e => take([...e.dataTransfer.files])); }
-  const refilter = () => { const pos = $('c-q')?.selectionStart; CF.q = val('c-q'); CF.subj = val('c-subj'); CF.camp = val('c-camp'); CF.days = val('c-days'); CF.all = val('c-all'); show('courses', false); const q = $('c-q'); if (q && document.activeElement !== q && pos != null && refilter.from === 'q') { q.focus(); q.setSelectionRange(pos, pos); } };
-  if ($('c-q')) { $('c-q').oninput = () => { refilter.from = 'q'; clearTimeout(refilter.t); refilter.t = setTimeout(refilter, 200); }; ['c-subj', 'c-camp', 'c-days', 'c-all'].forEach(id => $(id).onchange = () => { refilter.from = id; refilter(); $(id).focus(); }); }
+  const keep = sel => { const y = window.scrollY; show('courses', false); window.scrollTo(0, y); document.querySelector(sel)?.focus(); };
+  const refilter = () => { const pos = $('c-q')?.selectionStart; CF.q = val('c-q'); CF.subj = val('c-subj'); CF.loc = val('c-loc'); CF.days = val('c-days'); CF.all = val('c-all'); keep(refilter.from === 'q' ? '#c-q' : '#' + refilter.from); const q = $('c-q'); if (q && refilter.from === 'q' && pos != null) q.setSelectionRange(pos, pos); };
+  if ($('c-q')) { $('c-q').oninput = () => { refilter.from = 'q'; clearTimeout(refilter.t); refilter.t = setTimeout(refilter, 250); }; ['c-subj', 'c-loc', 'c-days', 'c-all'].forEach(id => $(id).onchange = () => { refilter.from = id; refilter(); }); }
+  document.querySelectorAll('[data-lvl]').forEach(b => b.onclick = () => { CF.level = b.dataset.lvl; keep(`[data-lvl="${CF.level}"]`); });
+  document.querySelectorAll('[data-sort]').forEach(b => b.onclick = () => { const k = b.dataset.sort; CF.dir = CF.sort === k ? -CF.dir : 1; CF.sort = k; keep(`[data-sort="${k}"]`); });
   document.querySelectorAll('[data-loc]').forEach(x => x.onchange = () => { const c = courses().find(y => y.CRN === x.dataset.loc); c.LOCATION = x.value; c.LOCATION_SET = true; changed(false); const sc = window.scrollY; show('courses', false); window.scrollTo(0, sc); document.querySelector(`[data-loc="${CSS.escape(c.CRN)}"]`)?.focus(); });
 };
 ACTS.dlDist = () => { const s = sem(); download(`class-distribution${s ? '-' + s.id : ''}.csv`, distributionCSV(), 'text/csv'); };
