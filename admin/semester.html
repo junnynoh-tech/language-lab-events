@@ -333,6 +333,34 @@ th[aria-sort="ascending"], th[aria-sort="descending"] { color: var(--text) !impo
 .sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
 :root { --c-gvl: #0e7aaa; --c-dah: #2f6b1c; --c-ocn: #a14f0d; }
 
+/* Room scheduling + Lab calendar (2026-11-20) */
+.stats { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
+.cnt { background: var(--chip); border-radius: 999px; padding: 5px 12px; font-size: 14px; }
+.cnt b { font-variant-numeric: tabular-nums; }
+.cnt.ok { background: var(--ok-bg); color: var(--ok); } .cnt.warn { background: var(--warn-bg); color: var(--warn); } .cnt.bad { background: var(--bad-bg); color: var(--bad); }
+table.t tr.todo td { background: var(--warn-bg); }
+.bar-row.two { align-items: center; }
+.bar-pair { display: grid; gap: 3px; }
+.bar-track.thin { height: 12px; }
+.bar-track.thin .bar-fill { border-radius: 6px; }
+.progress { list-style: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 0 0 14px; padding: 0; }
+@media (max-width: 760px) { .progress { grid-template-columns: 1fr 1fr; } }
+.progress li { background: var(--surface); border: 1px solid var(--line); border-top: 4px solid var(--line); border-radius: 10px; padding: 8px 12px; display: grid; gap: 2px; }
+.progress li.ok { border-top-color: var(--ok); } .progress li.warn { border-top-color: var(--warn); } .progress li.todo { border-top-color: var(--gold); }
+.progress a { font-weight: 700; text-decoration: none; color: var(--text); }
+.progress a b { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--chip); margin-right: 6px; font-size: 13px; }
+.progress span { font-size: 13px; color: var(--sub); }
+.cols { display: flex; align-items: flex-end; gap: 3px; height: 130px; padding-top: 18px; overflow-x: auto; }
+.colbar { flex: 1 0 22px; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; position: relative; border-radius: 4px; }
+.colbar.holiday, .colbar.break, .colbar.finals { background: var(--chip); }
+.colbar .cb { width: 70%; background: var(--c-gvl); border-radius: 3px 3px 0 0; min-height: 0; }
+.colbar.bad .cb { outline: 2px solid var(--bad); outline-offset: 1px; }
+.colbar .cv { font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.colbar .cl { font-size: 12px; color: var(--sub); margin-top: 3px; }
+#lc-2 .row select { width: auto; min-width: 140px; }
+table.lab { width: auto; }
+table.lab thead th:not(.wkh), table.lab td { min-width: 150px; }
+
 </style>
 </head>
 <body>
@@ -1143,28 +1171,52 @@ function distributionCSV() {
   return lines.join('\r\n');
 }
 
-/* ---------- room scheduling ---------- */
-let ROOMVIEW = '';
+/* ---------- room scheduling (redesigned 2026-11-20): summary + filters on top, sortable columns (the generator's: Course,
+   Days, Time, Max, Instructor, Room, Final exam), room-use chart, the week ---------- */
+const RF = { room: '', days: '', level: 'all', q: '', sort: 'DAYS', dir: 1 };
+const statPill = (n, l, kind = '') => `<span class="cnt ${kind}"><b>${n}</b> ${l}</span>`;
 VIEWS.rooms = () => {
   const s = sem(); if (!s) return head('Room scheduling', 'Rooms', '') + needSem();
-  const list = courses().filter(inNesbitt4201).sort((a, b) => normDays(a.DAYS).localeCompare(normDays(b.DAYS)) || mins(a.TIME_FROM) - mins(b.TIME_FROM));
-  if (!list.length) return head(semLabel(s), 'Room scheduling', 'Classes Banner puts in Nesbitt 4201 are split between 4201A and 4207 here.') + `<div class="empty">No classes in Nesbitt 4201 yet. <button class="btn sm" type="button" data-view="courses">Import courses</button></div>`;
+  const all = courses().filter(inNesbitt4201);
+  if (!all.length) return head(semLabel(s), 'Room scheduling', 'Classes Banner puts in Nesbitt 4201 are split between 4201A and 4207 here.') + `<div class="empty">No classes in Nesbitt 4201 yet. <button class="btn sm" type="button" data-view="courses">Add the Banner files</button></div>`;
   const A = roomsOf().assign, O = roomsOf().finalsOverrides, clash = roomClashes(), prev = prevWith(s, x => Object.keys(P.rooms[x.id]?.assign || {}).length);
+  const done = all.filter(c => A[c.CRN]).length, noFinal = s.type === 'summer' ? 0 : all.filter(c => !finalsFor(c).examDay).length;
+  const pats = [...new Set(all.map(c => normDays(c.DAYS)).filter(Boolean))].sort();
+  const q = RF.q.toLowerCase(), k = RF.sort;
+  const key = c => k === 'TIME_FROM' ? String(mins(c.TIME_FROM) + 10000) : k === 'DAYS' ? String(WD.findIndex(d => parseDays(c.DAYS)[0] === d) + 10) + String(mins(c.TIME_FROM) + 10000) : k === 'ROOM' ? (A[c.CRN] || 'zz') : k === 'FINAL' ? (finalsFor(c).examDay || 'zz') : k === 'COURSE' ? `${c.SUBJ}${c.CRSE}${c.SEC}` : String(c[k] ?? '');
+  const list = all.filter(c => (!RF.room || (RF.room === 'none' ? !A[c.CRN] : A[c.CRN] === RF.room)) && (!RF.days || normDays(c.DAYS) === RF.days)
+    && (RF.level === 'all' || ['1001', '1002'].includes(c.CRSE)) && (!q || `${c.CRN} ${c.SUBJ} ${c.CRSE}.${c.SEC} ${c.INSTRUCTOR}`.toLowerCase().includes(q)))
+    .sort((a, b) => RF.dir * key(a).localeCompare(key(b), undefined, { numeric: true }) || mins(a.TIME_FROM) - mins(b.TIME_FROM));
+  const th = ([kk, l, cls = '']) => `<th scope="col" class="${cls}" aria-sort="${RF.sort === kk ? (RF.dir > 0 ? 'ascending' : 'descending') : 'none'}"><button type="button" class="sorter" data-rsort="${kk}">${l}<span aria-hidden="true">${RF.sort === kk ? (RF.dir > 0 ? ' ▲' : ' ▼') : ''}</span></button></th>`;
   const rows = list.map(c => {
     const r = A[c.CRN] || '', f = finalsFor(c), o = O[c.CRN];
     const fin = f.examDay ? `${f.examDay} ${fmt12(f.examStart)}–${fmt12(f.examEnd)}<div class="small muted">${f.source === 'manual' ? 'entered by hand' : esc(f.source)}${o ? ` · <button class="btn sm" type="button" data-unfin="${esc(c.CRN)}">Use the schedule</button>` : ''}</div>`
       : `<div class="small" style="color:var(--warn)">${esc(f.note)}</div>${s.type === 'summer' ? '' : `<div class="row" style="margin-top:4px">${sel('fd-' + c.CRN, o?.day, ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => [d, d]), 'Day', `data-fin="${esc(c.CRN)}" aria-label="Exam day"`)}<input type="time" data-fin="${esc(c.CRN)}" data-k="start" value="${esc(o?.start || '')}" aria-label="Exam start" style="width:auto"><input type="time" data-fin="${esc(c.CRN)}" data-k="end" value="${esc(o?.end || '')}" aria-label="Exam end" style="width:auto"></div>`}`;
-    return `<tr${clash.has(c.CRN) ? ' class="flag"' : ''}><td class="nowrap">${isLang(c.SUBJ) ? langTag(c.SUBJ) : ''}<b>${esc(c.SUBJ)} ${esc(c.CRSE)}.${esc(c.SEC)}</b><div class="small muted">CRN ${esc(c.CRN)}${clash.has(c.CRN) ? ' · <b style="color:var(--bad)">double-booked</b>' : ''}</div></td>`
-      + `<td class="nowrap">${esc(normDays(c.DAYS))} ${esc(fmt12(c.TIME_FROM))}–${esc(fmt12(c.TIME_TO))}</td><td class="num">${c.MAXENR ?? '—'}</td><td>${esc(c.INSTRUCTOR)}</td>`
+    return `<tr${clash.has(c.CRN) ? ' class="flag"' : !r ? ' class="todo"' : ''}><td class="nowrap">${isLang(c.SUBJ) ? langTag(c.SUBJ) : ''}<b>${esc(c.SUBJ)} ${esc(c.CRSE)}.${esc(c.SEC)}</b><div class="small muted">CRN ${esc(c.CRN)}${clash.has(c.CRN) ? ' · <b style="color:var(--bad)">double-booked</b>' : ''}</div></td>`
+      + `<td class="nowrap">${esc(normDays(c.DAYS))}</td><td class="nowrap">${esc(fmt12(c.TIME_FROM))}–${esc(fmt12(c.TIME_TO))}</td><td class="num">${c.MAXENR ?? '—'}</td><td>${esc(c.INSTRUCTOR)}</td>`
       + `<td><div class="seg" role="group" aria-label="Room for ${esc(c.SUBJ + ' ' + c.CRSE + '.' + c.SEC)}">${ROOMS.map(([v, l]) => `<button type="button" data-room="${esc(c.CRN)}" data-v="${v}" aria-pressed="${r === v}" title="${esc(l)}">${v}</button>`).join('')}</div></td><td>${fin}</td></tr>`;
   }).join('');
-  const done = list.filter(c => A[c.CRN]).length;
-  return head(semLabel(s), 'Room scheduling', `${list.length} classes registered in Nesbitt 4201 · ${done} with a room · ${list.length - done} without${clash.size ? ` · <b style="color:var(--bad)">${clash.size} double-booked</b>` : ''}.`,
-    prev ? `<button class="btn" type="button" data-act="copyRooms" data-arg="${esc(prev.id)}">Copy rooms from ${esc(semLabel(prev))}</button>` : '')
-    + `<div class="tw"><table class="t"><caption>4201A is the larger room, 4207 the smaller. Final exam times come from UNG's final exam schedule.</caption><thead><tr><th scope="col">Class</th><th scope="col">Meets</th><th scope="col" class="num">Max</th><th scope="col">Instructor</th><th scope="col">Room</th><th scope="col">Final exam</th></tr></thead><tbody>${rows}</tbody></table></div>`
-    + `<div class="card" style="margin-top:16px"><h2>The week</h2><div class="toolbar"><div class="seg" role="group" aria-label="Which room">${[['', 'Both rooms'], ...ROOMS.map(([v]) => [v, v])].map(([v, l]) => `<button type="button" data-rv="${v}" aria-pressed="${ROOMVIEW === v}">${l}</button>`).join('')}</div>`
-    + `${ROOMS.map(([v]) => `<button class="btn sm" type="button" data-act="printRoom" data-arg="${v}">Printable ${v} schedule</button>`).join('')}</div>${weekGrid(list.filter(c => A[c.CRN] && (!ROOMVIEW || A[c.CRN] === ROOMVIEW)), clash)}</div>`;
+  return head(semLabel(s), 'Room scheduling', 'Classes Banner lists in Nesbitt 4201 go to the larger 4201A or the smaller 4207. Final exam times come from UNG\'s final exam schedule.',
+    (prev ? `<button class="btn" type="button" data-act="copyRooms" data-arg="${esc(prev.id)}">Copy rooms from ${esc(semLabel(prev))}</button>` : '') + ROOMS.map(([v]) => `<button class="btn" type="button" data-act="printRoom" data-arg="${v}">Print ${v}</button>`).join(''))
+    + `<div class="stats" role="status">${statPill(all.length, 'classes in Nesbitt 4201')}${statPill(done, 'with a room', done === all.length ? 'ok' : '')}${all.length - done ? statPill(all.length - done, 'still need a room', 'warn') : ''}${clash.size ? statPill(clash.size, 'double-booked', 'bad') : ''}${noFinal ? statPill(noFinal, 'final exam times to enter', 'warn') : ''}</div>`
+    + `<div class="toolbar" role="search" aria-label="Filter the classes"><div class="f"><span class="lbl" id="rr-l">Room</span><div class="seg" role="group" aria-labelledby="rr-l">${[['', 'All'], ...ROOMS.map(([v]) => [v, v]), ['none', 'No room yet']].map(([v, l]) => `<button type="button" data-rf="${v}" aria-pressed="${RF.room === v}">${l}</button>`).join('')}</div></div>`
+    + `<div class="f"><span class="lbl" id="rl-l">Level</span><div class="seg" role="group" aria-labelledby="rl-l"><button type="button" data-rl="first" aria-pressed="${RF.level === 'first'}">1001–1002</button><button type="button" data-rl="all" aria-pressed="${RF.level === 'all'}">All levels</button></div></div>`
+    + `<div class="f"><label for="r-days">Days</label>${sel('r-days', RF.days, pats.map(x => [x, x]), 'All')}</div><div class="f grow"><label for="r-q">Search</label><input type="search" id="r-q" value="${esc(RF.q)}" placeholder="CRN, course or instructor"></div></div>`
+    + roomUseHTML(all)
+    + `<div class="tw"><table class="t compact"><caption>${list.length} class${list.length === 1 ? '' : 'es'} shown. Select a column heading to sort; shaded rows still need a room.</caption><thead><tr>${[['COURSE', 'Course'], ['DAYS', 'Days'], ['TIME_FROM', 'Time'], ['MAXENR', 'Max', 'num'], ['INSTRUCTOR', 'Instructor'], ['ROOM', 'Room'], ['FINAL', 'Final exam']].map(th).join('')}</tr></thead><tbody>${rows || '<tr><td colspan="7" class="muted">No classes match these filters.</td></tr>'}</tbody></table></div>`
+    + `<div class="card" style="margin-top:16px"><h2>The week</h2><p class="lede">${RF.room && RF.room !== 'none' ? `Room ${esc(RF.room)} only.` : 'Both rooms.'} Each block is a class (color = language); overlapping blocks in one room are outlined in red. The table above lists the same classes.</p>${weekGrid(list.filter(c => A[c.CRN]), clash)}</div>`;
 };
+/* booked hours per weekday and room: shows which day is full before anything is double-booked */
+function roomUseHTML(all) {
+  const A = roomsOf().assign, hrs = (room, d) => all.filter(c => A[c.CRN] === room && parseDays(c.DAYS).includes(d)).reduce((a, c) => a + Math.max(0, mins(c.TIME_TO) - mins(c.TIME_FROM)), 0) / 60;
+  const data = WD.map(d => ({ d, v: ROOMS.map(([r]) => [r, hrs(r, d)]) })), max = Math.max(1, ...data.flatMap(x => x.v.map(y => y[1])));
+  if (!data.some(x => x.v.some(y => y[1]))) return '';
+  const RC = { '4201A': 'var(--c-gvl)', '4207': 'var(--c-ocn)' }, h = n => (Math.round(n * 10) / 10).toString();
+  const summary = data.map(x => `${x.d}: ${x.v.map(([r, n]) => `${r} ${h(n)} hours`).join(', ')}`).join('; ');
+  return `<figure class="card chart" style="margin:0 0 14px"><figcaption><b>Room use by weekday</b><span class="muted small"> · hours booked in each room</span></figcaption>`
+    + `<div class="bars" role="img" aria-label="Room use by weekday: ${esc(summary)}.">${data.map(x => `<div class="bar-row two"><span class="bar-l">${x.d}</span><span class="bar-pair">${x.v.map(([r, n]) => `<span class="bar-track thin"><span class="bar-fill" style="width:${(n / max * 100).toFixed(1)}%;background:${RC[r]}"></span></span>`).join('')}</span><span class="bar-n small">${x.v.map(([r, n]) => `${h(n)} h`).join('<br>')}</span></div>`).join('')}</div>`
+    + `<ul class="share-key"><li><span class="sw" style="background:${RC['4201A']}" aria-hidden="true"></span>4201A (larger): top bar</li><li><span class="sw" style="background:${RC['4207']}" aria-hidden="true"></span>4207 (smaller): bottom bar</li></ul></figure>`;
+}
 function weekGrid(list, clash = new Set(), T0 = 8 * 60, T1 = 21 * 60) {
   const A = roomsOf().assign, H = 44, px = m => (m - T0) / 60 * H, h = (T1 - T0) / 60 * H;
   const ts = list.map(c => [mins(c.TIME_FROM), mins(c.TIME_TO)]).filter(([a]) => a >= 0);
@@ -1180,9 +1232,13 @@ function weekGrid(list, clash = new Set(), T0 = 8 * 60, T1 = 21 * 60) {
   return list.length ? `<div class="wk" role="img" aria-label="Weekly room schedule, ${list.length} classes"><div class="hd">Time</div>${WD.map(d => `<div class="hd">${d}</div>`).join('')}<div class="col" style="height:${px(T1)}px;border-left:0">${hrs}</div>${cols}</div>` : '<div class="empty">No classes in this room yet.</div>';
 }
 AFTER.rooms = () => {
-  const keep = () => { const y = window.scrollY; show('rooms', false); window.scrollTo(0, y); };
+  const keep = sel => { const y = window.scrollY; show('rooms', false); window.scrollTo(0, y); if (sel) document.querySelector(sel)?.focus(); };
+  document.querySelectorAll('[data-rf]').forEach(b => b.onclick = () => { RF.room = b.dataset.rf; keep(`[data-rf="${RF.room}"]`); });
+  document.querySelectorAll('[data-rl]').forEach(b => b.onclick = () => { RF.level = b.dataset.rl; keep(`[data-rl="${RF.level}"]`); });
+  document.querySelectorAll('[data-rsort]').forEach(b => b.onclick = () => { const k = b.dataset.rsort; RF.dir = RF.sort === k ? -RF.dir : 1; RF.sort = k; keep(`[data-rsort="${k}"]`); });
+  if ($('r-days')) $('r-days').onchange = () => { RF.days = val('r-days'); keep('#r-days'); };
+  if ($('r-q')) $('r-q').oninput = () => { clearTimeout(keep.t); keep.t = setTimeout(() => { const pos = $('r-q').selectionStart; RF.q = val('r-q'); keep('#r-q'); $('r-q')?.setSelectionRange(pos, pos); }, 250); };
   document.querySelectorAll('[data-room]').forEach(b => b.onclick = () => { const A = roomsOf().assign; if (A[b.dataset.room] === b.dataset.v) delete A[b.dataset.room]; else A[b.dataset.room] = b.dataset.v; changed(false); keep(); document.querySelector(`[data-room="${CSS.escape(b.dataset.room)}"][data-v="${b.dataset.v}"]`)?.focus(); });
-  document.querySelectorAll('[data-rv]').forEach(b => b.onclick = () => { ROOMVIEW = b.dataset.rv; keep(); });
   document.querySelectorAll('[data-fin]').forEach(x => x.onchange = () => { const O = roomsOf().finalsOverrides, k = x.dataset.fin, o = O[k] ||= {}; if (x.tagName === 'SELECT') o.day = x.value; else o[x.dataset.k] = x.value; changed(false); if (o.day && o.start && o.end) keep(); });
   document.querySelectorAll('[data-unfin]').forEach(b => b.onclick = () => { delete roomsOf().finalsOverrides[b.dataset.unfin]; changed(false); keep(); });
 };
@@ -1206,19 +1262,42 @@ VIEWS.labs = () => {
   const pick = `<div class="classpick">${LAB_LANGS.map(([code, label, color]) => `<div class="lrow"><span class="lname">${langTag(code)}${label}</span>${LAB_LEVELS.flatMap(lv => activeSessions(s).map(se => { const k = classKey(code, lv, se); return `<label class="chipbox"><input type="checkbox" data-cls="${k}" ${lc.classesOffered[k] ? 'checked' : ''}>${code}${lv}${se === REGULAR ? '' : ' · ' + SESSION_LABEL[se]}</label>`; })).join('')}</div>`).join('')}</div>`;
   const due = off.length ? `<div class="tw"><table class="t"><thead><tr><th scope="col">Class</th><th scope="col">Due day</th><th scope="col">Due time</th></tr></thead><tbody>${off.map(c => { const d = lc.dueDayTimes[c.key] || {}; return `<tr><th scope="row">${langTag(c.code)}${esc(c.name)}</th><td>${sel('dd-' + c.key, d.day, DAY_FULL.slice(1).concat('Sunday').map(x => [x, x]), null, `data-dd="${c.key}" data-k="day" aria-label="Due day for ${esc(c.name)}"`)}</td><td>${sel('dt-' + c.key, d.time, [...new Set([...DUE_TIMES, d.time].filter(Boolean))].map(x => [x, x]), null, `data-dd="${c.key}" data-k="time" aria-label="Due time for ${esc(c.name)}"`)}</td></tr>`; }).join('')}</tbody></table></div>`
     + `<div class="row" style="margin-top:10px"><span class="small muted">Same for every class:</span>${sel('all-day', '', DAY_FULL.slice(1).concat('Sunday').map(x => [x, x]), 'Day', 'aria-label="Due day for every class"')}${sel('all-time', '', DUE_TIMES.map(x => [x, x]), 'Time', 'aria-label="Due time for every class"')}<button class="btn sm" type="button" data-act="allDue">Apply</button></div>` : '<div class="empty">Choose classes in step 1.</div>';
+  const pl = placedLabs(s).filter(p => p.cls && !p.outside), badPl = pl.filter(p => p.block).length, emptyCls = off.filter(c => !pl.some(p => p.classKey === c.key)).length;
+  const progress = `<ol class="progress" aria-label="Progress">`
+    + `<li class="${off.length ? 'ok' : 'todo'}"><a href="#lc-1"><b>1</b> Classes</a><span>${off.length ? `${off.length} chosen` : 'none yet'}</span></li>`
+    + `<li class="${off.length ? 'ok' : 'todo'}"><a href="#lc-2"><b>2</b> Due day and time</a><span>${off.length ? [...new Set(off.map(c => { const d = lc.dueDayTimes[c.key] || {}; return `${(d.day || '').slice(0, 3)} ${d.time || ''}`; }))].slice(0, 2).join(', ') + (new Set(off.map(c => JSON.stringify(lc.dueDayTimes[c.key]))).size > 2 ? '…' : '') : '—'}</span></li>`
+    + `<li class="${pl.length && !emptyCls && !badPl ? 'ok' : pl.length ? 'warn' : 'todo'}"><a href="#lc-3"><b>3</b> Due weeks</a><span>${pl.length} due date${pl.length === 1 ? '' : 's'}${emptyCls ? ` · ${emptyCls} class${emptyCls > 1 ? 'es' : ''} empty` : ''}${badPl ? ` · ${badPl} on a no-class day` : ''}</span></li>`
+    + `<li class="${pl.length ? 'ok' : 'todo'}"><a href="#lc-4"><b>4</b> Share</a><span>proposal and lab-due-dates.json</span></li></ol>`;
   return head(semLabel(s), 'Lab calendar', 'Which classes have labs, when they are due, and which week each lab is due. Lab Hub pages read the result (lab-due-dates.json).',
     (prev ? `<button class="btn primary" type="button" data-act="copyLabs" data-arg="${esc(prev.id)}">Copy from ${esc(semLabel(prev))}…</button>` : '') + `<button class="btn" type="button" data-act="copyLabs" data-arg="">Copy from another semester…</button>`)
+    + progress
     + ((b => b.length ? issueList(b) : '')(issues().filter(i => i.view === 'labs' && i.level === 'bad')))
-    + `<div class="card"><h2><span class="step">1</span>Classes with labs</h2>${sess}${pick}${fromCourses.length ? `<p class="small" style="margin:10px 0 0"><button class="btn sm" type="button" data-act="clsFromCourses">Match the imported courses</button> <span class="muted">${esc(fromCourses.join(', '))}</span></p>` : ''}</div>`
-    + `<div class="card"><h2><span class="step">2</span>Due day and time</h2>${due}</div>`
-    + `<div class="card"><h2><span class="step">3</span>Due weeks</h2><p class="lede">Drag a lab onto a week, or select a cell to choose its labs. Each cell shows that week's due date. Red cells are holidays, amber are breaks, gray is finals.</p>`
+    + `<div class="card" id="lc-1"><h2><span class="step">1</span>Classes with labs</h2>${sess}${pick}${fromCourses.length ? `<p class="small" style="margin:10px 0 0"><button class="btn sm" type="button" data-act="clsFromCourses">Match the imported courses</button> <span class="muted">${esc(fromCourses.join(', '))}</span></p>` : ''}</div>`
+    + `<div class="card" id="lc-2"><h2><span class="step">2</span>Due day and time</h2>${due}</div>`
+    + `<div class="card" id="lc-3"><h2><span class="step">3</span>Due weeks</h2><p class="lede">Drag a lab onto a week, or select a cell to choose its labs. Each cell shows that week's due date. Red cells are holidays, amber are breaks, gray is finals.</p>`
+    + (off.length ? `<div class="toolbar" role="search" aria-label="Which classes to show"><div class="f"><label for="lf-lang">Language</label>${sel('lf-lang', LF.lang, [...new Set(off.map(c => c.code))].map(c => [c, LAB_LANGS.find(l => l[0] === c)[1]]), 'All')}</div><div class="f"><span class="lbl" id="lf-l">Level</span><div class="seg" role="group" aria-labelledby="lf-l">${[['', 'Both'], ['1001', '1001'], ['1002', '1002']].map(([v, l]) => `<button type="button" data-lfl="${v}" aria-pressed="${LF.level === v}">${l}</button>`).join('')}</div></div></div>` : '')
+    + loadChartHTML(s)
     + `<div class="tray" aria-label="Labs and workshops">${lc.labTypes.map(l => `<span class="pill" draggable="true" data-drag="${esc(l.id)}" style="background:${esc(l.color)}">${esc(l.label)}<button class="x" type="button" data-act="rmType" data-arg="${esc(l.id)}" aria-label="Remove ${esc(l.label)}">✕</button></span>`).join('')}`
     + `<button class="btn sm" type="button" data-act="addType">+ Lab or workshop</button><span style="flex:1"></span><button class="btn sm" type="button" data-act="autoFill">Auto-fill</button><button class="btn sm danger" type="button" data-act="clearGrid">Clear</button></div>${gridHTML(s)}</div>`
-    + `<div class="card"><h2><span class="step">4</span>Share</h2><p class="lede">The proposal is a document for instructors (week table and one list per language). lab-due-dates.json goes to D2L with the other outputs.</p><div class="row"><button class="btn primary" type="button" data-act="proposal">Download the proposal</button><button class="btn" type="button" data-act="dlOut" data-arg="lab-due-dates.json">lab-due-dates.json</button></div></div>`;
+    + `<div class="card" id="lc-4"><h2><span class="step">4</span>Share</h2><p class="lede">The proposal is a document for instructors (week table and one list per language). lab-due-dates.json goes to D2L with the other outputs.</p><div class="row"><button class="btn primary" type="button" data-act="proposal">Download the proposal</button><button class="btn" type="button" data-act="dlOut" data-arg="lab-due-dates.json">lab-due-dates.json</button></div></div>`;
 };
+const LF = { lang: '', level: '' };
+const offShown = s => offered(s).filter(c => (!LF.lang || c.code === LF.lang) && (!LF.level || c.level === LF.level));
+/* how many labs come due each week (the classes shown): spreads the load and shows weeks that land on a no-class day */
+function loadChartHTML(s) {
+  const off = offShown(s), weeks = weeksOf(s); if (!off.length || !weeks.length) return '';
+  const keys = new Set(off.map(c => c.key)), pl = placedLabs(s).filter(p => p.cls && !p.outside && keys.has(p.classKey)); if (!pl.length) return '';
+  const per = weeks.map(w => ({ w, n: pl.filter(p => p.week === w.idx).length, bad: pl.filter(p => p.week === w.idx && p.block).length, blk: w.days.slice(0, 5).map(d => blocked(s, d)?.kind).find(Boolean) || '' }));
+  const max = Math.max(1, ...per.map(x => x.n));
+  const sum = per.filter(x => x.n).map(x => `week ${x.w.idx} ${x.n}`).join(', ');
+  return `<figure class="chart load" style="margin:0 0 14px"><figcaption><b>Labs due per week</b><span class="muted small"> · ${off.length} class${off.length === 1 ? '' : 'es'} shown; a red outline means a due date falls on a day with no classes</span></figcaption>`
+    + `<div class="cols" role="img" aria-label="Labs due per week: ${esc(sum)}.">${per.map(x => `<div class="colbar${x.bad ? ' bad' : ''}${x.blk ? ' ' + x.blk : ''}"><span class="cv">${x.n || ''}</span><span class="cb" style="height:${(x.n / max * 100).toFixed(0)}%"></span><span class="cl">${x.w.idx}</span></div>`).join('')}</div>`
+    + `<p class="small muted" style="margin:6px 0 0">Week numbers along the bottom. Shaded columns are weeks with a holiday, break or finals.</p></figure>`;
+}
 function gridHTML(s) {
-  const lc = labCal(s), off = offered(s), weeks = weeksOf(s);
-  if (!off.length) return '<div class="empty">Choose classes in step 1.</div>';
+  const lc = labCal(s), off = offShown(s), weeks = weeksOf(s);
+  if (!offered(s).length) return '<div class="empty">Choose classes in step 1.</div>';
+  if (!off.length) return '<div class="empty">No classes match the filter above.</div>';
   if (!weeks.length) return '<div class="empty">Set the term dates in the Academic calendar.</div>';
   const label = id => lc.labTypes.find(l => l.id === id);
   return `<div class="tw" style="max-height:70vh"><table class="lab"><caption class="sr">Lab due weeks, ${weeks.length} weeks by ${off.length} classes</caption><thead><tr><th class="wkh" scope="col">Week</th>${off.map(c => `<th scope="col" style="border-top:4px solid ${c.color}">${esc(c.name)}<div class="small muted" style="font-weight:500">${esc(lc.dueDayTimes[c.key]?.day?.slice(0, 3) || '')} ${esc(lc.dueDayTimes[c.key]?.time || '')}</div></th>`).join('')}</tr></thead><tbody>`
@@ -1231,6 +1310,8 @@ function gridHTML(s) {
 AFTER.labs = () => {
   const s = sem(); if (!s) return; const lc = labCal(s);
   const keep = () => { const y = window.scrollY, g = document.querySelector('.lab')?.closest('.tw'), gx = g?.scrollLeft, gy = g?.scrollTop; show('labs', false); window.scrollTo(0, y); const g2 = document.querySelector('.lab')?.closest('.tw'); if (g2) { g2.scrollLeft = gx; g2.scrollTop = gy; } };
+  if ($('lf-lang')) $('lf-lang').onchange = () => { LF.lang = val('lf-lang'); keep(); $('lf-lang')?.focus(); };
+  document.querySelectorAll('[data-lfl]').forEach(b => b.onclick = () => { LF.level = b.dataset.lfl; keep(); document.querySelector(`[data-lfl="${LF.level}"]`)?.focus(); });
   document.querySelectorAll('[data-sess]').forEach(x => x.onchange = () => { lc.sessionToggles[x.dataset.sess] = x.checked; changed(false); keep(); });
   document.querySelectorAll('[data-cls]').forEach(x => x.onchange = () => { const k = x.dataset.cls; lc.classesOffered[k] = x.checked; if (x.checked && !lc.dueDayTimes[k]) lc.dueDayTimes[k] = { day: 'Wednesday', time: '11:59 PM' }; changed(false); keep(); document.querySelector(`[data-cls="${k}"]`)?.focus(); });
   document.querySelectorAll('[data-dd]').forEach(x => x.onchange = () => { (lc.dueDayTimes[x.dataset.dd] ||= { day: 'Wednesday', time: '11:59 PM' })[x.dataset.k] = x.value; changed(false); keep(); });
