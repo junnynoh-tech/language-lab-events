@@ -385,6 +385,19 @@ table.t tr.picked td { background: var(--chip); }
 .strip li.finals { background: var(--accent); color: var(--accent-ink); }
 .strip .wk-k { position: absolute; top: 1px; right: 4px; font-size: 10px; font-weight: 800; }
 
+/* row actions menu + floating selection bar (2026-11-20) */
+.pickwrap { display: inline-flex; align-items: center; gap: 4px; }
+td.pick, th.pick { width: 64px; }
+.rowbtn { border: 1px solid transparent; background: none; border-radius: 6px; width: 26px; height: 26px; font-weight: 800; color: var(--sub); cursor: pointer; line-height: 1; padding: 0; }
+tr:hover .rowbtn, .rowbtn:focus-visible, .rowbtn[aria-expanded="true"] { border-color: var(--line); background: var(--surface); color: var(--text); }
+.rowmenu { position: fixed; z-index: 60; min-width: 220px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 8px 24px rgba(20,30,50,.18); padding: 4px; display: grid; }
+.rowmenu[hidden] { display: none; }
+.rowmenu button { all: unset; box-sizing: border-box; padding: 8px 12px; border-radius: 7px; cursor: pointer; font-weight: 600; font-size: 15px; color: var(--text); }
+.rowmenu button:hover, .rowmenu button:focus-visible { background: var(--chip); outline: none; }
+.rowmenu button.danger { color: var(--bad); }
+.selbar.float { position: sticky; bottom: 12px; z-index: 5; margin: 10px 0 0; border: 0; min-height: 0; padding: 0; }
+.selbar.float.on { border: 1px solid var(--bad); padding: 8px 12px; box-shadow: 0 6px 20px rgba(20,30,50,.18); }
+
 </style>
 </head>
 <body>
@@ -763,14 +776,20 @@ function importCourses(semId, rows1430, rows775) {
   applyInstructorCampus(semId);
   return list;
 }
+/* a professor's default campus: where their in-person sections are (the most common one), from Banner or chosen by hand */
+function profDefaults(semId = P.activeSemesterId) {
+  const tally = {};
+  (P.courseLists[semId]?.rows || []).forEach(c => { if (!c.INSTRUCTOR || !c.LOCATION || c.LOCATION_FROM === 'instructor') return; if (!AUTO_LOCATION[c.CMP] && !c.LOCATION_SET) return; const t = tally[profKey(c.INSTRUCTOR)] ||= {}; t[c.LOCATION] = (t[c.LOCATION] || 0) + 1; });
+  return Object.fromEntries(Object.entries(tally).map(([k, t]) => [k, Object.entries(t).sort((a, b) => b[1] - a[1])[0][0]]));
+}
 /* professors' home campuses (2026-11-20): kept for the whole plan, so they carry over to every semester. A section with no
    campus from Banner (online, off campus) takes its professor's home campus. A campus someone chose by hand always wins. */
 const profKey = n => String(n || '').trim().toLowerCase().replace(/\s+/g, ' ');
 function applyInstructorCampus(semId = P.activeSemesterId) {
-  const map = P.instructorCampus ||= {}; let n = 0;
+  const map = P.instructorCampus ||= {}, dflt = profDefaults(semId); let n = 0;
   (P.courseLists[semId]?.rows || []).forEach(c => {
     if (c.LOCATION_SET || (c.LOCATION && c.LOCATION_FROM !== 'instructor')) return;
-    const home = map[profKey(c.INSTRUCTOR)] || '';
+    const k = profKey(c.INSTRUCTOR), home = map[k] || dflt[k] || '';
     if (home) { if (c.LOCATION !== home) n++; c.LOCATION = home; c.LOCATION_FROM = 'instructor'; }
     else if (c.LOCATION_FROM === 'instructor') { c.LOCATION = ''; delete c.LOCATION_FROM; }
   });
@@ -1184,7 +1203,7 @@ VIEWS.courses = () => {
   const pickedShown = shown.filter(c => PICKED.has(c.CRN)).length, allPicked = shown.length && pickedShown === shown.length;
   const rows = shown.map(c => {
     const flag = isLang(c.SUBJ) && !pivotOf(c.LOCATION), name = `${c.SUBJ} ${c.CRSE}.${c.SEC}`, on = PICKED.has(c.CRN);
-    return `<tr class="${flag ? 'flag' : ''}${on ? ' picked' : ''}"><td class="pick"><input type="checkbox" data-pick="${esc(c.CRN)}" ${on ? 'checked' : ''} aria-label="Select ${esc(name)}, CRN ${esc(c.CRN)}"></td><td>${esc(c.CRN)}</td><td class="nowrap">${isLang(c.SUBJ) ? langTag(c.SUBJ) : esc(c.SUBJ)}</td><td>${esc(c.CRSE)}</td><td>${esc(c.SEC)}</td>`
+    return `<tr class="${flag ? 'flag' : ''}${on ? ' picked' : ''}" data-crn="${esc(c.CRN)}"><td class="pick"><span class="pickwrap"><input type="checkbox" data-pick="${esc(c.CRN)}" ${on ? 'checked' : ''} aria-label="Select ${esc(name)}, CRN ${esc(c.CRN)}"><button type="button" class="rowbtn" data-cmenu="${esc(c.CRN)}" aria-haspopup="menu" aria-label="Actions for ${esc(name)}" title="Actions (or right-click the row)">⋯</button></span></td><td>${esc(c.CRN)}</td><td class="nowrap">${isLang(c.SUBJ) ? langTag(c.SUBJ) : esc(c.SUBJ)}</td><td>${esc(c.CRSE)}</td><td>${esc(c.SEC)}</td>`
       + `<td>${esc(BANNER_CMP[c.CMP] || c.CMP || '')}</td><td class="num">${esc(c.CRED)}</td><td>${esc(c.TITLE)}</td><td class="nowrap">${esc(c.DAYS || 'TBA')}</td>`
       + `<td class="nowrap">${c.TIME_FROM ? esc(fmt12(c.TIME_FROM) + '–' + fmt12(c.TIME_TO)) : 'TBA'}</td><td>${esc(c.INSTRUCTOR)}</td><td>${esc(c.BUILDING)}</td><td>${esc(c.ROOM)}</td>`
       + `<td><select data-loc="${esc(c.CRN)}" aria-label="Campus for ${esc(name)}">${opt('', flag ? 'Choose a campus' : '—', c.LOCATION)}${LOCATIONS.map(l => opt(l, l.replace(' Campus', ''), c.LOCATION)).join('')}</select>${c.LOCATION_FROM === 'instructor' ? '<div class="small muted">from the professor</div>' : c.LOCATION_SET ? '<div class="small muted">chosen by hand</div>' : ''}</td>`
@@ -1199,41 +1218,89 @@ VIEWS.courses = () => {
     + `<label class="switch" style="margin:0 0 6px"><input type="checkbox" role="switch" id="c-all" ${CF.all ? 'checked' : ''}>Other subjects too</label></div>`
     + (needs ? `<p class="note warn" role="status">${needs} section${needs > 1 ? 's need' : ' needs'} a campus (shaded). Choose one in the Campus column, or set the professor's home campus in <button class="btn sm" type="button" data-view="profs">Professors' campuses</button>.</p>` : '')
     + chartsHTML(shown)
-    + `<div class="selbar${PICKED.size ? ' on' : ''}" role="status">${PICKED.size ? `<b>${PICKED.size} class${PICKED.size === 1 ? '' : 'es'} selected</b>${PICKED.size > pickedShown ? `<span class="muted small">(${PICKED.size - pickedShown} hidden by the filters)</span>` : ''}<button class="btn sm" type="button" data-act="unpick">Clear selection</button><button class="btn sm danger" type="button" data-act="delPicked">Delete selected…</button>` : '<span class="muted small">Tick classes to delete them (for example cancelled sections or ones the Lab doesn\'t serve).</span>'}</div>`
+    + (PICKED.size ? '' : `<p class="small muted" style="margin:0 0 8px">Tick classes, or use ⋯ or right-click on a row, to delete them (for example cancelled sections or ones the Lab doesn't serve).</p>`)
     + `<div class="tw"><table class="t compact"><caption>${shown.length} section${shown.length === 1 ? '' : 's'} shown${CF.level === 'first' ? ' (1001–1002)' : ''}. Select a column heading to sort.</caption><thead><tr><th scope="col" class="pick"><input type="checkbox" id="pick-all" ${allPicked ? 'checked' : ''} aria-label="Select all ${shown.length} sections shown"></th>${COLS.map(th).join('')}</tr></thead>`
     + `<tbody>${rows || `<tr><td colspan="${COLS.length + 1}" class="muted">No sections match these filters.</td></tr>`}</tbody></table></div>`
+    + `<div class="selbar float${PICKED.size ? ' on' : ''}" role="status">${PICKED.size ? `<b>${PICKED.size} class${PICKED.size === 1 ? '' : 'es'} selected</b>${PICKED.size > pickedShown ? `<span class="muted small">(${PICKED.size - pickedShown} hidden by the filters)</span>` : ''}<button class="btn sm" type="button" data-act="unpick">Clear selection</button><button class="btn sm danger" type="button" data-act="delPicked">Delete selected…</button>` : ''}</div>`
     + `<details class="card" style="margin-top:16px"><summary><b>Budget numbers by language and campus</b> (1001–1002 only: the lab fee)</summary>${distributionHTML()}</details>`;
 };
 /* professors' home campuses: one list for the whole plan; online sections follow their professor */
 VIEWS.profs = () => {
   const s = sem(); if (!s) return head('Professors\' campuses', 'Professors', '') + needSem();
   const body = profCard(s);
-  return head(semLabel(s), 'Professors\' home campuses', 'Set each professor\'s campus once. Their online and off-campus sections then count toward that campus on Language courses, this semester and the next ones. A campus chosen by hand on Language courses stays as it is.')
+  return head(semLabel(s), 'Professors\' home campuses', 'A professor who teaches in person starts with that campus. Set or change it here; their online and off-campus sections then count toward it on Language courses, this semester and the next ones. A campus chosen by hand on Language courses stays as it is.')
     + (body || `<div class="empty">No language sections with a professor yet. <button class="btn sm" type="button" data-view="courses">Add the Banner files</button></div>`);
 };
 AFTER.profs = () => {
   const keep = sel => { const y = window.scrollY; show('profs', false); window.scrollTo(0, y); if (sel) document.querySelector(sel)?.focus(); };
   if ($('pf-q')) $('pf-q').oninput = () => { clearTimeout(keep.t); keep.t = setTimeout(() => { const pos = $('pf-q').selectionStart; PF.q = val('pf-q'); keep('#pf-q'); $('pf-q')?.setSelectionRange(pos, pos); }, 250); };
   document.querySelectorAll('[data-pfo]').forEach(b => b.onclick = () => { PF.only = b.dataset.pfo; keep(`[data-pfo="${PF.only}"]`); });
-  document.querySelectorAll('[data-prof]').forEach(x => x.onchange = () => { const map = P.instructorCampus ||= {}; if (x.value) map[x.dataset.prof] = x.value; else delete map[x.dataset.prof];
+  const pItems = k => { const nm = document.querySelector(`tr[data-pk="${CSS.escape(k)}"] th`)?.firstChild?.textContent || k; return [
+    { label: PROF_PICK.has(k) ? 'Unselect' : 'Select', run: () => { PROF_PICK.has(k) ? PROF_PICK.delete(k) : PROF_PICK.add(k); keep(`[data-pmenu="${CSS.escape(k)}"]`); } },
+    ...(PROF_PICK.size && !(PROF_PICK.size === 1 && PROF_PICK.has(k)) ? [{ label: `Delete the ${PROF_PICK.size} selected…`, danger: true, run: () => delProfs([...PROF_PICK]) }] : []),
+    { label: `Delete ${nm}…`, danger: true, run: () => delProfs([k]) }]; };
+  document.querySelectorAll('[data-pmenu]').forEach(b => b.onclick = e => menuFor(b, e, pItems(b.dataset.pmenu)));
+  document.querySelectorAll('tr[data-pk]').forEach(tr => tr.oncontextmenu = e => { if (e.target.closest('select,input,a')) return; e.preventDefault(); menuFor(tr, e, pItems(tr.dataset.pk)); });
+  document.querySelectorAll('[data-ppick]').forEach(x => x.onchange = () => { if (x.checked) PROF_PICK.add(x.dataset.ppick); else PROF_PICK.delete(x.dataset.ppick); keep(`[data-ppick="${CSS.escape(x.dataset.ppick)}"]`); });
+  if ($('prof-all')) $('prof-all').onchange = () => { const on = $('prof-all').checked; document.querySelectorAll('[data-ppick]').forEach(x => on ? PROF_PICK.add(x.dataset.ppick) : PROF_PICK.delete(x.dataset.ppick)); keep('#prof-all'); };
+  document.querySelectorAll('[data-prof]').forEach(x => x.onchange = () => { const map = P.instructorCampus ||= {}, nm = P.instructorNames ||= {}; if (x.value) { map[x.dataset.prof] = x.value; nm[x.dataset.prof] = x.closest('tr').querySelector('th').firstChild.textContent; } else delete map[x.dataset.prof];
     const n = applyInstructorCampus(); changed(false); keep(`[data-prof="${CSS.escape(x.dataset.prof)}"]`); if (n) toast(`${n} section${n > 1 ? 's' : ''} moved to ${x.value.replace(' Campus', '')}.`); });
 };
 const PF = { q: '', only: '' };
+/* a small actions menu for a table row: the ⋯ button, or right-click on the row (2026-11-20) */
+function rowMenu(x, y, items, opener) {
+  let m = $('rowmenu'); if (!m) { m = document.createElement('div'); m.id = 'rowmenu'; m.className = 'rowmenu'; m.setAttribute('role', 'menu'); document.body.append(m); }
+  m.innerHTML = items.map((it, i) => `<button type="button" role="menuitem" tabindex="-1" class="${it.danger ? 'danger' : ''}" data-i="${i}">${esc(it.label)}</button>`).join('');
+  m.hidden = false; const r = m.getBoundingClientRect();
+  m.style.left = Math.max(8, Math.min(x, innerWidth - r.width - 8)) + 'px'; m.style.top = Math.max(8, Math.min(y, innerHeight - r.height - 8)) + 'px';
+  const bs = [...m.querySelectorAll('button')], close = back => { m.hidden = true; document.removeEventListener('pointerdown', outside, true); if (back) opener?.focus(); };
+  const outside = e => { if (!m.contains(e.target)) close(false); };
+  document.addEventListener('pointerdown', outside, true);
+  bs.forEach((b, i) => { b.onclick = () => { close(false); items[i].run(); }; b.onkeydown = e => {
+    if (e.key === 'Escape' || e.key === 'Tab') { e.preventDefault(); close(true); }
+    else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); bs[(i + (e.key === 'ArrowDown' ? 1 : bs.length - 1)) % bs.length].focus(); } }; });
+  bs[0].focus();
+}
+function menuFor(btnOrRow, e, items) { const b = btnOrRow.getBoundingClientRect(); rowMenu(e && e.type === 'contextmenu' ? e.clientX : b.left, e && e.type === 'contextmenu' ? e.clientY : b.bottom + 4, items, btnOrRow.matches('button') ? btnOrRow : btnOrRow.querySelector('.rowbtn')); }
+const PROF_PICK = new Set();
+ACTS.profUnpick = () => { PROF_PICK.clear(); const y = window.scrollY; show('profs', false); window.scrollTo(0, y); };
+ACTS.profDel = () => delProfs([...PROF_PICK]);
+function delProfs(keys) {
+  if (!keys.length) return;
+  const names = P.instructorNames || {}, teach = new Set(courses().filter(c => c.INSTRUCTOR).map(c => profKey(c.INSTRUCTOR)));
+  const label = k => names[k] || courses().find(c => profKey(c.INSTRUCTOR) === k)?.INSTRUCTOR || k;
+  const n = keys.length, word = `${n} professor${n === 1 ? '' : 's'}`, still = keys.filter(k => teach.has(k)).length;
+  pane(`Delete ${word}?`, 'Professors\' campuses', `<p class="lede" style="margin:0 0 12px">Their saved home campus is removed from the plan, so their online sections no longer count toward it.${still ? ` ${still === 1 ? 'One of them teaches' : `${still} of them teach`} this semester, so Banner keeps them on the list with no home campus.` : ''} A copy of the plan from before is kept on the Plan file page.</p>`
+    + `<ul class="del-list">${keys.map(k => `<li><b>${esc(label(k))}</b>${(P.instructorCampus || {})[k] ? ' · ' + esc(P.instructorCampus[k].replace(' Campus', '')) : ' · no campus set'}${teach.has(k) ? ' · teaches this semester' : ''}</li>`).join('')}</ul>`,
+    `<span></span><div class="row"><button class="btn" type="button" data-close>Cancel</button><button class="btn danger" type="button" id="pdel-go">Delete ${word}</button></div>`);
+  $('dlg').querySelector('.row [data-close]')?.focus();
+  $('pdel-go').onclick = async () => {
+    await backupLocal(`before deleting ${word}`);
+    keys.forEach(k => { delete (P.instructorCampus || {})[k]; delete (P.instructorNames || {})[k]; PROF_PICK.delete(k); });
+    applyInstructorCampus(); $('dlg').close(); changed(); toast(`${word.charAt(0).toUpperCase() + word.slice(1)} deleted.`);
+  };
+}
 function profCard(s) {
   const map = P.instructorCampus || {}, langRows = courses().filter(c => isLang(c.SUBJ) && c.INSTRUCTOR);
   const profs = {}; langRows.forEach(c => { const k = profKey(c.INSTRUCTOR), x = profs[k] ||= { name: c.INSTRUCTOR, n: 0, online: 0, campuses: new Set() }; x.n++; if (!AUTO_LOCATION[c.CMP] && !c.LOCATION_SET) x.online++; else if (c.LOCATION) x.campuses.add(campusName(c.LOCATION)); }); // online = no Banner campus and nobody chose one by hand
+  const names = P.instructorNames || {}, dflt = profDefaults(), home = k => map[k] || dflt[k] || '';
+  Object.keys(map).forEach(k => { if (!profs[k]) profs[k] = { name: names[k] || k.replace(/\b\w/g, ch => ch.toUpperCase()), n: 0, online: 0, campuses: new Set(), saved: true }; });
+  [...PROF_PICK].forEach(k => { if (!profs[k]) PROF_PICK.delete(k); });
   let list = Object.entries(profs).sort((a, b) => (b[1].online > 0) - (a[1].online > 0) || a[1].name.localeCompare(b[1].name, undefined, { numeric: true }));
   if (!list.length) return '';
-  const set = list.filter(([k]) => map[k]).length, onlineNoHome = list.filter(([k, x]) => x.online && !map[k]).length;
+  const set = list.filter(([k, x]) => home(k) && !x.saved).length, teaching = list.filter(([, x]) => !x.saved).length, onlineNoHome = list.filter(([k, x]) => x.online && !home(k)).length;
   const q = PF.q.toLowerCase();
-  const shown = list.filter(([k, x]) => (!q || x.name.toLowerCase().includes(q)) && (!PF.only || (PF.only === 'online' ? x.online : !map[k])));
-  return `<div class="stats-row" role="status">${statPill(list.length, 'professors teaching language sections')}${statPill(set, 'with a home campus', set === list.length ? 'ok' : '')}${onlineNoHome ? statPill(onlineNoHome, 'teaching online without one', 'warn') : ''}</div>`
-    + `<div class="toolbar" role="search" aria-label="Filter the professors"><div class="f"><span class="lbl" id="pfo-l">Show</span><div class="seg" role="group" aria-labelledby="pfo-l">${[['', 'All'], ['online', 'Teaching online'], ['unset', 'Not set']].map(([v, l]) => `<button type="button" data-pfo="${v}" aria-pressed="${PF.only === v}">${l}</button>`).join('')}</div></div>`
+  const shown = list.filter(([k, x]) => (!q || x.name.toLowerCase().includes(q)) && (!PF.only || (PF.only === 'online' ? x.online : PF.only === 'saved' ? x.saved : !home(k))));
+  const pickedShown = shown.filter(([k]) => PROF_PICK.has(k)).length;
+  return `<div class="stats-row" role="status">${statPill(teaching, 'professors teaching language sections')}${statPill(set, 'with a home campus', set === teaching ? 'ok' : '')}${list.length > teaching ? statPill(list.length - teaching, 'saved, not teaching this semester') : ''}${onlineNoHome ? statPill(onlineNoHome, 'teaching online without one', 'warn') : ''}</div>`
+    + `<div class="toolbar" role="search" aria-label="Filter the professors"><div class="f"><span class="lbl" id="pfo-l">Show</span><div class="seg" role="group" aria-labelledby="pfo-l">${[['', 'All'], ['online', 'Teaching online'], ['unset', 'Not set'], ['saved', 'Not teaching this semester']].map(([v, l]) => `<button type="button" data-pfo="${v}" aria-pressed="${PF.only === v}">${l}</button>`).join('')}</div></div>`
     + `<div class="f grow"><label for="pf-q">Search</label><input type="search" id="pf-q" value="${esc(PF.q)}" placeholder="Professor's name"></div></div>`
-    + `<div class="tw"><table class="t compact"><caption>${shown.length} professor${shown.length === 1 ? '' : 's'} shown${s ? ', from ' + esc(semLabel(s)) : ''}. Highlighted rows teach online with no home campus yet.</caption><thead><tr><th scope="col">Professor</th><th scope="col" class="num">Language sections</th><th scope="col" class="num">Online or no campus</th><th scope="col">Teaches on</th><th scope="col">Home campus</th></tr></thead><tbody>`
-    + (shown.map(([k, x]) => `<tr${x.online && !map[k] ? ' class="todo"' : ''}><th scope="row">${esc(x.name)}</th><td class="num">${x.n}</td><td class="num">${x.online || ''}</td><td class="small">${esc([...x.campuses].join(', '))}</td><td><select data-prof="${esc(k)}" aria-label="Home campus for ${esc(x.name)}">${opt('', 'Not set', map[k] || '')}${LOCATIONS.map(l => opt(l, l.replace(' Campus', ''), map[k] || '')).join('')}</select></td></tr>`).join('') || '<tr><td colspan="5" class="muted">No professors match.</td></tr>')
+    + (PROF_PICK.size ? '' : `<p class="small muted" style="margin:0 0 8px">Tick professors, or use ⋯ or right-click on a row, to delete them from the saved list (for example someone who no longer teaches here).</p>`)
+    + `<div class="tw"><table class="t compact"><caption>${shown.length} professor${shown.length === 1 ? '' : 's'} shown${s ? ', from ' + esc(semLabel(s)) : ''}. Highlighted rows teach online with no home campus yet.</caption><thead><tr><th scope="col" class="pick"><input type="checkbox" id="prof-all" ${shown.length && pickedShown === shown.length ? 'checked' : ''} aria-label="Select all ${shown.length} professors shown"></th><th scope="col">Professor</th><th scope="col" class="num">Language sections</th><th scope="col" class="num">Online or no campus</th><th scope="col">Teaches on</th><th scope="col">Home campus</th></tr></thead><tbody>`
+    + (shown.map(([k, x]) => `<tr class="${x.online && !home(k) ? 'todo' : ''}${PROF_PICK.has(k) ? ' picked' : ''}" data-pk="${esc(k)}"><td class="pick"><span class="pickwrap"><input type="checkbox" data-ppick="${esc(k)}" ${PROF_PICK.has(k) ? 'checked' : ''} aria-label="Select ${esc(x.name)}"><button type="button" class="rowbtn" data-pmenu="${esc(k)}" aria-haspopup="menu" aria-label="Actions for ${esc(x.name)}" title="Actions (or right-click the row)">⋯</button></span></td><th scope="row">${esc(x.name)}${x.saved ? '<div class="small muted">not teaching this semester</div>' : ''}</th><td class="num">${x.n || ''}</td><td class="num">${x.online || ''}</td><td class="small">${esc([...x.campuses].join(', '))}</td><td><select data-prof="${esc(k)}" aria-label="Home campus for ${esc(x.name)}">${opt('', dflt[k] ? `${dflt[k].replace(' Campus', '')} (where they teach)` : 'Not set', map[k] || '')}${LOCATIONS.map(l => opt(l, l.replace(' Campus', ''), map[k] || '')).join('')}</select>${!map[k] && dflt[k] ? '<div class="small muted">default from their classes</div>' : ''}</td></tr>`).join('') || '<tr><td colspan="6" class="muted">No professors match.</td></tr>')
     + `</tbody></table></div>`
-    + `<p class="small muted" style="margin:10px 0 0">Names are matched as Banner writes them. Add COM775 on Language courses for full names; COM1430 alone shortens them. ${Object.keys(map).length - set > 0 ? `${Object.keys(map).length - set} more saved from other semesters.` : ''}</p>`;
+    + `<div class="selbar float${PROF_PICK.size ? ' on' : ''}" role="status">${PROF_PICK.size ? `<b>${PROF_PICK.size} professor${PROF_PICK.size === 1 ? '' : 's'} selected</b>${PROF_PICK.size > pickedShown ? `<span class="muted small">(${PROF_PICK.size - pickedShown} hidden by the filters)</span>` : ''}<button class="btn sm" type="button" data-act="profUnpick">Clear selection</button><button class="btn sm danger" type="button" data-act="profDel">Delete selected…</button>` : ''}</div>`
+    + `<p class="small muted" style="margin:10px 0 0">Names are matched as Banner writes them. Add COM775 on Language courses for full names; COM1430 alone shortens them. </p>`;
 }
 function coursesShown() {
   const q = CF.q.toLowerCase(), k = CF.sort;
@@ -1297,25 +1364,32 @@ AFTER.courses = () => {
   document.querySelectorAll('[data-lvl]').forEach(b => b.onclick = () => { CF.level = b.dataset.lvl; keep(`[data-lvl="${CF.level}"]`); });
   document.querySelectorAll('[data-sort]').forEach(b => b.onclick = () => { const k = b.dataset.sort; CF.dir = CF.sort === k ? -CF.dir : 1; CF.sort = k; keep(`[data-sort="${k}"]`); });
   const redraw = sel => { const y = window.scrollY; show('courses', false); window.scrollTo(0, y); document.querySelector(sel)?.focus(); };
+  const cItems = crn => { const c = courses().find(y => y.CRN === crn), n = c ? `${c.SUBJ} ${c.CRSE}.${c.SEC}` : crn; return [
+    { label: PICKED.has(crn) ? 'Unselect' : 'Select', run: () => { PICKED.has(crn) ? PICKED.delete(crn) : PICKED.add(crn); redraw(`[data-cmenu="${CSS.escape(crn)}"]`); } },
+    ...(PICKED.size && !(PICKED.size === 1 && PICKED.has(crn)) ? [{ label: `Delete the ${PICKED.size} selected…`, danger: true, run: () => delCourses([...PICKED]) }] : []),
+    { label: `Delete ${n}…`, danger: true, run: () => delCourses([crn]) }]; };
+  document.querySelectorAll('[data-cmenu]').forEach(b => b.onclick = e => menuFor(b, e, cItems(b.dataset.cmenu)));
+  document.querySelectorAll('tr[data-crn]').forEach(tr => tr.oncontextmenu = e => { if (e.target.closest('select,input,a')) return; e.preventDefault(); menuFor(tr, e, cItems(tr.dataset.crn)); });
   document.querySelectorAll('[data-pick]').forEach(x => x.onchange = () => { if (x.checked) PICKED.add(x.dataset.pick); else PICKED.delete(x.dataset.pick); redraw(`[data-pick="${CSS.escape(x.dataset.pick)}"]`); });
   if ($('pick-all')) $('pick-all').onchange = () => { coursesShown().forEach(c => $('pick-all').checked ? PICKED.add(c.CRN) : PICKED.delete(c.CRN)); redraw('#pick-all'); };
   document.querySelectorAll('[data-loc]').forEach(x => x.onchange = () => { const c = courses().find(y => y.CRN === x.dataset.loc); c.LOCATION = x.value; c.LOCATION_SET = true; delete c.LOCATION_FROM; changed(false); const sc = window.scrollY; show('courses', false); window.scrollTo(0, sc); document.querySelector(`[data-loc="${CSS.escape(c.CRN)}"]`)?.focus(); });
 };
 ACTS.unpick = () => { PICKED.clear(); const y = window.scrollY; show('courses', false); window.scrollTo(0, y); };
-ACTS.delPicked = () => {
-  const s = sem(), list = courses().filter(c => PICKED.has(c.CRN)); if (!list.length) return;
+ACTS.delPicked = () => delCourses([...PICKED]);
+function delCourses(crns) {
+  const s = sem(), pick = new Set(crns), list = courses().filter(c => pick.has(c.CRN)); if (!list.length) return;
   const n = list.length, word = `${n} class${n === 1 ? '' : 'es'}`;
   pane(`Delete ${word}?`, semLabel(s), `<p class="lede" style="margin:0 0 12px">These are removed from ${esc(semLabel(s))}, with their room assignments. Importing COM1430 again brings them back. A copy of the plan from before is kept on the Plan file page.</p>`
     + `<ul class="del-list">${list.map(c => `<li><b>${esc(c.SUBJ)} ${esc(c.CRSE)}.${esc(c.SEC)}</b> · CRN ${esc(c.CRN)} · ${esc(c.TITLE)}${c.INSTRUCTOR ? ' · ' + esc(c.INSTRUCTOR) : ''}</li>`).join('')}</ul>`,
     `<span></span><div class="row"><button class="btn" type="button" data-close>Cancel</button><button class="btn danger" type="button" id="del-go">Delete ${word}</button></div>`);
-  $('dlg').querySelector('[data-close]')?.focus();
+  $('dlg').querySelector('.row [data-close]')?.focus();
   $('del-go').onclick = async () => {
     await backupLocal(`before deleting ${word}`);
-    const l = P.courseLists[s.id]; l.rows = l.rows.filter(c => !PICKED.has(c.CRN));
-    const R = roomsOf(s.id); PICKED.forEach(k => { delete R.assign[k]; delete R.finalsOverrides[k]; });
-    PICKED.clear(); $('dlg').close(); changed(); toast(`${word.charAt(0).toUpperCase() + word.slice(1)} deleted.`);
+    const l = P.courseLists[s.id]; l.rows = l.rows.filter(c => !pick.has(c.CRN));
+    const R = roomsOf(s.id); pick.forEach(k => { delete R.assign[k]; delete R.finalsOverrides[k]; PICKED.delete(k); });
+    $('dlg').close(); changed(); toast(`${word.charAt(0).toUpperCase() + word.slice(1)} deleted.`);
   };
-};
+}
 ACTS.dlDist = () => { const s = sem(); download(`class-distribution${s ? '-' + s.id : ''}.csv`, distributionCSV(), 'text/csv'); };
 function distributionCSV() {
   const cell = v => { v = v == null ? '' : String(v); return /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v; };
