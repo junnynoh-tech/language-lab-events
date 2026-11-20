@@ -165,8 +165,8 @@ input[readonly] { background: var(--chip); }
 code { font: 500 14px ui-monospace, Menlo, Consolas, monospace; background: var(--chip); border-radius: 4px; padding: 1px 6px; }
 
 /* one Lab console, three areas (Events | Semester plan | Tutorials): same rail on every page */
-.areas { display: grid; grid-template-columns: repeat(3, auto); gap: 4px; padding: 4px; margin: 0 8px; border-radius: 12px; background: var(--chip); }
-.areas a { text-align: center; padding: 8px 6px; border-radius: 9px; font-weight: 600; font-size: 15px; text-decoration: none; color: var(--text); }
+.areas { display: grid; grid-template-columns: auto 1fr auto; gap: 2px; padding: 4px; margin: 0 2px; border-radius: 12px; background: var(--chip); }
+.areas a { text-align: center; padding: 7px 5px; border-radius: 9px; font-weight: 600; font-size: 13px; text-decoration: none; color: var(--text); }
 .areas a:hover { background: var(--surface); }
 .areas a[aria-current="page"] { background: var(--accent); color: var(--accent-ink); }
 @media (max-width: 860px) { .areas { grid-column: 1 / -1; margin: 0; } }
@@ -452,7 +452,7 @@ function vLibrary(kind) {
 function vSettings() {
   return header('Setup', 'Settings', 'Looking around needs nothing. To save from this console, connect a GitHub key once on this computer.')
     + `<ol class="howto"><li><span>Open <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub → new fine-grained token ↗</a>. Name it “Lab console”.</span></li>
-      <li><span><b>Repository access:</b> Only select repositories → <code>${REPO}</code> and <code>${REQ_REPO}</code> (requests).</span></li>
+      <li><span><b>Repository access:</b> Only select repositories → <code>${REPO}</code>, <code>${REQ_REPO}</code> (requests) and <code>lab-console-data</code> (the shared Semester plan). If a repository isn't offered, make a <a href="https://github.com/settings/tokens/new?scopes=repo&description=Lab%20console" target="_blank" rel="noopener">classic token ↗</a> with <b>repo</b> ticked instead.</span></li>
       <li><span><b>Permissions:</b> Repository → <b>Contents: Read and write</b>, and <b>Issues: Read and write</b> (closes the request emails when you decide). Nothing else.</span></li>
       <li><span>Generate it, copy it, paste it below. It stays in this browser only and is never put in a file.</span></li></ol>
       <fieldset style="max-width:620px"><legend>GitHub key</legend><div class="f"><label for="tok">Key</label><input type="password" id="tok" autocomplete="off" spellcheck="false" placeholder="github_pat_…" value="${token ? '••••••••' : ''}"></div>
