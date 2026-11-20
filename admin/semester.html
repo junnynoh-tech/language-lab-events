@@ -406,6 +406,32 @@ tr:hover .rowbtn, .rowbtn:focus-visible, .rowbtn[aria-expanded="true"] { border-
 .bar-n[data-tip] { border-radius: 4px; }
 .bar-l .fold { display: block; font-weight: 400; font-size: 12px; }
 
+/* campus colors (faded rows on Language courses), 2026-11-20 */
+:root { --c-cmg: #8a3f7e; --c-blr: #445e80; }
+tr.cp-gvl { --cc: var(--c-gvl); } tr.cp-dah { --cc: var(--c-dah); } tr.cp-ocn { --cc: var(--c-ocn); } tr.cp-cmg { --cc: var(--c-cmg); } tr.cp-blr { --cc: var(--c-blr); }
+table.t tr[class*="cp-"] td { background: color-mix(in srgb, var(--cc) 9%, var(--surface)); }
+table.t tr[class*="cp-"] td:first-child { box-shadow: inset 4px 0 0 var(--cc); }
+table.t tr[class*="cp-"].picked td { background: color-mix(in srgb, var(--cc) 20%, var(--surface)); }
+.campus-key { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0 0 8px; color: var(--sub); }
+.campus-key span { display: inline-flex; align-items: center; gap: 6px; }
+.campus-key i { width: 14px; height: 14px; border-radius: 3px; display: inline-block; }
+.campus-key .cp-gvl i { background: color-mix(in srgb, var(--c-gvl) 30%, var(--surface)); border-left: 4px solid var(--c-gvl); }
+.campus-key .cp-dah i { background: color-mix(in srgb, var(--c-dah) 30%, var(--surface)); border-left: 4px solid var(--c-dah); }
+.campus-key .cp-ocn i { background: color-mix(in srgb, var(--c-ocn) 30%, var(--surface)); border-left: 4px solid var(--c-ocn); }
+.campus-key .cp-cmg i { background: color-mix(in srgb, var(--c-cmg) 30%, var(--surface)); border-left: 4px solid var(--c-cmg); }
+.campus-key .cp-blr i { background: color-mix(in srgb, var(--c-blr) 30%, var(--surface)); border-left: 4px solid var(--c-blr); }
+.campus-key .flagkey i { background: var(--bad-bg); }
+@media (prefers-color-scheme: dark) { :root:not([data-mode="light"]) table.t tr[class*="cp-"] td { background: color-mix(in srgb, var(--cc) 22%, var(--surface)); } }
+:root[data-mode="dark"] table.t tr[class*="cp-"] td { background: color-mix(in srgb, var(--cc) 22%, var(--surface)); }
+
+/* Outputs for D2L (2026-11-20) */
+.howto-steps { list-style: none; counter-reset: st; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 0 0 14px; padding: 0; }
+@media (max-width: 760px) { .howto-steps { grid-template-columns: 1fr; } }
+.howto-steps li { counter-increment: st; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px 10px 44px; position: relative; font-size: 15px; }
+.howto-steps li::before { content: counter(st); position: absolute; left: 12px; top: 10px; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-weight: 700; font-size: 13px; }
+.preview { max-height: 50vh; overflow: auto; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px; font: 13px/1.45 ui-monospace, Menlo, Consolas, monospace; white-space: pre; }
+table.t tr.todo th { background: var(--warn-bg); }
+
 </style>
 </head>
 <body>
@@ -521,7 +547,7 @@ function standardHolidays(type, y) {
 
 /* ---------- the plan ---------- */
 const KIND = 'ung-language-lab-semester-plan';
-const blankPlan = () => ({ kind: KIND, version: 1, savedAt: '', semesters: [], activeSemesterId: null, courseLists: {}, rooms: {}, labCalendars: {}, instructorCampus: {} });
+const blankPlan = () => ({ kind: KIND, version: 1, savedAt: '', semesters: [], activeSemesterId: null, courseLists: {}, rooms: {}, labCalendars: {}, instructorCampus: {}, labTemplates: [] });
 let P = blankPlan();
 const F = { handle: null, name: '', lastModified: 0, dirty: false, supported: 'showOpenFilePicker' in window };
 let VIEW = 'overview';
@@ -799,7 +825,7 @@ function applyInstructorCampus(semId = P.activeSemesterId) {
   const map = P.instructorCampus ||= {}, dflt = profDefaults(semId); let n = 0;
   (P.courseLists[semId]?.rows || []).forEach(c => {
     if (c.LOCATION_SET || (c.LOCATION && c.LOCATION_FROM !== 'instructor')) return;
-    const k = profKey(c.INSTRUCTOR), home = map[k] || dflt[k] || '';
+    const k = profKey(c.INSTRUCTOR), home = (P.hiddenProfs || {})[k] ? '' : map[k] || dflt[k] || '';
     if (home) { if (c.LOCATION !== home) n++; c.LOCATION = home; c.LOCATION_FROM = 'instructor'; }
     else if (c.LOCATION_FROM === 'instructor') { c.LOCATION = ''; delete c.LOCATION_FROM; }
   });
@@ -886,8 +912,8 @@ function autoFill(s) {
 }
 /* Copy another semester's lab setup. Placements keep their week number (Lab 2 in week 4 stays in week 4); a due date
    that now lands on a holiday, break or finals moves to the next open week when moveBlocked is on, else it is flagged. */
-function planCopy(fromId, to, opt) {
-  const src = P.labCalendars[fromId], fromSem = semById(fromId);
+function planCopy(fromId, to, opt) { // fromId: a semester id, or a template object { name, cal }
+  const T = fromId && typeof fromId === 'object' ? fromId : null, src = T ? T.cal : P.labCalendars[fromId], fromSem = T ? null : semById(fromId);
   const dst = clone(labCal(to)), rep = { classes: 0, types: 0, placed: 0, moved: [], flagged: [], dropped: [], skipped: [] };
   if (!src) return { dst, rep };
   if (opt.classes) {
@@ -922,7 +948,7 @@ function planCopy(fromId, to, opt) {
     });
     P.labCalendars[to.id] = saved;
   }
-  rep.from = semLabel(fromSem);
+  rep.from = T ? `the template "${T.name}"` : semLabel(fromSem);
   return { dst, rep };
 }
 /* lab-due-dates.json: the shape the Lab Hub's Grade Due Dates page reads (unchanged from the generator) */
@@ -1215,7 +1241,7 @@ VIEWS.courses = () => {
   const pickedShown = shown.filter(c => PICKED.has(c.CRN)).length, allPicked = shown.length && pickedShown === shown.length;
   const rows = shown.map(c => {
     const flag = isLang(c.SUBJ) && !c.LOCATION, name = `${c.SUBJ} ${c.CRSE}.${c.SEC}`, on = PICKED.has(c.CRN);
-    return `<tr class="${flag ? 'flag' : ''}${on ? ' picked' : ''}" data-crn="${esc(c.CRN)}"><td class="pick"><span class="pickwrap"><input type="checkbox" data-pick="${esc(c.CRN)}" ${on ? 'checked' : ''} aria-label="Select ${esc(name)}, CRN ${esc(c.CRN)}"><button type="button" class="rowbtn" data-cmenu="${esc(c.CRN)}" aria-haspopup="menu" aria-label="Actions for ${esc(name)}" title="Actions (or right-click the row)">⋯</button></span></td><td>${esc(c.CRN)}</td><td class="nowrap">${isLang(c.SUBJ) ? langTag(c.SUBJ) : esc(c.SUBJ)}</td><td>${esc(c.CRSE)}</td><td>${esc(c.SEC)}</td>`
+    return `<tr class="${flag ? 'flag' : campusCls(c.LOCATION)}${on ? ' picked' : ''}" data-crn="${esc(c.CRN)}"><td class="pick"><span class="pickwrap"><input type="checkbox" data-pick="${esc(c.CRN)}" ${on ? 'checked' : ''} aria-label="Select ${esc(name)}, CRN ${esc(c.CRN)}"><button type="button" class="rowbtn" data-cmenu="${esc(c.CRN)}" aria-haspopup="menu" aria-label="Actions for ${esc(name)}" title="Actions (or right-click the row)">⋯</button></span></td><td>${esc(c.CRN)}</td><td class="nowrap">${isLang(c.SUBJ) ? langTag(c.SUBJ) : esc(c.SUBJ)}</td><td>${esc(c.CRSE)}</td><td>${esc(c.SEC)}</td>`
       + `<td>${esc(BANNER_CMP[c.CMP] || c.CMP || '')}</td><td class="num">${esc(c.CRED)}</td><td>${esc(c.TITLE)}</td><td class="nowrap">${esc(c.DAYS || 'TBA')}</td>`
       + `<td class="nowrap">${c.TIME_FROM ? esc(fmt12(c.TIME_FROM) + '–' + fmt12(c.TIME_TO)) : 'TBA'}</td><td>${esc(c.INSTRUCTOR)}</td><td>${esc(c.BUILDING)}</td><td>${esc(c.ROOM)}</td>`
       + `<td><select data-loc="${esc(c.CRN)}" aria-label="Campus for ${esc(name)}">${opt('', flag ? 'Choose a campus' : '—', c.LOCATION)}${LOCATIONS.map(l => opt(l, l.replace(' Campus', ''), c.LOCATION)).join('')}</select>${c.LOCATION_FROM === 'instructor' ? '<div class="small muted">from the professor</div>' : c.LOCATION_SET ? '<div class="small muted">chosen by hand</div>' : ''}</td>`
@@ -1232,6 +1258,7 @@ VIEWS.courses = () => {
     + (outBudget.length ? `<p class="note warn" role="status">${outBudget.length} 1001–1002 section${outBudget.length > 1 ? 's are' : ' is'} at ${esc([...new Set(outBudget.map(c => campusName(c.LOCATION)))].join(', '))}, which isn't a budget campus, so ${outBudget.length > 1 ? 'they aren\'t' : 'it isn\'t'} in the budget numbers. Move ${outBudget.length > 1 ? 'them' : 'it'} to Dahlonega, Gainesville or Oconee if ${outBudget.length > 1 ? 'they' : 'it'} should count (select them, then right-click or use the bar).</p>` : '')
     + chartsHTML(shown)
     + (PICKED.size ? '' : `<p class="small muted" style="margin:0 0 8px">Tick classes, or use ⋯ or right-click on a row, to delete them (for example cancelled sections or ones the Lab doesn't serve).</p>`)
+    + campusKey()
     + `<div class="tw"><table class="t compact"><caption>${shown.length} section${shown.length === 1 ? '' : 's'} shown${CF.level === 'all' ? '' : ` (${lvlText()})`}. Select a column heading to sort.</caption><thead><tr><th scope="col" class="pick"><input type="checkbox" id="pick-all" ${allPicked ? 'checked' : ''} aria-label="Select all ${shown.length} sections shown"></th>${COLS.map(th).join('')}</tr></thead>`
     + `<tbody>${rows || `<tr><td colspan="${COLS.length + 1}" class="muted">No sections match these filters.</td></tr>`}</tbody></table></div>`
     + `<div class="selbar float${PICKED.size ? ' on' : ''}" role="status">${PICKED.size ? `<b>${PICKED.size} class${PICKED.size === 1 ? '' : 'es'} selected</b>${PICKED.size > pickedShown ? `<span class="muted small">(${PICKED.size - pickedShown} hidden by the filters)</span>` : ''}<span class="row" style="gap:6px">${sel('pick-loc', '', LOCATIONS.map(l => [l, l.replace(' Campus', '')]), 'Move to campus…', 'aria-label="Campus for the selected sections"')}<button class="btn sm" type="button" id="pick-move">Move</button></span><button class="btn sm" type="button" data-act="unpick">Clear selection</button><button class="btn sm danger" type="button" data-act="delPicked">Delete selected…</button>` : ''}</div>`
@@ -1254,6 +1281,7 @@ AFTER.profs = () => {
     { label: `Delete ${nm}…`, danger: true, run: () => delProfs([k]) }]; };
   document.querySelectorAll('[data-pmenu]').forEach(b => b.onclick = e => menuFor(b, e, pItems(b.dataset.pmenu)));
   document.querySelectorAll('tr[data-pk]').forEach(tr => tr.oncontextmenu = e => { if (e.target.closest('select,input,a')) return; e.preventDefault(); menuFor(tr, e, pItems(tr.dataset.pk)); });
+  document.querySelectorAll('[data-unhide]').forEach(b => b.onclick = () => { delete (P.hiddenProfs || {})[b.dataset.unhide]; applyInstructorCampus(); changed(false); keep(); toast('Brought back.'); });
   document.querySelectorAll('[data-ppick]').forEach(x => x.onchange = () => { if (x.checked) PROF_PICK.add(x.dataset.ppick); else PROF_PICK.delete(x.dataset.ppick); keep(`[data-ppick="${CSS.escape(x.dataset.ppick)}"]`); });
   if ($('prof-all')) $('prof-all').onchange = () => { const on = $('prof-all').checked; document.querySelectorAll('[data-ppick]').forEach(x => on ? PROF_PICK.add(x.dataset.ppick) : PROF_PICK.delete(x.dataset.ppick)); keep('#prof-all'); };
   document.querySelectorAll('[data-prof]').forEach(x => x.onchange = () => { const map = P.instructorCampus ||= {}, nm = P.instructorNames ||= {}; if (x.value) { map[x.dataset.prof] = x.value; nm[x.dataset.prof] = x.closest('tr').querySelector('th').firstChild.textContent; } else delete map[x.dataset.prof];
@@ -1282,14 +1310,14 @@ function delProfs(keys) {
   if (!keys.length) return;
   const names = P.instructorNames || {}, teach = new Set(courses().filter(c => c.INSTRUCTOR).map(c => profKey(c.INSTRUCTOR)));
   const label = k => names[k] || courses().find(c => profKey(c.INSTRUCTOR) === k)?.INSTRUCTOR || k;
-  const n = keys.length, word = `${n} professor${n === 1 ? '' : 's'}`, still = keys.filter(k => teach.has(k)).length;
-  pane(`Delete ${word}?`, 'Professors\' campuses', `<p class="lede" style="margin:0 0 12px">Their saved home campus is removed from the plan, so their online sections no longer count toward it.${still ? ` ${still === 1 ? 'One of them teaches' : `${still} of them teach`} this semester, so Banner keeps them on the list with no home campus.` : ''} A copy of the plan from before is kept on the Plan file page.</p>`
+  const n = keys.length, word = `${n} professor${n === 1 ? '' : 's'}`;
+  pane(`Delete ${word}?`, 'Professors\' campuses', `<p class="lede" style="margin:0 0 12px">They're removed from this list with their home campus, so their online sections no longer get a campus from them. Their classes stay on Language courses. You can bring them back with "Show deleted professors" at the bottom of the list.</p>`
     + `<ul class="del-list">${keys.map(k => `<li><b>${esc(label(k))}</b>${(P.instructorCampus || {})[k] ? ' · ' + esc(P.instructorCampus[k].replace(' Campus', '')) : ' · no campus set'}${teach.has(k) ? ' · teaches this semester' : ''}</li>`).join('')}</ul>`,
     `<span></span><div class="row"><button class="btn" type="button" data-close>Cancel</button><button class="btn danger" type="button" id="pdel-go">Delete ${word}</button></div>`);
   $('dlg').querySelector('.row [data-close]')?.focus();
   $('pdel-go').onclick = async () => {
     await backupLocal(`before deleting ${word}`);
-    keys.forEach(k => { delete (P.instructorCampus || {})[k]; delete (P.instructorNames || {})[k]; PROF_PICK.delete(k); });
+    const hid = P.hiddenProfs ||= {}; keys.forEach(k => { hid[k] = label(k); delete (P.instructorCampus || {})[k]; delete (P.instructorNames || {})[k]; PROF_PICK.delete(k); });
     applyInstructorCampus(); $('dlg').close(); changed(); toast(`${word.charAt(0).toUpperCase() + word.slice(1)} deleted.`);
   };
 }
@@ -1298,9 +1326,11 @@ function profCard(s) {
   const profs = {}; langRows.forEach(c => { const k = profKey(c.INSTRUCTOR), x = profs[k] ||= { name: c.INSTRUCTOR, n: 0, online: 0, campuses: new Set() }; x.n++; if (!AUTO_LOCATION[c.CMP] && !c.LOCATION_SET) x.online++; else if (c.LOCATION) x.campuses.add(campusName(c.LOCATION)); }); // online = no Banner campus and nobody chose one by hand
   const names = P.instructorNames || {}, dflt = profDefaults(), home = k => map[k] || dflt[k] || '';
   Object.keys(map).forEach(k => { if (!profs[k]) profs[k] = { name: names[k] || k.replace(/\b\w/g, ch => ch.toUpperCase()), n: 0, online: 0, campuses: new Set(), saved: true }; });
+  const hidden = P.hiddenProfs || {}; Object.keys(hidden).forEach(k => delete profs[k]);
   [...PROF_PICK].forEach(k => { if (!profs[k]) PROF_PICK.delete(k); });
   let list = Object.entries(profs).sort((a, b) => (b[1].online > 0) - (a[1].online > 0) || a[1].name.localeCompare(b[1].name, undefined, { numeric: true }));
-  if (!list.length) return '';
+  const restore = Object.keys(hidden).length ? `<details class="card" style="margin-top:14px"><summary><b>Show deleted professors</b> <span class="muted small">(${Object.keys(hidden).length})</span></summary><ul class="issues" style="margin-top:10px">${Object.entries(hidden).sort((a, b) => a[1].localeCompare(b[1])).map(([k, nm]) => `<li><span>${esc(nm)}</span><span></span><button class="btn sm" type="button" data-unhide="${esc(k)}">Bring back</button></li>`).join('')}</ul></details>` : '';
+  if (!list.length) return restore;
   const set = list.filter(([k, x]) => home(k) && !x.saved).length, teaching = list.filter(([, x]) => !x.saved).length, onlineNoHome = list.filter(([k, x]) => x.online && !home(k)).length;
   const q = PF.q.toLowerCase();
   const shown = list.filter(([k, x]) => (!q || x.name.toLowerCase().includes(q)) && (!PF.only || (PF.only === 'online' ? x.online : PF.only === 'saved' ? x.saved : !home(k))));
@@ -1313,8 +1343,12 @@ function profCard(s) {
     + (shown.map(([k, x]) => `<tr class="${x.online && !home(k) ? 'todo' : ''}${PROF_PICK.has(k) ? ' picked' : ''}" data-pk="${esc(k)}"><td class="pick"><span class="pickwrap"><input type="checkbox" data-ppick="${esc(k)}" ${PROF_PICK.has(k) ? 'checked' : ''} aria-label="Select ${esc(x.name)}"><button type="button" class="rowbtn" data-pmenu="${esc(k)}" aria-haspopup="menu" aria-label="Actions for ${esc(x.name)}" title="Actions (or right-click the row)">⋯</button></span></td><th scope="row">${esc(x.name)}${x.saved ? '<div class="small muted">not teaching this semester</div>' : ''}</th><td class="num">${x.n || ''}</td><td class="num">${x.online || ''}</td><td class="small">${esc([...x.campuses].join(', '))}</td><td><select data-prof="${esc(k)}" aria-label="Home campus for ${esc(x.name)}">${opt('', dflt[k] ? `${dflt[k].replace(' Campus', '')} (where they teach)` : 'Not set', map[k] || '')}${LOCATIONS.map(l => opt(l, l.replace(' Campus', ''), map[k] || '')).join('')}</select>${!map[k] && dflt[k] ? '<div class="small muted">default from their classes</div>' : ''}</td></tr>`).join('') || '<tr><td colspan="6" class="muted">No professors match.</td></tr>')
     + `</tbody></table></div>`
     + `<div class="selbar float${PROF_PICK.size ? ' on' : ''}" role="status">${PROF_PICK.size ? `<b>${PROF_PICK.size} professor${PROF_PICK.size === 1 ? '' : 's'} selected</b>${PROF_PICK.size > pickedShown ? `<span class="muted small">(${PROF_PICK.size - pickedShown} hidden by the filters)</span>` : ''}<button class="btn sm" type="button" data-act="profUnpick">Clear selection</button><button class="btn sm danger" type="button" data-act="profDel">Delete selected…</button>` : ''}</div>`
-    + `<p class="small muted" style="margin:10px 0 0">Names are matched as Banner writes them. Add COM775 on Language courses for full names; COM1430 alone shortens them. </p>`;
+    + restore + `<p class="small muted" style="margin:10px 0 0">Names are matched as Banner writes them. Add COM775 on Language courses for full names; COM1430 alone shortens them. </p>`;
 }
+/* faded campus colors on table rows (the Campus column says it in words too) */
+const CAMPUS_CLS = { Gainesville: 'cp-gvl', Dahlonega: 'cp-dah', Oconee: 'cp-ocn', Cumming: 'cp-cmg', 'Blue Ridge': 'cp-blr' };
+const campusCls = loc => CAMPUS_CLS[campusName(loc)] || '';
+const campusKey = () => `<p class="campus-key small" aria-hidden="true">${Object.entries(CAMPUS_CLS).map(([n, c]) => `<span class="${c}"><i></i>${n}</span>`).join('')}<span class="flagkey"><i></i>Needs a campus</span></p>`;
 const lvlText = () => CF.level === '1001' || CF.level === '1002' ? CF.level : '1001–1002';
 function coursesShown() {
   const q = CF.q.toLowerCase(), k = CF.sort;
@@ -1568,7 +1602,7 @@ VIEWS.labs = () => {
     + `<li class="${pl.length && !emptyCls && !badPl ? 'ok' : pl.length ? 'warn' : 'todo'}"><a href="#lc-3"><b>3</b> Due weeks</a><span>${pl.length} due date${pl.length === 1 ? '' : 's'}${emptyCls ? ` · ${emptyCls} class${emptyCls > 1 ? 'es' : ''} empty` : ''}${badPl ? ` · ${badPl} on a no-class day` : ''}</span></li>`
     + `<li class="${pl.length ? 'ok' : 'todo'}"><a href="#lc-4"><b>4</b> Share</a><span>proposal and lab-due-dates.json</span></li></ol>`;
   return head(semLabel(s), 'Lab calendar', 'Which classes have labs, when they are due, and which week each lab is due. Lab Hub pages read the result (lab-due-dates.json).',
-    (prev ? `<button class="btn primary" type="button" data-act="copyLabs" data-arg="${esc(prev.id)}">Copy from ${esc(semLabel(prev))}…</button>` : '') + `<button class="btn" type="button" data-act="copyLabs" data-arg="">Copy from another semester…</button>`)
+    `<button class="btn primary" type="button" data-act="useTemplate">Start from a template or semester…</button><button class="btn" type="button" data-act="importExcel">Import the Automatic Calendar (Excel)…</button><button class="btn" type="button" data-act="templates">Templates…</button>`)
     + progress
     + ((b => b.length ? issueList(b) : '')(issues().filter(i => i.view === 'labs' && i.level === 'bad')))
     + `<div class="card" id="lc-1"><h2><span class="step">1</span>Classes with labs</h2>${sess}${pick}${fromCourses.length ? `<p class="small" style="margin:10px 0 0"><button class="btn sm" type="button" data-act="clsFromCourses">Match the imported courses</button> <span class="muted">${esc(fromCourses.join(', '))}</span></p>` : ''}</div>`
@@ -1672,18 +1706,87 @@ ACTS.addType = () => {
 ACTS.rmType = id => { const s = sem(), lc = labCal(s), l = lc.labTypes.find(x => x.id === id), n = Object.values(lc.placements).filter(v => v.includes(id)).length; if (!confirm(`Remove ${l.label}${n ? ` and its ${n} placement${n > 1 ? 's' : ''}` : ''}?`)) return; lc.labTypes = lc.labTypes.filter(x => x.id !== id); Object.keys(lc.placements).forEach(k => { lc.placements[k] = lc.placements[k].filter(x => x !== id); if (!lc.placements[k].length) delete lc.placements[k]; }); changed(); };
 ACTS.autoFill = () => { const s = sem(); if (Object.keys(labCal(s).placements).length && !confirm('Auto-fill adds labs to weeks that are still empty for each class, one per week from week 2, skipping holidays, breaks and finals. Continue?')) return; autoFill(s); changed(); toast('Auto-filled. Check the weeks before sharing.'); };
 ACTS.clearGrid = () => { const s = sem(); if (!confirm('Remove every lab from the weeks? Classes, due days and the lab list stay.')) return; labCal(s).placements = {}; changed(); };
+ACTS.useTemplate = () => ACTS.copyLabs('');
+/* lab calendar templates: kept in the plan (so every coordinator sees them), saved from any semester, applied by week number */
+ACTS.templates = () => {
+  const s = sem(), tpls = P.labTemplates ||= [], lc = labCal(s), has = offered(s).length;
+  const list = tpls.length ? `<ul class="issues">${tpls.map(t => { const n = Object.values(t.cal.classesOffered || {}).filter(Boolean).length, pl = Object.values(t.cal.placements || {}).reduce((a, v) => a + v.length, 0);
+    return `<li><span><b>${esc(t.name)}</b><span class="small muted"> · ${TYPE_LABEL[t.type] || ''} · ${n} classes, ${pl} due dates · saved ${esc(fmtMD(t.savedAt.slice(0, 10)))}${t.from ? ' from ' + esc(t.from) : ''}</span></span><span class="row" style="gap:6px"><button class="btn sm primary" type="button" data-tuse="${esc(t.id)}">Use</button><button class="btn sm" type="button" data-tdl="${esc(t.id)}">Download</button><button class="btn sm danger" type="button" data-tdel="${esc(t.id)}">Delete</button></span></li>`; }).join('')}</ul>`
+    : '<p class="muted">No templates yet.</p>';
+  pane('Lab calendar templates', semLabel(s), `<p class="lede" style="margin:0 0 12px">A template keeps the classes, due days and times, the list of labs and workshops, and the due week of each lab (by week number). It's saved in the plan, so every coordinator can use it. Using one fills ${esc(semLabel(s))} and moves any due date that lands on a holiday, break or finals.</p>`
+    + list
+    + `<fieldset style="margin-top:14px"><legend>Save ${esc(semLabel(s))} as a template</legend>${has ? `<div class="row" style="align-items:end">${fld('t-nm', 'Name', `<input type="text" id="t-nm" value="${esc(`${TYPE_LABEL[s.type]} labs (from ${semLabel(s)})`)}">`)}<button class="btn primary" type="button" id="t-save">Save template</button></div>` : '<p class="muted small" style="margin:0">Choose classes and place labs first, or import the Automatic Calendar.</p>'}</fieldset>`
+    + `<fieldset><legend>Upload a template file</legend><p class="small muted" style="margin:0 0 6px">A .json file someone downloaded from this list.</p><input type="file" id="t-up" accept=".json" aria-label="Choose a template file"></fieldset>`,
+    `<span></span><button class="btn" type="button" data-close>Close</button>`);
+  const again = () => ACTS.templates();
+  if ($('t-save')) $('t-save').onclick = () => { const nm = val('t-nm') || 'Lab template'; const cur = labCal(s);
+    tpls.push({ id: 't' + Date.now().toString(36), name: nm, type: s.type, from: semLabel(s), savedAt: new Date().toISOString(), savedBy: meName(),
+      cal: clone({ classesOffered: cur.classesOffered, dueDayTimes: cur.dueDayTimes, labTypes: cur.labTypes, placements: cur.placements, sessionToggles: cur.sessionToggles }) });
+    changed(false); toast(`Template "${nm}" saved.`); again(); };
+  $('dlg').querySelectorAll('[data-tuse]').forEach(b => b.onclick = () => { $('dlg').close(); ACTS.copyLabs('tpl:' + b.dataset.tuse); });
+  $('dlg').querySelectorAll('[data-tdl]').forEach(b => b.onclick = () => { const t = tpls.find(x => x.id === b.dataset.tdl); download(`lab-template-${t.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.json`, JSON.stringify({ kind: 'ung-language-lab-lab-template', ...t }, null, 2)); });
+  $('dlg').querySelectorAll('[data-tdel]').forEach(b => b.onclick = () => { const t = tpls.find(x => x.id === b.dataset.tdel); if (!confirm(`Delete the template "${t.name}"? Semesters made from it keep their lab calendars.`)) return; P.labTemplates = tpls.filter(x => x !== t); changed(false); again(); });
+  $('t-up').onchange = async e => { try { const o = JSON.parse(await readFile(e.target.files[0])); if (o.kind !== 'ung-language-lab-lab-template' || !o.cal) throw new Error('That file is not a lab calendar template.');
+    delete o.kind; o.id = 't' + Date.now().toString(36); tpls.push(o); changed(false); toast(`Template "${o.name}" added.`); again(); } catch (er) { toast(er.message, 6000); } };
+};
+/* the Automatic Calendar workbook the Lab Hub Generator used: its "Due Date VIEWER" sheet (Class, Due Day, Lab 1..N dates) */
+ACTS.importExcel = () => {
+  const s = sem(); if (!s) return;
+  const inp = document.createElement('input'); inp.type = 'file'; inp.accept = '.xlsx,.xls'; inp.className = 'sr'; inp.setAttribute('aria-label', 'Choose the Automatic Calendar workbook'); document.body.append(inp);
+  inp.onchange = async () => { const f = inp.files[0]; inp.remove(); if (!f) return;
+    try {
+      if (!window.XLSX) await new Promise((res, rej) => { const sc = document.createElement('script'); sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'; sc.onload = res; sc.onerror = () => rej(new Error('The Excel reader did not load (offline?).')); document.head.append(sc); });
+      const wb = XLSX.read(new Uint8Array(await f.arrayBuffer()), { type: 'array', cellDates: true });
+      await backupLocal('before importing the Automatic Calendar');
+      const r = importAutoCalendar(wb, s); changed();
+      pane('Automatic Calendar imported', semLabel(s), `<ul class="report"><li class="ok">${r.classes} classes${r.workshops ? ` and ${r.workshops} workshop row${r.workshops > 1 ? 's' : ''}` : ''}, ${r.placed} due dates placed.</li>${r.outside ? `<li class="warn">${r.outside} date${r.outside > 1 ? 's' : ''} fell outside ${esc(semLabel(s))}'s weeks. Check the term dates.</li>` : ''}${r.unmatched.length ? `<li class="warn">Not a lab class: ${esc(r.unmatched.join(', '))}</li>` : ''}</ul><p class="small muted">Check the weeks below. To reuse this next term, save it as a template.</p>`,
+        `<span></span><div class="row"><button class="btn" type="button" data-close>Check the weeks</button><button class="btn primary" type="button" id="x-tpl">Save as a template…</button></div>`);
+      $('x-tpl').onclick = () => ACTS.templates();
+    } catch (e) { toast('Could not read the workbook: ' + e.message, 7000); }
+  };
+  inp.click();
+};
+function importAutoCalendar(wb, s) {
+  const sheet = wb.SheetNames.find(n => /due\s*date.*view/i.test(n)); if (!sheet) throw new Error('No "Due Date VIEWER" sheet in this workbook.');
+  const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheet], { header: 1, defval: '' });
+  const hi = rows.findIndex(r => String(r[0] || '').trim().toLowerCase() === 'class'); if (hi < 0) throw new Error('No "Class" header row on Due Date VIEWER.');
+  const H = rows[hi].map(h => String(h || '').trim().toLowerCase()), iDay = H.indexOf('day'), iTime = H.indexOf('time'), iDD = H.indexOf('due day');
+  const DOW = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], nDay = v => DOW.find(d => d.toLowerCase() === String(v || '').trim().toLowerCase()) || '';
+  const nTime = v => { const m = String(v || '').trim().match(/^(\d{1,2}):(\d{2})\s*([ap])\.?\s*m\.?$/i); return m ? `${parseInt(m[1])}:${m[2]} ${m[3].toUpperCase()}M` : String(v || '').trim(); };
+  const dstr = v => { if (!(v instanceof Date) || isNaN(v)) return ''; const d = new Date(v.getTime() + 12 * 3600e3); return iso(d); };
+  const labCols = []; H.forEach((h, i) => { const m = h.match(/^lab\s*(\d+)$/); if (m) labCols.push({ n: +m[1], col: i }); });
+  if (!labCols.length) throw new Error('Found the Class row but no "Lab N" columns.');
+  const lc = labCal(s), weeks = weeksOf(s), sessions = activeSessions(s), out = { classes: 0, workshops: 0, placed: 0, outside: 0, unmatched: [] };
+  for (let r = hi + 1; r < rows.length; r++) {
+    const raw = String(rows[r][0] || '').trim(); if (!raw) break;
+    const m = raw.match(/^([A-Za-z]+)\s*(\d{4})/), code = m ? m[1].toUpperCase() : '', lv = m ? m[2] : '';
+    if (!LAB_LANGS.some(l => l[0] === code) || !LAB_LEVELS.includes(lv) || !sessions.length) { out.unmatched.push(raw); continue; }
+    const ws = /workshop/i.test(raw), key = classKey(code, lv, sessions[0]); lc.classesOffered[key] = true; ws ? out.workshops++ : out.classes++;
+    const [cd, ct] = iDD >= 0 ? String(rows[r][iDD] || '').split('@').map(x => x.trim()) : ['', ''];
+    const day = nDay(iDay >= 0 ? rows[r][iDay] : '') || nDay(cd), time = nTime(iTime >= 0 && rows[r][iTime] ? rows[r][iTime] : ct);
+    if (day && !ws) lc.dueDayTimes[key] = { day, time: time || lc.dueDayTimes[key]?.time || '11:59 PM' };
+    labCols.forEach(({ n, col }) => { const cell = rows[r][col]; if (!cell || String(cell).trim().toUpperCase() === 'N/A') return; const d = dstr(cell); if (!d) return;
+      const w = weeks.find(x => x.days.includes(d)); if (!w) { out.outside++; return; }
+      const id = ws ? `workshop${n}` : `lab${n}`; if (!lc.labTypes.some(l => l.id === id)) lc.labTypes.push({ id, label: ws ? `Workshop ${n}` : `Lab ${n}`, color: ws ? WORKSHOP_GREEN : LAB_BLUE });
+      const pk = `${w.idx}_${key}`; (lc.placements[pk] ||= []); if (!lc.placements[pk].includes(id)) { lc.placements[pk].push(id); out.placed++; } });
+  }
+  lc.labTypes.sort((a, b) => (/workshop/i.test(a.label) - /workshop/i.test(b.label)) || a.label.localeCompare(b.label, undefined, { numeric: true }));
+  return out;
+}
 ACTS.copyLabs = fromId => {
-  const s = sem(), cands = sortedSems().filter(x => x.id !== s.id && P.labCalendars[x.id]);
-  if (!cands.length) return toast('No other semester has a lab calendar yet. Import one under Plan file.', 5000);
-  fromId = fromId || cands[0].id;
-  const body = () => `${fld('cp-from', 'Copy from', sel('cp-from', fromId, cands.map(x => [x.id, semLabel(x)])))}`
+  const s = sem(), cands = sortedSems().filter(x => x.id !== s.id && P.labCalendars[x.id]), tpls = P.labTemplates || [];
+  if (!cands.length && !tpls.length) return toast('No template or other semester with a lab calendar yet. Import the Automatic Calendar (Excel), or save this one as a template.', 6000);
+  const best = tpls.find(t => t.type === s.type) || tpls[0];
+  fromId = fromId || (best ? 'tpl:' + best.id : cands[0].id);
+  const srcOf = v => v.startsWith('tpl:') ? tpls.find(t => 'tpl:' + t.id === v) : v;
+  const body = () => `${fld('cp-from', 'Start from', sel('cp-from', fromId, [...tpls.map(t => ['tpl:' + t.id, `Template: ${t.name}`]), ...cands.map(x => [x.id, semLabel(x)])]))}`
     + `<fieldset><legend>What to copy</legend><div class="checks"><label><input type="checkbox" id="cp-cls" checked><span><b>Classes with labs, due days and times</b></span></label><label><input type="checkbox" id="cp-types" checked><span><b>The list of labs and workshops</b></span></label><label><input type="checkbox" id="cp-pl" checked><span><b>Due weeks</b> <span class="muted">(same week number: Lab 2 in week 4 stays in week 4)</span></span></label><label><input type="checkbox" id="cp-move" checked><span><b>Move a due date that lands on a holiday, break or finals to the next open week</b></span></label></div></fieldset>`
     + `<p class="small muted">This replaces what ${esc(semLabel(s))} has for the parts you check. Undo by closing without copying.</p><div id="cp-rep"></div>`;
-  pane(`Copy the lab calendar into ${semLabel(s)}`, 'Lab calendar', body(), `<span></span><div class="row"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" type="button" id="cp-go">Copy</button></div>`);
+  pane(`Fill ${semLabel(s)}'s lab calendar`, 'Lab calendar', body(), `<span></span><div class="row"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" type="button" id="cp-go">Copy</button></div>`);
   const opts = () => ({ classes: val('cp-cls'), types: val('cp-types'), placements: val('cp-pl'), moveBlocked: val('cp-move') });
-  const preview = () => { const { rep } = planCopy(val('cp-from'), s, opts()); $('cp-rep').innerHTML = repHTML(rep, true); };
+  const preview = () => { const { rep } = planCopy(srcOf(val('cp-from')), s, opts()); $('cp-rep').innerHTML = repHTML(rep, true); };
   ['cp-from', 'cp-cls', 'cp-types', 'cp-pl', 'cp-move'].forEach(id => $(id).onchange = preview); preview();
-  $('cp-go').onclick = () => { const { dst, rep } = planCopy(val('cp-from'), s, opts()); P.labCalendars[s.id] = dst; changed();
+  $('cp-go').onclick = async () => { await backupLocal('before filling the lab calendar'); const { dst, rep } = planCopy(srcOf(val('cp-from')), s, opts()); P.labCalendars[s.id] = dst; changed();
     pane('Copied', semLabel(s), repHTML(rep, false), `<span></span><button class="btn primary" type="button" data-close>Check the weeks</button>`); };
 };
 function repHTML(r, preview) {
@@ -1721,21 +1824,53 @@ const OUTPUTS = [
   ['academic-calendar.json', 'Every semester\'s dates, holidays, breaks and finals. Read by the work schedule, room schedule and hub home pages.', () => JSON.stringify({ semesters: P.semesters, activeSemesterId: P.activeSemesterId }, null, 2), () => P.semesters.length ? '' : 'No semesters yet'],
   ['room-schedule.json', 'Nesbitt 4201 classes with their room (4201A or 4207) and final exam time. Read by the room schedule page.', () => JSON.stringify(roomScheduleOut(), null, 2), () => !courses().filter(inNesbitt4201).length ? 'No Nesbitt 4201 classes' : roomClashes().size ? 'Double-booked classes' : ''],
   ['lab-due-dates.json', 'Each class\'s lab due dates. Read by the grade due dates page.', () => JSON.stringify(labDueDatesOut(sem()), null, 2), () => !labDueDatesOut(sem()).classes.length ? 'No labs placed' : placedLabs(sem()).some(p => p.block) ? 'A due date falls on a day with no classes' : ''],
-  ['class-distribution.csv', '1001–1002 language sections by campus (the lab fee), with the budget percentages (same columns as the Class Distribution sheet).', () => distributionCSV(), () => !courses().length ? 'No courses' : distribution().unmapped ? `${distribution().unmapped} sections without a campus` : ''],
+  ['class-distribution.csv', '1001–1002 language sections by campus (the lab fee), with the budget percentages (same columns as the Class Distribution sheet).', () => distributionCSV(), () => !courses().length ? 'No courses' : distribution().unmapped ? `${distribution().unmapped} 1001–1002 sections not at a budget campus (no campus, Cumming or Blue Ridge)` : ''],
 ];
+/* outputs (redesigned 2026-11-20): what to do on top, one table of files with status, select + download, row menu, preview */
+const OUT_VIEW = { 'academic-calendar.json': ['calendar', 'Academic calendar'], 'room-schedule.json': ['rooms', 'Room scheduling'], 'lab-due-dates.json': ['labs', 'Lab calendar'], 'class-distribution.csv': ['courses', 'Language courses'] };
+const OUT_READ = { 'academic-calendar.json': 'Work schedule, room schedule, hub home pages', 'room-schedule.json': 'Room schedule page', 'lab-due-dates.json': 'Grade due dates page', 'class-distribution.csv': 'Class Distribution sheet (budget)' };
+const OPICK = new Set();
 VIEWS.outputs = () => {
   const s = sem(); if (!s) return head('Outputs for D2L', 'Files for the Lab Hub', '') + needSem();
-  return head(semLabel(s), 'Outputs for D2L', 'Download these and upload them to the Lab Hub in D2L (current/data/), replacing the old ones. They are made fresh from the plan each time.', `<button class="btn primary" type="button" data-act="zip">Download all (.zip)</button>`)
-    + `<div class="outs">${OUTPUTS.map(([n, d, , st]) => { const w = st(); return `<div class="out"><div><b>${esc(n)}</b> ${w ? `<span class="tag warn">${esc(w)}</span>` : '<span class="tag ok">Ready</span>'}<p>${esc(d)}</p></div><button class="btn" type="button" data-act="dlOut" data-arg="${esc(n)}">Download</button></div>`; }).join('')}</div>`
-    + `<h2 class="sec">Documents</h2><div class="outs"><div class="out"><div><b>Lab due date proposal</b><p>For instructors: due dates by week and per language.</p></div><button class="btn" type="button" data-act="proposal">Download</button></div>`
-    + ROOMS.map(([r]) => `<div class="out"><div><b>Room ${r} weekly schedule</b><p>To print and post by the door.</p></div><button class="btn" type="button" data-act="printRoom" data-arg="${r}">Download</button></div>`).join('') + '</div>';
+  const st = OUTPUTS.map(([n, , , f]) => [n, f()]), ready = st.filter(x => !x[1]).length;
+  [...OPICK].forEach(k => { if (!OUTPUTS.some(o => o[0] === k)) OPICK.delete(k); });
+  const rows = OUTPUTS.map(([n, d, , f]) => { const w = f(), v = OUT_VIEW[n], on = OPICK.has(n);
+    return `<tr class="${w ? 'todo' : ''}${on ? ' picked' : ''}" data-out="${esc(n)}"><td class="pick"><span class="pickwrap"><input type="checkbox" data-opick="${esc(n)}" ${on ? 'checked' : ''} aria-label="Select ${esc(n)}"><button type="button" class="rowbtn" data-omenu="${esc(n)}" aria-haspopup="menu" aria-label="Actions for ${esc(n)}" title="Actions (or right-click the row)">⋯</button></span></td>`
+      + `<th scope="row"><code>${esc(n)}</code><div class="small muted" style="font-weight:400">${esc(d)}</div></th><td class="small">${esc(OUT_READ[n] || '')}</td>`
+      + `<td>${w ? `<span class="tag warn">${esc(w)}</span>${v ? ` <button class="btn sm" type="button" data-view="${v[0]}">Open ${esc(v[1])}</button>` : ''}` : '<span class="tag ok">Ready</span>'}</td>`
+      + `<td><button class="btn sm" type="button" data-act="dlOut" data-arg="${esc(n)}">Download</button></td></tr>`; }).join('');
+  return head(semLabel(s), 'Outputs for D2L', 'Files the Lab Hub pages read. They are made fresh from the plan each time you download, so download after your last change.', `<button class="btn primary" type="button" data-act="zip">Download all (ZIP)</button>`)
+    + `<ol class="howto-steps"><li><b>Download</b> all as one ZIP, or the files you changed.</li><li><b>Upload</b> them to the Lab Hub in D2L: Manage Files → <code>current/data/</code>, replacing the old ones.</li><li><b>Check</b> a Lab Hub page (for example the grade due dates) shows the new dates.</li></ol>`
+    + `<div class="stats-row" role="status">${statPill(ready, 'of ' + OUTPUTS.length + ' files ready', ready === OUTPUTS.length ? 'ok' : '')}${OUTPUTS.length - ready ? statPill(OUTPUTS.length - ready, 'need a look first', 'warn') : ''}</div>`
+    + `<div class="tw"><table class="t compact"><caption>Files for <code>current/data/</code>. Tick files, or use ⋯ or right-click, to download or preview them.</caption><thead><tr><th scope="col" class="pick"><input type="checkbox" id="opick-all" ${OPICK.size === OUTPUTS.length ? 'checked' : ''} aria-label="Select all files"></th><th scope="col">File</th><th scope="col">Read by</th><th scope="col">Status</th><th scope="col"><span class="sr">Download</span></th></tr></thead><tbody>${rows}</tbody></table></div>`
+    + `<div class="selbar float${OPICK.size ? ' on' : ''}" role="status">${OPICK.size ? `<b>${OPICK.size} file${OPICK.size === 1 ? '' : 's'} selected</b><button class="btn sm primary" type="button" data-act="zipPicked">Download selected (ZIP)</button><button class="btn sm" type="button" data-act="oUnpick">Clear selection</button>` : ''}</div>`
+    + `<h2 class="sec">Documents to share</h2><div class="tw"><table class="t compact"><thead><tr><th scope="col">Document</th><th scope="col">For</th><th scope="col"><span class="sr">Download</span></th></tr></thead><tbody>`
+    + `<tr><th scope="row">Lab due date proposal</th><td class="small">Instructors: due dates by week and per language</td><td><button class="btn sm" type="button" data-act="proposal">Download</button></td></tr>`
+    + ROOMS.map(([r]) => `<tr><th scope="row">Room ${r} weekly schedule</th><td class="small">To print and post by the door</td><td><button class="btn sm" type="button" data-act="printRoom" data-arg="${r}">Download</button></td></tr>`).join('') + `</tbody></table></div>`;
 };
+AFTER.outputs = () => {
+  const keep = sel => { const y = window.scrollY; show('outputs', false); window.scrollTo(0, y); if (sel) document.querySelector(sel)?.focus({ preventScroll: true }); };
+  const oItems = n => { const many = OPICK.size > 1 && OPICK.has(n);
+    return [{ label: `Download ${n}`, run: () => ACTS.dlOut(n) }, ...(many ? [{ label: `Download the ${OPICK.size} selected (ZIP)`, run: () => ACTS.zipPicked() }] : []),
+      { label: 'Preview…', run: () => previewOut(n) }, { label: OPICK.has(n) ? 'Unselect' : 'Select', run: () => { OPICK.has(n) ? OPICK.delete(n) : OPICK.add(n); keep(`[data-omenu="${CSS.escape(n)}"]`); } },
+      ...(OUT_VIEW[n] ? [{ label: `Open ${OUT_VIEW[n][1]}`, run: () => show(OUT_VIEW[n][0]) }] : [])]; };
+  document.querySelectorAll('[data-omenu]').forEach(b => b.onclick = e => menuFor(b, e, oItems(b.dataset.omenu)));
+  document.querySelectorAll('tr[data-out]').forEach(tr => tr.oncontextmenu = e => { if (e.target.closest('input,button')) return; e.preventDefault(); menuFor(tr, e, oItems(tr.dataset.out)); });
+  document.querySelectorAll('[data-opick]').forEach(x => x.onchange = () => { x.checked ? OPICK.add(x.dataset.opick) : OPICK.delete(x.dataset.opick); keep(`[data-opick="${CSS.escape(x.dataset.opick)}"]`); });
+  if ($('opick-all')) $('opick-all').onchange = () => { OUTPUTS.forEach(([n]) => $('opick-all').checked ? OPICK.add(n) : OPICK.delete(n)); keep('#opick-all'); };
+};
+function previewOut(n) { const o = OUTPUTS.find(x => x[0] === n), t = o[2](), lines = t.split('\n');
+  pane(n, 'Preview', `<p class="lede" style="margin:0 0 10px">${lines.length} lines${lines.length > 200 ? ', first 200 shown' : ''}. This is what the Lab Hub page will read.</p><pre class="preview">${esc(lines.slice(0, 200).join('\n'))}</pre>`, `<span></span><div class="row"><button class="btn" type="button" data-close>Close</button><button class="btn primary" type="button" id="pv-dl">Download</button></div>`);
+  $('pv-dl').onclick = () => ACTS.dlOut(n); }
+ACTS.oUnpick = () => { OPICK.clear(); const y = window.scrollY; show('outputs', false); window.scrollTo(0, y); };
+ACTS.zipPicked = () => ACTS.zip([...OPICK]);
 ACTS.dlOut = n => { const o = OUTPUTS.find(x => x[0] === n); download(n, o[2](), n.endsWith('.csv') ? 'text/csv' : 'application/json'); };
-ACTS.zip = async () => {
+ACTS.zip = async only => {
   try {
     if (!window.JSZip) await new Promise((res, rej) => { const sc = document.createElement('script'); sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'; sc.onload = res; sc.onerror = () => rej(new Error('The ZIP tool did not load (offline?). Download the files one by one.')); document.head.append(sc); });
-    const z = new JSZip(), d = z.folder('current').folder('data'); OUTPUTS.forEach(([n, , make]) => d.file(n, make()));
-    const blob = await z.generateAsync({ type: 'blob' }), a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `lab-hub-data-${sem().id}.zip`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    const list = Array.isArray(only) && only.length ? OUTPUTS.filter(o => only.includes(o[0])) : OUTPUTS;
+    const z = new JSZip(), d = z.folder('current').folder('data'); list.forEach(([n, , make]) => d.file(n, make()));
+    const blob = await z.generateAsync({ type: 'blob' }), a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `lab-hub-data-${sem().id}${list.length < OUTPUTS.length ? '-' + list.length + '-files' : ''}.zip`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   } catch (e) { toast(e.message, 6000); }
 };
 
