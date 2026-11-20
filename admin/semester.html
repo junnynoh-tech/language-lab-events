@@ -398,6 +398,13 @@ tr:hover .rowbtn, .rowbtn:focus-visible, .rowbtn[aria-expanded="true"] { border-
 .selbar.float { position: sticky; bottom: 12px; z-index: 5; margin: 10px 0 0; border: 0; min-height: 0; padding: 0; }
 .selbar.float.on { border: 1px solid var(--bad); padding: 8px 12px; box-shadow: 0 6px 20px rgba(20,30,50,.18); }
 
+/* chart tooltips (2026-11-20) */
+.tip { position: fixed; z-index: 70; max-width: 320px; background: var(--text); color: var(--bg); border-radius: 8px; padding: 7px 10px; font-size: 14px; line-height: 1.35; pointer-events: none; box-shadow: 0 6px 18px rgba(0,0,0,.2); }
+.tip[hidden] { display: none; }
+[data-tip] { cursor: default; }
+[data-tip]:focus-visible { outline: 3px solid var(--gold); outline-offset: 1px; position: relative; z-index: 1; }
+.bar-n[data-tip] { border-radius: 4px; }
+
 </style>
 </head>
 <body>
@@ -1197,7 +1204,7 @@ VIEWS.courses = () => {
   const pool = cs.filter(c => CF.all || isLang(c.SUBJ));
   const subjects = [...new Set(pool.map(c => c.SUBJ))].sort(), pats = [...new Set(pool.map(c => normDays(c.DAYS)).filter(Boolean))].sort();
   const shown = coursesShown(), needs = shown.filter(c => isLang(c.SUBJ) && !pivotOf(c.LOCATION)).length;
-  const lvl = `<div class="f"><span class="lbl" id="lvl-l">Level</span><div class="seg" role="group" aria-labelledby="lvl-l"><button type="button" data-lvl="first" aria-pressed="${CF.level === 'first'}">1001–1002</button><button type="button" data-lvl="all" aria-pressed="${CF.level === 'all'}">All levels</button></div></div>`;
+  const lvl = `<div class="f"><span class="lbl" id="lvl-l">Level</span><div class="seg" role="group" aria-labelledby="lvl-l">${[['first', '1001–1002'], ['1001', '1001'], ['1002', '1002'], ['all', 'All levels']].map(([v, l]) => `<button type="button" data-lvl="${v}" aria-pressed="${CF.level === v}">${l}</button>`).join('')}</div></div>`;
   const th = ([k, l]) => `<th scope="col" aria-sort="${CF.sort === k ? (CF.dir > 0 ? 'ascending' : 'descending') : 'none'}"><button type="button" class="sorter" data-sort="${k}">${l}<span aria-hidden="true">${CF.sort === k ? (CF.dir > 0 ? ' ▲' : ' ▼') : ''}</span></button></th>`;
   [...PICKED].forEach(k => { if (!cs.some(c => c.CRN === k)) PICKED.delete(k); });
   const pickedShown = shown.filter(c => PICKED.has(c.CRN)).length, allPicked = shown.length && pickedShown === shown.length;
@@ -1219,7 +1226,7 @@ VIEWS.courses = () => {
     + (needs ? `<p class="note warn" role="status">${needs} section${needs > 1 ? 's need' : ' needs'} a campus (shaded). Choose one in the Campus column, or set the professor's home campus in <button class="btn sm" type="button" data-view="profs">Professors' campuses</button>.</p>` : '')
     + chartsHTML(shown)
     + (PICKED.size ? '' : `<p class="small muted" style="margin:0 0 8px">Tick classes, or use ⋯ or right-click on a row, to delete them (for example cancelled sections or ones the Lab doesn't serve).</p>`)
-    + `<div class="tw"><table class="t compact"><caption>${shown.length} section${shown.length === 1 ? '' : 's'} shown${CF.level === 'first' ? ' (1001–1002)' : ''}. Select a column heading to sort.</caption><thead><tr><th scope="col" class="pick"><input type="checkbox" id="pick-all" ${allPicked ? 'checked' : ''} aria-label="Select all ${shown.length} sections shown"></th>${COLS.map(th).join('')}</tr></thead>`
+    + `<div class="tw"><table class="t compact"><caption>${shown.length} section${shown.length === 1 ? '' : 's'} shown${CF.level === 'all' ? '' : ` (${lvlText()})`}. Select a column heading to sort.</caption><thead><tr><th scope="col" class="pick"><input type="checkbox" id="pick-all" ${allPicked ? 'checked' : ''} aria-label="Select all ${shown.length} sections shown"></th>${COLS.map(th).join('')}</tr></thead>`
     + `<tbody>${rows || `<tr><td colspan="${COLS.length + 1}" class="muted">No sections match these filters.</td></tr>`}</tbody></table></div>`
     + `<div class="selbar float${PICKED.size ? ' on' : ''}" role="status">${PICKED.size ? `<b>${PICKED.size} class${PICKED.size === 1 ? '' : 'es'} selected</b>${PICKED.size > pickedShown ? `<span class="muted small">(${PICKED.size - pickedShown} hidden by the filters)</span>` : ''}<button class="btn sm" type="button" data-act="unpick">Clear selection</button><button class="btn sm danger" type="button" data-act="delPicked">Delete selected…</button>` : ''}</div>`
     + `<details class="card" style="margin-top:16px"><summary><b>Budget numbers by language and campus</b> (1001–1002 only: the lab fee)</summary>${distributionHTML()}</details>`;
@@ -1302,10 +1309,11 @@ function profCard(s) {
     + `<div class="selbar float${PROF_PICK.size ? ' on' : ''}" role="status">${PROF_PICK.size ? `<b>${PROF_PICK.size} professor${PROF_PICK.size === 1 ? '' : 's'} selected</b>${PROF_PICK.size > pickedShown ? `<span class="muted small">(${PROF_PICK.size - pickedShown} hidden by the filters)</span>` : ''}<button class="btn sm" type="button" data-act="profUnpick">Clear selection</button><button class="btn sm danger" type="button" data-act="profDel">Delete selected…</button>` : ''}</div>`
     + `<p class="small muted" style="margin:10px 0 0">Names are matched as Banner writes them. Add COM775 on Language courses for full names; COM1430 alone shortens them. </p>`;
 }
+const lvlText = () => CF.level === '1001' || CF.level === '1002' ? CF.level : '1001–1002';
 function coursesShown() {
   const q = CF.q.toLowerCase(), k = CF.sort;
   const key = c => k === 'LOCATION' ? String(CAMPUS_ORDER.indexOf(campusName(c.LOCATION))) : k === 'TIME_FROM' ? String(mins(c.TIME_FROM) + 10000) : String(c[k] ?? '');
-  return courses().filter(c => (CF.all || isLang(c.SUBJ)) && (CF.level !== 'first' || ['1001', '1002'].includes(c.CRSE)) && (!CF.subj || c.SUBJ === CF.subj)
+  return courses().filter(c => (CF.all || isLang(c.SUBJ)) && (CF.level === 'all' || (CF.level === 'first' ? ['1001', '1002'].includes(c.CRSE) : c.CRSE === CF.level)) && (!CF.subj || c.SUBJ === CF.subj)
     && (!CF.days || normDays(c.DAYS) === CF.days) && (!CF.loc || campusName(c.LOCATION) === CF.loc)
     && (!q || `${c.CRN} ${c.SUBJ} ${c.CRSE}.${c.SEC} ${c.SUBJ}${c.CRSE} ${c.TITLE} ${c.INSTRUCTOR}`.toLowerCase().includes(q)))
     .sort((a, b) => CF.dir * key(a).localeCompare(key(b), undefined, { numeric: true }) || `${a.SUBJ}${a.CRSE}${a.SEC}`.localeCompare(`${b.SUBJ}${b.CRSE}${b.SEC}`, undefined, { numeric: true }));
@@ -1313,26 +1321,45 @@ function coursesShown() {
 /* two charts of the sections shown: sections per campus (split by language) and each budget campus's share.
    Every number is printed (no color-only reading); each chart has a text summary for screen readers. */
 function chartsHTML(list) {
-  // both charts count 1001–1002 only (the lab fee), and follow the Language, Campus, Days and Search filters
+  // both charts count 1001–1002 only (the lab fee), and follow the Level, Language, Campus, Days and Search filters
   const lang = list.filter(c => isLang(c.SUBJ) && ['1001', '1002'].includes(String(c.CRSE).trim()));
-  if (!lang.length) return `<p class="muted small" style="margin:0 0 14px">No 1001–1002 sections match these filters, so there's nothing to chart.</p>`;
-  const langs = LANG_ORDER.filter(l => lang.some(c => c.SUBJ === l));
-  const per = CAMPUS_ORDER.map(cp => { const here = lang.filter(c => campusName(c.LOCATION) === cp); return { cp, n: here.length, by: langs.map(l => [l, here.filter(c => c.SUBJ === l).length]).filter(x => x[1]) }; }).filter(x => x.n);
+  if (!lang.length) return `<p class="muted small" style="margin:0 0 14px">No ${lvlText()} sections match these filters, so there's nothing to chart.</p>`;
+  const langs = LANG_ORDER.filter(l => lang.some(c => c.SUBJ === l)), lv = ['1001', '1002'];
+  const cnt = (arr, l, v) => arr.filter(c => c.SUBJ === l && (!v || c.CRSE === v)).length;
+  const split = (arr, l) => lv.map(v => [v, cnt(arr, l, v)]).filter(x => x[1]).map(([v, n]) => `${l} ${v}: ${n}`).join(', ');
+  const breakdown = arr => langs.map(l => cnt(arr, l) ? split(arr, l) : '').filter(Boolean).join('; ');
+  const per = CAMPUS_ORDER.map(cp => { const here = lang.filter(c => campusName(c.LOCATION) === cp); return { cp, here, n: here.length, by: langs.map(l => [l, cnt(here, l)]).filter(x => x[1]) }; }).filter(x => x.n);
   const max = Math.max(...per.map(x => x.n));
+  const tip = t => `data-tip="${esc(t)}" tabindex="0" aria-label="${esc(t)}"`;
   const bars = per.map(x => `<div class="bar-row"><span class="bar-l">${esc(x.cp)}</span><span class="bar-track"><span class="bar-fill" style="width:${(x.n / max * 100).toFixed(1)}%">`
-    + x.by.map(([l, n]) => `<span class="bar-seg" style="flex:${n};background:${langColor(l)}" title="${esc(LANG[l][0])}: ${n}">${n / max > .16 ? `${esc(l)} ${n}` : ''}</span>`).join('')
-    + `</span></span><b class="bar-n">${x.n}</b></div>`).join('');
+    + x.by.map(([l, n]) => `<span class="bar-seg" style="flex:${n};background:${langColor(l)}" ${tip(`${LANG[l][0]} at ${x.cp}: ${n} section${n === 1 ? '' : 's'} (${split(x.here, l)})`)}>${n / max > .16 ? `${esc(l)} ${n}` : ''}</span>`).join('')
+    + `</span></span><b class="bar-n" ${tip(`${x.cp}: ${x.n} sections. ${breakdown(x.here)}`)}>${x.n}</b></div>`).join('');
   const sum1 = per.map(x => `${x.cp} ${x.n} (${x.by.map(([l, n]) => `${LANG[l][0]} ${n}`).join(', ')})`).join('; ');
-  const fee = lang;
-  const piv = PIVOTS.map(([p, l]) => ({ p, l, n: fee.filter(c => pivotOf(c.LOCATION) === p).length })), tot = piv.reduce((a, x) => a + x.n, 0);
+  const piv = PIVOTS.map(([p, l]) => { const here = lang.filter(c => pivotOf(c.LOCATION) === p); return { p, l, here, n: here.length }; }), tot = piv.reduce((a, x) => a + x.n, 0);
   const pc = n => tot ? Math.round(n / tot * 100) : 0, PCOL = { DAH: 'var(--c-dah)', GVL: 'var(--c-gvl)', OCN: 'var(--c-ocn)' };
-  const share = tot ? `<div class="share" aria-hidden="true">${piv.filter(x => x.n).map(x => `<span style="flex:${x.n};background:${PCOL[x.p]}">${pc(x.n) >= 22 ? `${x.l} ${pc(x.n)}%` : pc(x.n) >= 9 ? `${pc(x.n)}%` : ''}</span>`).join('')}</div>`
+  const share = tot ? `<div class="share">${piv.filter(x => x.n).map(x => `<span style="flex:${x.n};background:${PCOL[x.p]}" ${tip(`${x.l}: ${x.n} sections, ${pc(x.n)}% of the budget. ${breakdown(x.here)}`)}>${pc(x.n) >= 22 ? `${x.l} ${pc(x.n)}%` : pc(x.n) >= 9 ? `${pc(x.n)}%` : ''}</span>`).join('')}</div>`
     + `<ul class="share-key">${piv.map(x => `<li><span class="sw" style="background:${PCOL[x.p]}" aria-hidden="true"></span>${esc(x.l)}: <b>${x.n}</b> section${x.n === 1 ? '' : 's'} (${pc(x.n)}%)</li>`).join('')}</ul>` : '<p class="muted small">No sections have a campus yet.</p>';
-  return `<div class="charts"><figure class="card chart"><figcaption><b>Sections by campus</b><span class="muted small"> · 1001–1002 sections, split by language</span></figcaption>`
-    + `<div class="bars" role="img" aria-label="Sections by campus: ${esc(sum1)}.">${bars}</div>`
-    + `<ul class="share-key">${langs.map(l => `<li><span class="sw" style="background:${langColor(l)}" aria-hidden="true"></span>${esc(LANG[l][0])}: <b>${lang.filter(c => c.SUBJ === l).length}</b></li>`).join('')}</ul></figure>`
-    + `<figure class="card chart"><figcaption><b>Budget split</b><span class="muted small"> · 1001–1002 sections only (the lab fee), per budget campus; Cumming counts with Gainesville, Blue Ridge with Dahlonega</span></figcaption>${share}</figure></div>`;
+  /* the numbers per class, always visible (the tooltips repeat them per campus) */
+  const byClass = `<div class="tw" style="margin-top:12px"><table class="t compact"><caption class="sr">Sections per class and campus</caption><thead><tr><th scope="col">Class</th>${CAMPUS_ORDER.filter(cp => per.some(x => x.cp === cp)).map(cp => `<th scope="col" class="num">${esc(cp)}</th>`).join('')}<th scope="col" class="num">Total</th></tr></thead><tbody>`
+    + langs.flatMap(l => lv.filter(v => cnt(lang, l, v)).map(v => `<tr><th scope="row">${langTag(l)}${v}</th>${CAMPUS_ORDER.filter(cp => per.some(x => x.cp === cp)).map(cp => `<td class="num">${cnt(lang.filter(c => campusName(c.LOCATION) === cp), l, v) || ''}</td>`).join('')}<td class="num"><b>${cnt(lang, l, v)}</b></td></tr>`)).join('')
+    + `</tbody></table></div>`;
+  return `<div class="charts"><figure class="card chart"><figcaption><b>Sections by campus</b><span class="muted small"> · ${lvlText()} sections, split by language. Hover over or tab to a bar for each class.</span></figcaption>`
+    + `<p class="sr">Sections by campus: ${esc(sum1)}.</p><div class="bars">${bars}</div>`
+    + `<ul class="share-key">${langs.map(l => `<li><span class="sw" style="background:${langColor(l)}" aria-hidden="true"></span>${esc(LANG[l][0])}: <b>${cnt(lang, l)}</b> <span class="muted">(${lv.map(v => cnt(lang, l, v) ? `${v}: ${cnt(lang, l, v)}` : '').filter(Boolean).join(' · ')})</span></li>`).join('')}</ul>`
+    + `<details style="margin-top:8px"><summary class="small"><b>Per class and campus</b></summary>${byClass}</details></figure>`
+    + `<figure class="card chart"><figcaption><b>Budget split</b><span class="muted small"> · ${lvlText()} sections (the lab fee), per budget campus; Cumming counts with Gainesville, Blue Ridge with Dahlonega</span></figcaption>${share}</figure></div>`;
 }
+/* tooltips for chart pieces: hover or keyboard focus, Esc hides (2026-11-20) */
+(() => {
+  const t = document.createElement('div'); t.id = 'tip'; t.className = 'tip'; t.setAttribute('role', 'tooltip'); t.hidden = true; document.addEventListener('DOMContentLoaded', () => document.body.append(t)); if (document.body) document.body.append(t);
+  const showTip = el => { t.textContent = el.dataset.tip; t.hidden = false; const r = el.getBoundingClientRect(), w = t.getBoundingClientRect();
+    t.style.left = Math.max(8, Math.min(r.left + r.width / 2 - w.width / 2, innerWidth - w.width - 8)) + 'px'; t.style.top = (r.top - w.height - 8 < 8 ? r.bottom + 8 : r.top - w.height - 8) + 'px'; };
+  document.addEventListener('mouseover', e => { const el = e.target.closest?.('[data-tip]'); if (el) showTip(el); });
+  document.addEventListener('mouseout', e => { if (e.target.closest?.('[data-tip]') && !e.relatedTarget?.closest?.('[data-tip]')) t.hidden = true; });
+  document.addEventListener('focusin', e => { const el = e.target.closest?.('[data-tip]'); if (el) showTip(el); else t.hidden = true; });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') t.hidden = true; });
+  addEventListener('scroll', () => { t.hidden = true; }, { passive: true });
+})();
 function distribution() {
   const by = {}, tot = {}, camp = {}; let unmapped = 0;
   LANG_ORDER.forEach(l => { by[l] = {}; tot[l] = 0; }); PIVOTS.forEach(([p]) => camp[p] = 0);
