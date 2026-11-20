@@ -432,6 +432,17 @@ table.t tr[class*="cp-"].picked td { background: color-mix(in srgb, var(--cc) 20
 .preview { max-height: 50vh; overflow: auto; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px; font: 13px/1.45 ui-monospace, Menlo, Consolas, monospace; white-space: pre; }
 table.t tr.todo th { background: var(--warn-bg); }
 
+/* Overview (2026-11-20) */
+.ovgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin: 0 0 14px; }
+.ovcard { background: var(--surface); border: 1px solid var(--line); border-top: 4px solid var(--line); border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+.ovcard.done { border-top-color: var(--ok); } .ovcard.warn { border-top-color: var(--warn); } .ovcard.bad { border-top-color: var(--bad); } .ovcard.todo { border-top-color: var(--gold); }
+.ovhead { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.ovcard h2 { font-size: 18px; margin: 0; }
+.ovcard ul { margin: 0; padding-left: 18px; font-size: 15px; flex: 1; }
+.ovcard li + li { margin-top: 2px; }
+.ovcard .btn { align-self: flex-start; }
+.strip li.now { outline: 3px solid var(--gold); outline-offset: 1px; }
+
 </style>
 </head>
 <body>
@@ -1052,16 +1063,48 @@ const issueList = list => list.length ? `<ul class="issues">${list.map(i => `<li
 const VIEWS = {}, AFTER = {}, ACTS = {};
 ACTS.save = () => savePlan();
 
-/* ---------- overview ---------- */
+/* ---------- overview (redesigned 2026-11-20): where each part of the plan stands, what's coming up, what needs a look ---------- */
+let OF = '';
 VIEWS.overview = () => {
   const s = sem();
-  if (!s) return head('Language Lab', 'Plan the semester', 'Courses, rooms, the academic calendar and lab due dates in one place. The plan stays in this browser and in a plan file your team keeps in a shared folder.') + needSem();
-  const cs = courses(), lang = cs.filter(c => isLang(c.SUBJ)), n4201 = cs.filter(inNesbitt4201), A = roomsOf().assign, pl = placedLabs(s), wk = weeksOf(s).length;
+  if (!s) return head('Language Lab', 'Plan the semester', 'Courses, rooms, the academic calendar and lab due dates in one place.', `<button class="btn primary" type="button" data-act="newSem">Add a semester</button>`) + needSem();
+  const cs = courses(), lang = cs.filter(c => isLang(c.SUBJ)), fy = lang.filter(c => ['1001', '1002'].includes(c.CRSE)), n4201 = cs.filter(inNesbitt4201), A = roomsOf().assign;
+  const pl = placedLabs(s).filter(p => p.cls && !p.outside), off = offered(s), iss = issues(), wk = weeksOf(s);
+  const today = iso(new Date()), cur = wk.find(w => w.days.includes(today));
+  const noCampus = lang.filter(c => !c.LOCATION).length, outBud = fy.filter(c => c.LOCATION && !pivotOf(c.LOCATION)).length;
+  const profs = new Set(lang.filter(c => c.INSTRUCTOR).map(c => profKey(c.INSTRUCTOR))), dflt = profDefaults(), map = P.instructorCampus || {}, hid = P.hiddenProfs || {};
+  const onlineNoHome = [...new Set(lang.filter(c => !AUTO_LOCATION[c.CMP] && !c.LOCATION_SET && !c.LOCATION).map(c => profKey(c.INSTRUCTOR)))].filter(k => k && !hid[k] && !map[k] && !dflt[k]).length;
+  const outs = OUTPUTS.map(([n, , , f]) => f()), outReady = outs.filter(x => !x).length;
+  /* one card per part of the plan: status, the key facts, a way in */
+  const card = (view, title, state, facts) => `<article class="ovcard ${state}"><div class="ovhead"><h2>${esc(title)}</h2><span class="tag ${state === 'done' ? 'ok' : state === 'todo' ? '' : state === 'bad' ? 'bad' : 'warn'}">${{ done: 'Done', warn: 'Needs a look', bad: 'Fix', todo: 'Not started' }[state]}</span></div><ul>${facts.filter(Boolean).map(f => `<li>${f}</li>`).join('')}</ul><button class="btn sm" type="button" data-view="${view}">Open ${esc(title)}</button></article>`;
+  const has = v => iss.some(i => i.view === v && i.level === 'bad') ? 'bad' : iss.some(i => i.view === v) ? 'warn' : '';
+  const cards = [
+    card('calendar', 'Academic calendar', !s.start ? 'todo' : has('calendar') || 'done', [s.start ? `Classes ${esc(fmtMD(s.start))} – ${esc(fmtMD(s.end))}` : 'No dates yet', s.finalsStart ? `Finals ${esc(fmtMD(s.finalsStart))} – ${esc(fmtMD(s.finalsEnd))}` : '', `${(s.holidays || []).length} holidays, ${(s.breaks || []).length} break${(s.breaks || []).length === 1 ? '' : 's'}`]),
+    card('courses', 'Language courses', !cs.length ? 'todo' : noCampus ? 'warn' : outBud ? 'warn' : 'done', cs.length ? [`<b>${fy.length}</b> first-year (1001–1002) of ${lang.length} language sections`, noCampus ? `<b>${noCampus}</b> need a campus` : 'Every section has a campus', outBud ? `${outBud} at Cumming or Blue Ridge, not in the budget` : ''] : ['Add the two Banner files (COM1430, COM775)']),
+    card('profs', 'Professors\' campuses', !profs.size ? 'todo' : onlineNoHome ? 'warn' : 'done', profs.size ? [`<b>${profs.size}</b> professors teaching language sections`, onlineNoHome ? `<b>${onlineNoHome}</b> teaching online without a home campus` : 'Online sections all have a campus'] : ['Comes from the Banner files']),
+    card('rooms', 'Room scheduling', !n4201.length ? 'todo' : has('rooms') || 'done', n4201.length ? [`<b>${n4201.filter(c => A[c.CRN]).length}</b> of ${n4201.length} Nesbitt 4201 classes have a room`, roomClashes().size ? `<b>${roomClashes().size}</b> double-booked` : 'No double-bookings'] : ['No classes in Nesbitt 4201 yet']),
+    card('labs', 'Lab calendar', !off.length ? 'todo' : has('labs') || (pl.length ? 'done' : 'warn'), off.length ? [`<b>${off.length}</b> classes with labs`, `<b>${pl.length}</b> due dates placed`, (P.labTemplates || []).length ? `${P.labTemplates.length} template${P.labTemplates.length === 1 ? '' : 's'} saved` : ''] : ['Import the Automatic Calendar or start from a template']),
+    card('outputs', 'Outputs for D2L', outReady === OUTPUTS.length ? 'done' : 'warn', [`<b>${outReady}</b> of ${OUTPUTS.length} files ready`, outReady < OUTPUTS.length ? 'Fix the parts marked above first' : 'Download and upload to the Lab Hub'])];
+  /* coming up: the next 14 days */
+  const until = iso(addDays(new Date(), 14)), up = [];
+  pl.forEach(p => { if (p.date >= today && p.date <= until) up.push([p.date, `${p.lab.label} due`, p.cls.name, 'lab']); });
+  (s.holidays || []).forEach(h => { if (h.date >= today && h.date <= until) up.push([h.date, h.name, 'No classes', 'holiday']); });
+  (s.breaks || []).forEach(b => { if (b.end >= today && b.start <= until) up.push([b.start < today ? today : b.start, b.name, `Through ${fmtWMD(b.end)}`, 'break']); });
+  if (s.finalsStart && s.finalsStart >= today && s.finalsStart <= until) up.push([s.finalsStart, 'Finals begin', `Through ${fmtWMD(s.finalsEnd)}`, 'finals']);
+  const grouped = {}; up.forEach(([d, what, who, k]) => { const key = d + '|' + what; (grouped[key] ||= { d, what, k, who: [] }).who.push(who); });
+  const upRows = Object.values(grouped).sort((a, b) => a.d.localeCompare(b.d) || a.what.localeCompare(b.what));
+  const TAG = { lab: ['Lab due', ''], holiday: ['Holiday', 'bad'], break: ['Break', 'warn'], finals: ['Finals', 'ok'] };
+  const soon = `<div class="card"><h2>Coming up <span class="muted small" style="font-weight:400">· the next 14 days</span></h2>${upRows.length ? `<div class="tw"><table class="t compact"><caption class="sr">The next 14 days</caption><thead><tr><th scope="col">Date</th><th scope="col">What</th><th scope="col">Details</th></tr></thead><tbody>${upRows.map(r => `<tr><td class="nowrap">${esc(fmtWMD(r.d))}${r.d === today ? ' <span class="tag ok">Today</span>' : ''}</td><td><span class="tag ${TAG[r.k][1]}">${TAG[r.k][0]}</span> ${esc(r.what)}</td><td class="small">${esc(r.who.join(', '))}</td></tr>`).join('')}</tbody></table></div>` : `<p class="muted" style="margin:0">${today < (s.start || '') ? `Classes start ${esc(fmtLong(s.start))}.` : today > (s.finalsEnd || s.end || '') ? 'The term is over.' : 'Nothing due and no days off in the next two weeks.'}</p>`}</div>`;
+  /* needs a look, with a filter */
+  const shown = iss.filter(i => !OF || i.level === OF);
+  const look = `<div class="card"><div class="row" style="justify-content:space-between;align-items:end;margin-bottom:10px"><h2 style="margin:0">Needs a look <span class="muted small" style="font-weight:400">· ${iss.length || 'nothing'}</span></h2>${iss.length ? `<div class="seg" role="group" aria-label="Show">${[['', 'All'], ['bad', `Fix (${iss.filter(i => i.level === 'bad').length})`], ['warn', `Check (${iss.filter(i => i.level === 'warn').length})`]].filter(([v]) => !v || iss.some(i => i.level === v)).map(([v, l]) => `<button type="button" data-of="${v}" aria-pressed="${OF === v}">${l}</button>`).join('')}</div>` : ''}</div>${issueList(shown)}</div>`;
   return head(semLabel(s), 'Semester overview', s.start ? `Classes ${fmtLong(s.start)} to ${fmtLong(s.end)}${s.finalsStart ? `; finals ${fmtMD(s.finalsStart)}–${fmtMD(s.finalsEnd)}` : ''}.` : 'Dates not set yet.')
-    + `<div class="stats"><div class="stat"><b>${wk || '–'}</b><span>Weeks of classes</span></div><div class="stat"><b>${lang.length}</b><span>Language sections</span></div>`
-    + `<div class="stat"><b>${n4201.filter(c => A[c.CRN]).length}/${n4201.length}</b><span>Nesbitt 4201 classes with a room</span></div><div class="stat"><b>${pl.length}</b><span>Labs and workshops placed</span></div></div>`
-    + `<h2 class="sec">Needs a look</h2>${issueList(issues())}`;
+    + `<div class="stats-row" role="status">${cur ? statPill(`Week ${cur.idx}`, `of ${wk.length}`, 'ok') : statPill(wk.length || '–', 'weeks of classes')}${statPill(fy.length, 'first-year sections')}${statPill(`${n4201.filter(c => A[c.CRN]).length}/${n4201.length}`, 'Nesbitt 4201 rooms set')}${statPill(pl.length, 'lab due dates')}${statPill(`${outReady}/${OUTPUTS.length}`, 'outputs ready', outReady === OUTPUTS.length ? 'ok' : 'warn')}</div>`
+    + `<div class="ovgrid">${cards.join('')}</div>`
+    + `<div class="charts">${soon}${wk.length ? termStrip(s, termWeeks(s), cur?.idx) : ''}</div>`
+    + look;
 };
+AFTER.overview = () => { document.querySelectorAll('[data-of]').forEach(b => b.onclick = () => { OF = b.dataset.of; const y = window.scrollY; show('overview', false); window.scrollTo(0, y); document.querySelector(`[data-of="${OF}"]`)?.focus({ preventScroll: true }); }); };
 
 /* ---------- academic calendar (redesigned 2026-11-20): summary + actions on top, semester switcher, key dates with a
    filter, class days per weekday, the term week by week, then the months ---------- */
@@ -1107,14 +1150,14 @@ function weekdayChart(s, cd) {
     + `<p class="small muted" style="margin:10px 0 0">MW classes meet ${cd.Mon + cd.Wed} times, TR classes ${cd.Tue + cd.Thu}, MWF ${cd.Mon + cd.Wed + cd.Fri}.</p></figure>`;
 }
 /* the term week by week: each square is a week, marked when it has a holiday, break or finals */
-function termStrip(s, weeks) {
+function termStrip(s, weeks, now) {
   const kind = w => { const ks = w.days.slice(0, 5).map(d => blocked(s, d)?.kind).filter(Boolean); return ks.includes('finals') ? 'finals' : ks.includes('break') ? 'break' : ks.includes('holiday') ? 'holiday' : ''; };
   const name = w => [...new Set(w.days.slice(0, 5).map(d => blocked(s, d)?.name).filter(Boolean))].join(', ');
   const LBL = { holiday: 'H', break: 'B', finals: 'F' };
   const marked = weeks.filter(kind);
   return `<figure class="card chart"><figcaption><b>The term, week by week</b><span class="muted small"> · from the first day of classes through finals</span></figcaption>`
-    + `<ol class="strip" aria-label="Weeks: ${esc(marked.map(w => `week ${w.idx} ${name(w)}`).join('; ') || 'no holidays or breaks')}.">${weeks.map(w => { const k = kind(w); return `<li class="${k}" title="${esc(`Week ${w.idx}, ${fmtMD(w.start)}–${fmtMD(w.end)}${k ? ': ' + name(w) : ''}`)}"><span class="wn">${w.idx}</span>${k ? `<span class="wk-k" aria-hidden="true">${LBL[k]}</span>` : ''}</li>`; }).join('')}</ol>`
-    + `<ul class="share-key"><li><span class="sw" style="background:var(--bad-bg);outline:1px solid var(--bad)" aria-hidden="true"></span>H holiday</li><li><span class="sw" style="background:var(--warn-bg);outline:1px solid var(--warn)" aria-hidden="true"></span>B break</li><li><span class="sw" style="background:var(--accent)" aria-hidden="true"></span>F finals</li></ul>`
+    + `<ol class="strip" aria-label="Weeks: ${esc(marked.map(w => `week ${w.idx} ${name(w)}`).join('; ') || 'no holidays or breaks')}.">${weeks.map(w => { const k = kind(w); return `<li class="${k}${now === w.idx ? ' now' : ''}" title="${esc(`Week ${w.idx}, ${fmtMD(w.start)}–${fmtMD(w.end)}${k ? ': ' + name(w) : ''}${now === w.idx ? ' (this week)' : ''}`)}"${now === w.idx ? ' aria-current="date"' : ''}><span class="wn">${w.idx}</span>${k ? `<span class="wk-k" aria-hidden="true">${LBL[k]}</span>` : ''}</li>`; }).join('')}</ol>`
+    + `<ul class="share-key"><li><span class="sw" style="background:var(--bad-bg);outline:1px solid var(--bad)" aria-hidden="true"></span>H holiday</li><li><span class="sw" style="background:var(--warn-bg);outline:1px solid var(--warn)" aria-hidden="true"></span>B break</li><li><span class="sw" style="background:var(--accent)" aria-hidden="true"></span>F finals</li>${now ? '<li><span class="sw" style="outline:3px solid var(--gold)" aria-hidden="true"></span>this week</li>' : ''}</ul>`
     + (marked.length ? `<ul class="small" style="margin:8px 0 0;padding-left:18px">${marked.map(w => `<li>Week ${w.idx} (${fmtMD(w.start)}): ${esc(name(w))}</li>`).join('')}</ul>` : '') + `</figure>`;
 }
 /* every date that matters, in order, with a filter */
