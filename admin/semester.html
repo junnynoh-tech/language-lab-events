@@ -630,12 +630,13 @@ async function openPlanFile() {
 }
 async function savePlan(as = false) {
   if (shared() && !as) return pushShared();
-  P.savedAt = new Date().toISOString(); P.savedBy = askMe();
-  const text = JSON.stringify(P, null, 2);
-  if (!F.supported) { download(planName(), text, 'application/json'); F.dirty = false; F.name ||= planName(); storeMeta(); fileUI(); toast('Downloaded. Put it in the shared folder so the others get it.'); return; }
+  if (!F.supported) { P.savedAt = new Date().toISOString(); P.savedBy = askMe(); download(planName(), JSON.stringify(P, null, 2), 'application/json'); F.dirty = false; F.name ||= planName(); storeMeta(); fileUI(); toast('Downloaded. Put it in the shared folder so the others get it.'); return; }
+  let text;
   try {
+    /* file permission first, while the click still counts: a question box (the name) before it would make the browser refuse */
     if (!F.handle || as) { F.handle = await showSaveFilePicker({ ...PICK, suggestedName: F.name || planName() }); await DB.set('handle', F.handle); }
-    if ((await F.handle.queryPermission?.({ mode: 'readwrite' })) !== 'granted' && (await F.handle.requestPermission?.({ mode: 'readwrite' })) !== 'granted') throw new Error('Saving needs permission to change the file.');
+    else if (F.handle.requestPermission && (await F.handle.requestPermission({ mode: 'readwrite' })) !== 'granted') throw new Error('Saving needs permission to change the file. Click Save plan and choose Allow.');
+    P.savedAt = new Date().toISOString(); P.savedBy = askMe(); text = JSON.stringify(P, null, 2);
     const cur = await F.handle.getFile();
     if (!as && F.lastModified && cur.lastModified > F.lastModified + 1000) { // someone else saved it after this page opened it
       let who = 'Someone'; try { who = JSON.parse(await cur.text()).savedBy || who; } catch (e) {}
@@ -644,7 +645,7 @@ async function savePlan(as = false) {
     const w = await F.handle.createWritable(); await w.write(text); await w.close();
     const f = await F.handle.getFile(); F.name = f.name; F.lastModified = f.lastModified; F.dirty = false; F.needsReopen = false;
     await DB.set('plan', P); storeMeta(); fileUI(); toast(`Saved to ${f.name}. OneDrive shares it with the other coordinators.`);
-  } catch (e) { if (e.name !== 'AbortError') toast(e.message, 6000); }
+  } catch (e) { if (e.name === 'AbortError') return; if (e.name === 'NotAllowedError' || e.name === 'SecurityError') { F.needsReopen = true; fileUI(); toast('The browser needs one more click to allow saving into the file: click Save plan again.', 7000); return; } toast(e.message, 6000); }
 }
 const storeMeta = () => DB.set('fileMeta', { name: F.name, lastModified: F.lastModified, dirty: F.dirty });
 const planName = () => `semester-plan${sem() ? '-' + sem().id : ''}.json`;
