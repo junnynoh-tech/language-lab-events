@@ -371,6 +371,20 @@ table.t tr.picked td { background: var(--chip); }
 .del-list { max-height: 45vh; overflow: auto; margin: 0; padding-left: 20px; font-size: 15px; }
 .del-list li + li { margin-top: 4px; }
 
+/* Academic calendar (2026-11-20) */
+.semswitch { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
+.semchip { flex: 0 0 auto; width: auto !important; display: grid; text-align: left; gap: 2px; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); cursor: pointer; font: inherit; color: var(--text); }
+.semchip span { font-size: 13px; color: var(--sub); }
+.semchip[aria-current="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.semchip[aria-current="true"] span { color: inherit; opacity: .85; }
+.stats-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
+.strip { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(34px, 1fr)); gap: 4px; }
+.strip li { position: relative; height: 40px; border-radius: 6px; background: var(--chip); display: grid; place-items: center; font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.strip li.holiday { background: var(--bad-bg); color: var(--bad); outline: 1px solid var(--bad); }
+.strip li.break { background: var(--warn-bg); color: var(--warn); outline: 1px solid var(--warn); }
+.strip li.finals { background: var(--accent); color: var(--accent-ink); }
+.strip .wk-k { position: absolute; top: 1px; right: 4px; font-size: 10px; font-weight: 800; }
+
 </style>
 </head>
 <body>
@@ -895,7 +909,7 @@ function labDueDatesOut(s) {
    Screens. One section per screen, like the events console: overview, then the four planning sections, then the
    outputs for D2L and the plan file.
 ===================================================================================================================== */
-const SECTIONS = [['overview', 'Overview'], ['calendar', 'Academic calendar'], ['courses', 'Language courses'], ['rooms', 'Room scheduling'], ['labs', 'Lab calendar'], ['outputs', 'Outputs for D2L'], ['plan', 'Plan file']];
+const SECTIONS = [['overview', 'Overview'], ['calendar', 'Academic calendar'], ['courses', 'Language courses'], ['profs', 'Professors\' campuses'], ['rooms', 'Room scheduling'], ['labs', 'Lab calendar'], ['outputs', 'Outputs for D2L'], ['plan', 'Plan file']];
 const fld = (id, label, input, hint = '') => `<div class="f"><label for="${id}">${esc(label)}</label>${input}${hint ? `<span class="hint">${esc(hint)}</span>` : ''}</div>`;
 const opt = (v, l, cur) => `<option value="${esc(v)}"${String(v) === String(cur ?? '') ? ' selected' : ''}>${esc(l)}</option>`;
 const sel = (id, cur, opts, empty, extra = '') => `<select id="${id}" ${extra}>${empty != null ? opt('', empty, cur) : ''}${opts.map(([v, l]) => opt(v, l, cur)).join('')}</select>`;
@@ -923,8 +937,8 @@ $('semPick').onchange = e => {
   P.activeSemesterId = e.target.value; changed(false); render();
 };
 function nav() {
-  $('nav').innerHTML = `<h2>Plan</h2><ul>${SECTIONS.slice(0, 5).map(([k, l]) => `<li><button type="button" data-view="${k}" ${k === VIEW ? 'aria-current="page"' : ''}>${esc(l)}</button></li>`).join('')}</ul>`
-    + `<h2>Share</h2><ul>${SECTIONS.slice(5).map(([k, l]) => `<li><button type="button" data-view="${k}" ${k === VIEW ? 'aria-current="page"' : ''}>${esc(l)}</button></li>`).join('')}</ul>`;
+  $('nav').innerHTML = `<h2>Plan</h2><ul>${SECTIONS.slice(0, 6).map(([k, l]) => `<li><button type="button" data-view="${k}" ${k === VIEW ? 'aria-current="page"' : ''}>${esc(l)}</button></li>`).join('')}</ul>`
+    + `<h2>Share</h2><ul>${SECTIONS.slice(6).map(([k, l]) => `<li><button type="button" data-view="${k}" ${k === VIEW ? 'aria-current="page"' : ''}>${esc(l)}</button></li>`).join('')}</ul>`;
 }
 function show(v, focus = true) {
   VIEW = v; nav();
@@ -994,14 +1008,82 @@ VIEWS.overview = () => {
     + `<h2 class="sec">Needs a look</h2>${issueList(issues())}`;
 };
 
-/* ---------- academic calendar ---------- */
+/* ---------- academic calendar (redesigned 2026-11-20): summary + actions on top, semester switcher, key dates with a
+   filter, class days per weekday, the term week by week, then the months ---------- */
+let KF = '';
 VIEWS.calendar = () => {
   const s = sem(), list = sortedSems();
-  const cards = list.map(x => `<button class="semcard" type="button" data-act="editSem" data-arg="${esc(x.id)}" ${x.id === P.activeSemesterId ? 'aria-current="true"' : ''}><h3>${esc(semLabel(x))}</h3>`
-    + `<span class="muted small">${x.start ? `${fmtMD(x.start)} – ${fmtMD(x.end)}, ${x.year}` : 'No dates yet'}</span><span class="chips">${x.id === P.activeSemesterId ? '<span class="tag ok">Showing</span>' : ''}${(x.holidays || []).length ? `<span class="tag">${x.holidays.length} holidays</span>` : ''}${(x.breaks || []).length ? `<span class="tag">${x.breaks.length} break${x.breaks.length > 1 ? 's' : ''}</span>` : ''}</span></button>`).join('');
-  return head('Academic calendar', 'Semesters', 'Term dates, holidays, breaks and finals. Lab due dates and room finals read from here.', `<button class="btn primary" type="button" data-act="newSem">Add a semester</button>`)
-    + (list.length ? `<h2 class="sr">Semesters in the plan</h2><div class="semcards">${cards}</div>` : needSem())
-    + (s ? `<div class="card"><h2>${esc(semLabel(s))} at a glance</h2><p class="lede">Select a semester above to edit it.</p>${monthsHTML(s)}</div>` : '');
+  const add = `<button class="btn primary" type="button" data-act="newSem">Add a semester</button>`;
+  if (!s) return head('Academic calendar', 'Semesters', 'Term dates, holidays, breaks and finals. Lab due dates and room finals read from here.', add) + needSem();
+  const switcher = `<nav class="semswitch" aria-label="Semesters in the plan">${list.map(x => `<button type="button" class="semchip" data-semsel="${esc(x.id)}" ${x.id === P.activeSemesterId ? 'aria-current="true"' : ''}><b>${esc(semLabel(x))}</b><span>${x.start ? `${fmtMD(x.start)} – ${fmtMD(x.end)}` : 'no dates yet'}</span></button>`).join('')}</nav>`;
+  const u = s.type === 'fall' ? ungFall(s.year) : null, differs = u && (s.start !== u.start || s.end !== u.end || s.finalsStart !== u.finalsStart || s.finalsEnd !== u.finalsEnd);
+  const [a, b] = termSpan(s), weeks = weeksOf(s);
+  const cd = classDays(s), hol = (s.holidays || []).filter(h => !a || (h.date >= a && h.date <= (s.finalsEnd || b))), brk = s.breaks || [];
+  const right = `<button class="btn" type="button" data-act="editSem" data-arg="${esc(s.id)}">Edit ${esc(semLabel(s))}</button>${add}`;
+  let h = head('Academic calendar', semLabel(s), a ? `Classes ${fmtLong(a)} to ${fmtLong(b)}${s.finalsStart ? `; finals ${fmtMD(s.finalsStart)}–${fmtMD(s.finalsEnd)}` : ''}. Lab due dates and room finals read from here.` : 'No dates yet: add the first and last day of classes.', right)
+    + switcher;
+  const iss = issues().filter(i => i.view === 'calendar');
+  if (iss.length) h += issueList(iss);
+  if (differs) h += `<p class="note warn" role="status">These dates differ from UNG's Fall ${s.year} calendar (classes ${fmtMD(u.start)}–${fmtMD(u.end)}, finals ${fmtMD(u.finalsStart)}–${fmtMD(u.finalsEnd)}). <button class="btn sm" type="button" data-act="useUng">Use UNG's dates</button></p>`;
+  if (!a) return h + `<div class="empty">Add the first and last day of classes. <button class="btn sm primary" type="button" data-act="editSem" data-arg="${esc(s.id)}">Edit ${esc(semLabel(s))}</button></div>`;
+  h += `<div class="stats-row" role="status">${statPill(weeks.length, 'weeks of classes')}${statPill(cd.total, 'class days')}${statPill(hol.length, hol.length === 1 ? 'holiday' : 'holidays', hol.length ? '' : 'warn')}${statPill(brk.length, brk.length === 1 ? 'break' : 'breaks')}${s.type === 'summer' ? statPill(Object.keys(s.sessions || {}).length, 'sessions') : statPill(s.finalsStart ? `${fmtMD(s.finalsStart)}–${fmtMD(s.finalsEnd)}` : 'not set', 'finals', s.finalsStart ? '' : 'warn')}</div>`;
+  h += `<div class="charts">${weekdayChart(s, cd)}${termStrip(s, termWeeks(s))}</div>`;
+  h += keyDatesHTML(s);
+  return h + `<div class="card" style="margin-top:16px"><h2>Month by month</h2>${monthsHTML(s)}</div>`;
+};
+/* the class weeks, continued through finals (Fall Break and finals week get a number too) */
+function termWeeks(s) {
+  const w = weeksOf(s); if (!w.length) return w;
+  const last = [s.finalsEnd, ...Object.values(s.sessions || {}).map(x => x.finalsEnd)].filter(Boolean).sort().pop();
+  let cur = addDays(pd(w[w.length - 1].start), 7);
+  while (last && cur <= pd(last)) { w.push({ idx: w.length + 1, start: iso(cur), end: iso(addDays(cur, 6)), days: [0, 1, 2, 3, 4, 5, 6].map(n => iso(addDays(cur, n))) }); cur = addDays(cur, 7); }
+  return w;
+}
+/* class days per weekday: holidays, breaks and finals don't count (useful for MW vs TR lab planning) */
+function classDays(s) {
+  const [a, b] = termSpan(s), out = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, total: 0 }; if (!a || !b) return out;
+  for (let d = pd(a); d <= pd(b); d = addDays(d, 1)) { const w = WD[d.getDay() - 1], ds = iso(d); if (!w || blocked(s, ds)) continue; out[w]++; out.total++; }
+  return out;
+}
+function weekdayChart(s, cd) {
+  const max = Math.max(1, ...WD.map(d => cd[d]));
+  return `<figure class="card chart"><figcaption><b>Class days by weekday</b><span class="muted small"> · holidays, breaks and finals left out</span></figcaption>`
+    + `<div class="bars" role="img" aria-label="Class days by weekday: ${WD.map(d => `${d} ${cd[d]}`).join(', ')}.">${WD.map(d => `<div class="bar-row"><span class="bar-l">${d}</span><span class="bar-track"><span class="bar-fill" style="width:${(cd[d] / max * 100).toFixed(1)}%;background:var(--c-gvl)"></span></span><b class="bar-n">${cd[d]}</b></div>`).join('')}</div>`
+    + `<p class="small muted" style="margin:10px 0 0">MW classes meet ${cd.Mon + cd.Wed} times, TR classes ${cd.Tue + cd.Thu}, MWF ${cd.Mon + cd.Wed + cd.Fri}.</p></figure>`;
+}
+/* the term week by week: each square is a week, marked when it has a holiday, break or finals */
+function termStrip(s, weeks) {
+  const kind = w => { const ks = w.days.slice(0, 5).map(d => blocked(s, d)?.kind).filter(Boolean); return ks.includes('finals') ? 'finals' : ks.includes('break') ? 'break' : ks.includes('holiday') ? 'holiday' : ''; };
+  const name = w => [...new Set(w.days.slice(0, 5).map(d => blocked(s, d)?.name).filter(Boolean))].join(', ');
+  const LBL = { holiday: 'H', break: 'B', finals: 'F' };
+  const marked = weeks.filter(kind);
+  return `<figure class="card chart"><figcaption><b>The term, week by week</b><span class="muted small"> · from the first day of classes through finals</span></figcaption>`
+    + `<ol class="strip" aria-label="Weeks: ${esc(marked.map(w => `week ${w.idx} ${name(w)}`).join('; ') || 'no holidays or breaks')}.">${weeks.map(w => { const k = kind(w); return `<li class="${k}" title="${esc(`Week ${w.idx}, ${fmtMD(w.start)}–${fmtMD(w.end)}${k ? ': ' + name(w) : ''}`)}"><span class="wn">${w.idx}</span>${k ? `<span class="wk-k" aria-hidden="true">${LBL[k]}</span>` : ''}</li>`; }).join('')}</ol>`
+    + `<ul class="share-key"><li><span class="sw" style="background:var(--bad-bg);outline:1px solid var(--bad)" aria-hidden="true"></span>H holiday</li><li><span class="sw" style="background:var(--warn-bg);outline:1px solid var(--warn)" aria-hidden="true"></span>B break</li><li><span class="sw" style="background:var(--accent)" aria-hidden="true"></span>F finals</li></ul>`
+    + (marked.length ? `<ul class="small" style="margin:8px 0 0;padding-left:18px">${marked.map(w => `<li>Week ${w.idx} (${fmtMD(w.start)}): ${esc(name(w))}</li>`).join('')}</ul>` : '') + `</figure>`;
+}
+/* every date that matters, in order, with a filter */
+function keyDatesHTML(s) {
+  const [a, b] = termSpan(s), rows = [];
+  if (s.type === 'summer') Object.entries(s.sessions || {}).forEach(([k, x]) => { if (x.start) rows.push([x.start, `${SESSION_LABEL[k] || k} starts`, 'term']); if (x.end) rows.push([x.end, `${SESSION_LABEL[k] || k}: last day of classes`, 'term']); if (x.finalsStart) rows.push([x.finalsStart, `${SESSION_LABEL[k] || k}: finals`, 'finals']); });
+  else { rows.push([a, 'First day of classes', 'term'], [b, 'Last day of classes', 'term']); if (s.finalsStart) rows.push([s.finalsStart, s.finalsEnd && s.finalsEnd !== s.finalsStart ? `Finals begin (through ${fmtWMD(s.finalsEnd)})` : 'Finals', 'finals']); }
+  (s.holidays || []).forEach(h => rows.push([h.date, h.name, 'holiday']));
+  (s.breaks || []).forEach(x => rows.push([x.start, `${x.name}${x.end && x.end !== x.start ? ` (through ${fmtWMD(x.end)})` : ''}`, 'break']));
+  rows.sort((x, y) => x[0].localeCompare(y[0]));
+  const shown = rows.filter(r => !KF || (KF === 'off' ? ['holiday', 'break'].includes(r[2]) : r[2] === KF));
+  const TAG = { term: ['Term', ''], holiday: ['Holiday, no classes', 'bad'], break: ['Break, no classes', 'warn'], finals: ['Finals', 'ok'] };
+  const tw = termWeeks(s), wkOf = d => tw.find(w => w.days.includes(d))?.idx || '';
+  return `<div class="card" style="margin-top:14px"><div class="row" style="justify-content:space-between;align-items:end;margin-bottom:10px"><h2 style="margin:0">Key dates</h2>`
+    + `<div class="seg" role="group" aria-label="Show">${[['', 'All'], ['term', 'Term'], ['off', 'No-class days'], ['finals', 'Finals']].map(([v, l]) => `<button type="button" data-kf="${v}" aria-pressed="${KF === v}">${l}</button>`).join('')}</div></div>`
+    + `<div class="tw"><table class="t compact"><caption class="sr">Key dates for ${esc(semLabel(s))}</caption><thead><tr><th scope="col">Date</th><th scope="col">Week</th><th scope="col">What</th><th scope="col">Kind</th></tr></thead><tbody>`
+    + (shown.map(([d, what, k]) => `<tr><td class="nowrap">${esc(fmtWMD(d))}</td><td class="num">${wkOf(d)}</td><td>${esc(what)}</td><td><span class="tag ${TAG[k][1]}">${TAG[k][0]}</span></td></tr>`).join('') || '<tr><td colspan="4" class="muted">Nothing here yet.</td></tr>')
+    + `</tbody></table></div><p class="small muted" style="margin:8px 0 0"><button class="btn sm" type="button" data-act="editSem" data-arg="${esc(s.id)}">Add or change holidays and breaks</button></p></div>`;
+}
+ACTS.useUng = () => { const s = sem(); if (s && applyUngFall(s)) { changed(); toast(`UNG's Fall ${s.year} dates applied.`); } };
+AFTER.calendar = () => {
+  const keep = sel => { const y = window.scrollY; show('calendar', false); window.scrollTo(0, y); if (sel) document.querySelector(sel)?.focus(); };
+  document.querySelectorAll('[data-semsel]').forEach(b => b.onclick = () => { P.activeSemesterId = b.dataset.semsel; changed(false); render(); document.querySelector(`[data-semsel="${CSS.escape(b.dataset.semsel)}"]`)?.focus(); });
+  document.querySelectorAll('[data-kf]').forEach(b => b.onclick = () => { KF = b.dataset.kf; keep(`[data-kf="${KF}"]`); });
 };
 function monthsHTML(s) {
   const [a, b] = termSpan(s); if (!a || !b) return '<div class="empty">Add the first and last day of classes to see the calendar.</div>';
@@ -1115,8 +1197,7 @@ VIEWS.courses = () => {
     + `<div class="f"><label for="c-loc">Campus</label>${sel('c-loc', CF.loc, CAMPUS_ORDER.map(x => [x, x]), 'All')}</div><div class="f"><label for="c-days">Days</label>${sel('c-days', CF.days, pats.map(x => [x, x]), 'All')}</div>`
     + `<div class="f grow"><label for="c-q">Search</label><input type="search" id="c-q" value="${esc(CF.q)}" placeholder="CRN, title or instructor"></div>`
     + `<label class="switch" style="margin:0 0 6px"><input type="checkbox" role="switch" id="c-all" ${CF.all ? 'checked' : ''}>Other subjects too</label></div>`
-    + profCard(s)
-    + (needs ? `<p class="note warn" role="status">${needs} section${needs > 1 ? 's need' : ' needs'} a campus (shaded). Set the professor's home campus above, or choose one in the Campus column.</p>` : '')
+    + (needs ? `<p class="note warn" role="status">${needs} section${needs > 1 ? 's need' : ' needs'} a campus (shaded). Choose one in the Campus column, or set the professor's home campus in <button class="btn sm" type="button" data-view="profs">Professors' campuses</button>.</p>` : '')
     + chartsHTML(shown)
     + `<div class="selbar${PICKED.size ? ' on' : ''}" role="status">${PICKED.size ? `<b>${PICKED.size} class${PICKED.size === 1 ? '' : 'es'} selected</b>${PICKED.size > pickedShown ? `<span class="muted small">(${PICKED.size - pickedShown} hidden by the filters)</span>` : ''}<button class="btn sm" type="button" data-act="unpick">Clear selection</button><button class="btn sm danger" type="button" data-act="delPicked">Delete selected…</button>` : '<span class="muted small">Tick classes to delete them (for example cancelled sections or ones the Lab doesn\'t serve).</span>'}</div>`
     + `<div class="tw"><table class="t compact"><caption>${shown.length} section${shown.length === 1 ? '' : 's'} shown${CF.level === 'first' ? ' (1001–1002)' : ''}. Select a column heading to sort.</caption><thead><tr><th scope="col" class="pick"><input type="checkbox" id="pick-all" ${allPicked ? 'checked' : ''} aria-label="Select all ${shown.length} sections shown"></th>${COLS.map(th).join('')}</tr></thead>`
@@ -1124,19 +1205,35 @@ VIEWS.courses = () => {
     + `<details class="card" style="margin-top:16px"><summary><b>Budget numbers by language and campus</b> (1001–1002 only: the lab fee)</summary>${distributionHTML()}</details>`;
 };
 /* professors' home campuses: one list for the whole plan; online sections follow their professor */
-let PROF_OPEN = null;
+VIEWS.profs = () => {
+  const s = sem(); if (!s) return head('Professors\' campuses', 'Professors', '') + needSem();
+  const body = profCard(s);
+  return head(semLabel(s), 'Professors\' home campuses', 'Set each professor\'s campus once. Their online and off-campus sections then count toward that campus on Language courses, this semester and the next ones. A campus chosen by hand on Language courses stays as it is.')
+    + (body || `<div class="empty">No language sections with a professor yet. <button class="btn sm" type="button" data-view="courses">Add the Banner files</button></div>`);
+};
+AFTER.profs = () => {
+  const keep = sel => { const y = window.scrollY; show('profs', false); window.scrollTo(0, y); if (sel) document.querySelector(sel)?.focus(); };
+  if ($('pf-q')) $('pf-q').oninput = () => { clearTimeout(keep.t); keep.t = setTimeout(() => { const pos = $('pf-q').selectionStart; PF.q = val('pf-q'); keep('#pf-q'); $('pf-q')?.setSelectionRange(pos, pos); }, 250); };
+  document.querySelectorAll('[data-pfo]').forEach(b => b.onclick = () => { PF.only = b.dataset.pfo; keep(`[data-pfo="${PF.only}"]`); });
+  document.querySelectorAll('[data-prof]').forEach(x => x.onchange = () => { const map = P.instructorCampus ||= {}; if (x.value) map[x.dataset.prof] = x.value; else delete map[x.dataset.prof];
+    const n = applyInstructorCampus(); changed(false); keep(`[data-prof="${CSS.escape(x.dataset.prof)}"]`); if (n) toast(`${n} section${n > 1 ? 's' : ''} moved to ${x.value.replace(' Campus', '')}.`); });
+};
+const PF = { q: '', only: '' };
 function profCard(s) {
   const map = P.instructorCampus || {}, langRows = courses().filter(c => isLang(c.SUBJ) && c.INSTRUCTOR);
-  const profs = {}; langRows.forEach(c => { const k = profKey(c.INSTRUCTOR), x = profs[k] ||= { name: c.INSTRUCTOR, n: 0, online: 0 }; x.n++; if (!AUTO_LOCATION[c.CMP] && !c.LOCATION_SET) x.online++; }); // no Banner campus (online, off campus) and nobody chose one by hand
-  const list = Object.entries(profs).sort((a, b) => (b[1].online > 0) - (a[1].online > 0) || a[1].name.localeCompare(b[1].name, undefined, { numeric: true }));
+  const profs = {}; langRows.forEach(c => { const k = profKey(c.INSTRUCTOR), x = profs[k] ||= { name: c.INSTRUCTOR, n: 0, online: 0, campuses: new Set() }; x.n++; if (!AUTO_LOCATION[c.CMP] && !c.LOCATION_SET) x.online++; else if (c.LOCATION) x.campuses.add(campusName(c.LOCATION)); }); // online = no Banner campus and nobody chose one by hand
+  let list = Object.entries(profs).sort((a, b) => (b[1].online > 0) - (a[1].online > 0) || a[1].name.localeCompare(b[1].name, undefined, { numeric: true }));
   if (!list.length) return '';
   const set = list.filter(([k]) => map[k]).length, onlineNoHome = list.filter(([k, x]) => x.online && !map[k]).length;
-  const open = PROF_OPEN ?? onlineNoHome > 0;
-  return `<details class="card prof" id="prof-card"${open ? ' open' : ''}><summary><b>Professors' home campuses</b> <span class="muted small">· ${set} of ${list.length} set${onlineNoHome ? ` · <b style="color:var(--warn)">${onlineNoHome} teaching online without one</b>` : ''}</span></summary>`
-    + `<p class="lede">Set each professor's campus once. Their online and off-campus sections then count toward that campus, this semester and the next ones. A campus chosen by hand in the table stays as it is.</p>`
-    + `<div class="tw"><table class="t compact"><thead><tr><th scope="col">Professor</th><th scope="col" class="num">Language sections</th><th scope="col" class="num">Online or no campus</th><th scope="col">Home campus</th></tr></thead><tbody>`
-    + list.map(([k, x]) => `<tr${x.online && !map[k] ? ' class="todo"' : ''}><th scope="row">${esc(x.name)}</th><td class="num">${x.n}</td><td class="num">${x.online || ''}</td><td><select data-prof="${esc(k)}" aria-label="Home campus for ${esc(x.name)}">${opt('', 'Not set', map[k] || '')}${LOCATIONS.map(l => opt(l, l.replace(' Campus', ''), map[k] || '')).join('')}</select></td></tr>`).join('')
-    + `</tbody></table></div></details>`;
+  const q = PF.q.toLowerCase();
+  const shown = list.filter(([k, x]) => (!q || x.name.toLowerCase().includes(q)) && (!PF.only || (PF.only === 'online' ? x.online : !map[k])));
+  return `<div class="stats-row" role="status">${statPill(list.length, 'professors teaching language sections')}${statPill(set, 'with a home campus', set === list.length ? 'ok' : '')}${onlineNoHome ? statPill(onlineNoHome, 'teaching online without one', 'warn') : ''}</div>`
+    + `<div class="toolbar" role="search" aria-label="Filter the professors"><div class="f"><span class="lbl" id="pfo-l">Show</span><div class="seg" role="group" aria-labelledby="pfo-l">${[['', 'All'], ['online', 'Teaching online'], ['unset', 'Not set']].map(([v, l]) => `<button type="button" data-pfo="${v}" aria-pressed="${PF.only === v}">${l}</button>`).join('')}</div></div>`
+    + `<div class="f grow"><label for="pf-q">Search</label><input type="search" id="pf-q" value="${esc(PF.q)}" placeholder="Professor's name"></div></div>`
+    + `<div class="tw"><table class="t compact"><caption>${shown.length} professor${shown.length === 1 ? '' : 's'} shown${s ? ', from ' + esc(semLabel(s)) : ''}. Highlighted rows teach online with no home campus yet.</caption><thead><tr><th scope="col">Professor</th><th scope="col" class="num">Language sections</th><th scope="col" class="num">Online or no campus</th><th scope="col">Teaches on</th><th scope="col">Home campus</th></tr></thead><tbody>`
+    + (shown.map(([k, x]) => `<tr${x.online && !map[k] ? ' class="todo"' : ''}><th scope="row">${esc(x.name)}</th><td class="num">${x.n}</td><td class="num">${x.online || ''}</td><td class="small">${esc([...x.campuses].join(', '))}</td><td><select data-prof="${esc(k)}" aria-label="Home campus for ${esc(x.name)}">${opt('', 'Not set', map[k] || '')}${LOCATIONS.map(l => opt(l, l.replace(' Campus', ''), map[k] || '')).join('')}</select></td></tr>`).join('') || '<tr><td colspan="5" class="muted">No professors match.</td></tr>')
+    + `</tbody></table></div>`
+    + `<p class="small muted" style="margin:10px 0 0">Names are matched as Banner writes them. Add COM775 on Language courses for full names; COM1430 alone shortens them. ${Object.keys(map).length - set > 0 ? `${Object.keys(map).length - set} more saved from other semesters.` : ''}</p>`;
 }
 function coursesShown() {
   const q = CF.q.toLowerCase(), k = CF.sort;
@@ -1202,9 +1299,6 @@ AFTER.courses = () => {
   const redraw = sel => { const y = window.scrollY; show('courses', false); window.scrollTo(0, y); document.querySelector(sel)?.focus(); };
   document.querySelectorAll('[data-pick]').forEach(x => x.onchange = () => { if (x.checked) PICKED.add(x.dataset.pick); else PICKED.delete(x.dataset.pick); redraw(`[data-pick="${CSS.escape(x.dataset.pick)}"]`); });
   if ($('pick-all')) $('pick-all').onchange = () => { coursesShown().forEach(c => $('pick-all').checked ? PICKED.add(c.CRN) : PICKED.delete(c.CRN)); redraw('#pick-all'); };
-  if ($('prof-card')) $('prof-card').ontoggle = () => { PROF_OPEN = $('prof-card').open; };
-  document.querySelectorAll('[data-prof]').forEach(x => x.onchange = () => { const map = P.instructorCampus ||= {}; if (x.value) map[x.dataset.prof] = x.value; else delete map[x.dataset.prof]; PROF_OPEN = true;
-    const n = applyInstructorCampus(); changed(false); redraw(`[data-prof="${CSS.escape(x.dataset.prof)}"]`); if (n) toast(`${n} section${n > 1 ? 's' : ''} moved to ${x.value.replace(' Campus', '')}.`); });
   document.querySelectorAll('[data-loc]').forEach(x => x.onchange = () => { const c = courses().find(y => y.CRN === x.dataset.loc); c.LOCATION = x.value; c.LOCATION_SET = true; delete c.LOCATION_FROM; changed(false); const sc = window.scrollY; show('courses', false); window.scrollTo(0, sc); document.querySelector(`[data-loc="${CSS.escape(c.CRN)}"]`)?.focus(); });
 };
 ACTS.unpick = () => { PICKED.clear(); const y = window.scrollY; show('courses', false); window.scrollTo(0, y); };
