@@ -1261,7 +1261,7 @@ function rowMenu(x, y, items, opener) {
     else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); bs[(i + (e.key === 'ArrowDown' ? 1 : bs.length - 1)) % bs.length].focus(); } }; });
   bs[0].focus();
 }
-function menuFor(btnOrRow, e, items) { const b = btnOrRow.getBoundingClientRect(); rowMenu(e && e.type === 'contextmenu' ? e.clientX : b.left, e && e.type === 'contextmenu' ? e.clientY : b.bottom + 4, items, btnOrRow.matches('button') ? btnOrRow : btnOrRow.querySelector('.rowbtn')); }
+function menuFor(btnOrRow, e, items) { const b = btnOrRow.getBoundingClientRect(); rowMenu(e && e.type === 'contextmenu' ? e.clientX : b.left, e && e.type === 'contextmenu' ? e.clientY : b.bottom + 4, items, btnOrRow.matches('button') ? btnOrRow : (btnOrRow.querySelector('.rowbtn') || btnOrRow)); }
 const PROF_PICK = new Set();
 ACTS.profUnpick = () => { PROF_PICK.clear(); const y = window.scrollY; show('profs', false); window.scrollTo(0, y); };
 ACTS.profDel = () => delProfs([...PROF_PICK]);
@@ -1514,8 +1514,10 @@ VIEWS.labs = () => {
   const fromCourses = LAB_LANGS.flatMap(([code]) => LAB_LEVELS.map(lv => `${code}${lv}`)).filter(k => courses().some(c => `${c.SUBJ}${c.CRSE}` === k));
   const sess = s.type === 'summer' ? `<p class="small" style="margin:0 0 10px"><b>Sessions with labs:</b> ${SESSIONS.map(([k, l]) => { const x = s.sessions?.[k]; return `<label class="chipbox"${x?.start ? '' : ' title="Add this session\'s dates in the Academic calendar"'}><input type="checkbox" data-sess="${k}" ${lc.sessionToggles[k] ? 'checked' : ''} ${x?.start ? '' : 'disabled'}>${l}</label>`; }).join(' ')}</p>` : '';
   const pick = `<div class="classpick">${LAB_LANGS.map(([code, label, color]) => `<div class="lrow"><span class="lname">${langTag(code)}${label}</span>${LAB_LEVELS.flatMap(lv => activeSessions(s).map(se => { const k = classKey(code, lv, se); return `<label class="chipbox"><input type="checkbox" data-cls="${k}" ${lc.classesOffered[k] ? 'checked' : ''}>${code}${lv}${se === REGULAR ? '' : ' · ' + SESSION_LABEL[se]}</label>`; })).join('')}</div>`).join('')}</div>`;
-  const due = off.length ? `<div class="tw"><table class="t"><thead><tr><th scope="col">Class</th><th scope="col">Due day</th><th scope="col">Due time</th></tr></thead><tbody>${off.map(c => { const d = lc.dueDayTimes[c.key] || {}; return `<tr><th scope="row">${langTag(c.code)}${esc(c.name)}</th><td>${sel('dd-' + c.key, d.day, DAY_FULL.slice(1).concat('Sunday').map(x => [x, x]), null, `data-dd="${c.key}" data-k="day" aria-label="Due day for ${esc(c.name)}"`)}</td><td>${sel('dt-' + c.key, d.time, [...new Set([...DUE_TIMES, d.time].filter(Boolean))].map(x => [x, x]), null, `data-dd="${c.key}" data-k="time" aria-label="Due time for ${esc(c.name)}"`)}</td></tr>`; }).join('')}</tbody></table></div>`
-    + `<div class="row" style="margin-top:10px"><span class="small muted">Same for every class:</span>${sel('all-day', '', DAY_FULL.slice(1).concat('Sunday').map(x => [x, x]), 'Day', 'aria-label="Due day for every class"')}${sel('all-time', '', DUE_TIMES.map(x => [x, x]), 'Time', 'aria-label="Due time for every class"')}<button class="btn sm" type="button" data-act="allDue">Apply</button></div>` : '<div class="empty">Choose classes in step 1.</div>';
+  [...LPICK].forEach(k => { if (!off.some(c => c.key === k)) LPICK.delete(k); });
+  const due = off.length ? `<p class="small muted" style="margin:0 0 8px">Tick classes, or use ⋯ or right-click on a row, to set several at once or take a class off the lab calendar.</p><div class="tw"><table class="t"><thead><tr><th scope="col" class="pick"><input type="checkbox" id="lpick-all" ${off.every(c => LPICK.has(c.key)) ? 'checked' : ''} aria-label="Select all ${off.length} classes"></th><th scope="col">Class</th><th scope="col">Due day</th><th scope="col">Due time</th></tr></thead><tbody>${off.map(c => { const d = lc.dueDayTimes[c.key] || {}; return `<tr class="${LPICK.has(c.key) ? 'picked' : ''}" data-lkey="${c.key}"><td class="pick"><span class="pickwrap"><input type="checkbox" data-lpick="${c.key}" ${LPICK.has(c.key) ? 'checked' : ''} aria-label="Select ${esc(c.name)}"><button type="button" class="rowbtn" data-lmenu="${c.key}" aria-haspopup="menu" aria-label="Actions for ${esc(c.name)}" title="Actions (or right-click the row)">⋯</button></span></td><th scope="row">${langTag(c.code)}${esc(c.name)}</th><td>${sel('dd-' + c.key, d.day, DAY_FULL.slice(1).concat('Sunday').map(x => [x, x]), null, `data-dd="${c.key}" data-k="day" aria-label="Due day for ${esc(c.name)}"`)}</td><td>${sel('dt-' + c.key, d.time, [...new Set([...DUE_TIMES, d.time].filter(Boolean))].map(x => [x, x]), null, `data-dd="${c.key}" data-k="time" aria-label="Due time for ${esc(c.name)}"`)}</td></tr>`; }).join('')}</tbody></table></div>`
+    + `<div class="row" style="margin-top:10px"><span class="small muted">${LPICK.size ? `Same for the ${LPICK.size} selected:` : 'Same for every class:'}</span>${sel('all-day', '', DAY_FULL.slice(1).concat('Sunday').map(x => [x, x]), 'Day', `aria-label="Due day for ${LPICK.size ? 'the selected classes' : 'every class'}"`)}${sel('all-time', '', DUE_TIMES.map(x => [x, x]), 'Time', `aria-label="Due time for ${LPICK.size ? 'the selected classes' : 'every class'}"`)}<button class="btn sm" type="button" data-act="allDue">Apply</button></div>`
+    + `<div class="selbar float${LPICK.size ? ' on' : ''}" role="status">${LPICK.size ? `<b>${LPICK.size} class${LPICK.size === 1 ? '' : 'es'} selected</b><span class="muted small">Set the day and time just above, or:</span><button class="btn sm" type="button" data-act="lUnpick">Clear selection</button><button class="btn sm danger" type="button" data-act="lRemove">Take off the lab calendar…</button>` : ''}</div>` : '<div class="empty">Choose classes in step 1.</div>';
   const pl = placedLabs(s).filter(p => p.cls && !p.outside), badPl = pl.filter(p => p.block).length, emptyCls = off.filter(c => !pl.some(p => p.classKey === c.key)).length;
   const progress = `<ol class="progress" aria-label="Progress">`
     + `<li class="${off.length ? 'ok' : 'todo'}"><a href="#lc-1"><b>1</b> Classes</a><span>${off.length ? `${off.length} chosen` : 'none yet'}</span></li>`
@@ -1528,7 +1530,7 @@ VIEWS.labs = () => {
     + ((b => b.length ? issueList(b) : '')(issues().filter(i => i.view === 'labs' && i.level === 'bad')))
     + `<div class="card" id="lc-1"><h2><span class="step">1</span>Classes with labs</h2>${sess}${pick}${fromCourses.length ? `<p class="small" style="margin:10px 0 0"><button class="btn sm" type="button" data-act="clsFromCourses">Match the imported courses</button> <span class="muted">${esc(fromCourses.join(', '))}</span></p>` : ''}</div>`
     + `<div class="card" id="lc-2"><h2><span class="step">2</span>Due day and time</h2>${due}</div>`
-    + `<div class="card" id="lc-3"><h2><span class="step">3</span>Due weeks</h2><p class="lede">Drag a lab onto a week, or select a cell to choose its labs. Each cell shows that week's due date. Red cells are holidays, amber are breaks, gray is finals.</p>`
+    + `<div class="card" id="lc-3"><h2><span class="step">3</span>Due weeks</h2><p class="lede">Drag a lab onto a week, select a cell to choose its labs, or right-click a cell (keyboard: the Menu key) to add or remove one quickly. Each cell shows that week's due date. Red cells are holidays, amber are breaks, gray is finals.</p>`
     + (off.length ? `<div class="toolbar" role="search" aria-label="Which classes to show"><div class="f"><label for="lf-lang">Language</label>${sel('lf-lang', LF.lang, [...new Set(off.map(c => c.code))].map(c => [c, LAB_LANGS.find(l => l[0] === c)[1]]), 'All')}</div><div class="f"><span class="lbl" id="lf-l">Level</span><div class="seg" role="group" aria-labelledby="lf-l">${[['', 'Both'], ['1001', '1001'], ['1002', '1002']].map(([v, l]) => `<button type="button" data-lfl="${v}" aria-pressed="${LF.level === v}">${l}</button>`).join('')}</div></div></div>` : '')
     + loadChartHTML(s)
     + `<div class="tray" aria-label="Labs and workshops">${lc.labTypes.map(l => `<span class="pill" draggable="true" data-drag="${esc(l.id)}" style="background:${esc(l.color)}">${esc(l.label)}<button class="x" type="button" data-act="rmType" data-arg="${esc(l.id)}" aria-label="Remove ${esc(l.label)}">✕</button></span>`).join('')}`
@@ -1566,6 +1568,20 @@ AFTER.labs = () => {
   const keep = () => { const y = window.scrollY, g = document.querySelector('.lab')?.closest('.tw'), gx = g?.scrollLeft, gy = g?.scrollTop; show('labs', false); window.scrollTo(0, y); const g2 = document.querySelector('.lab')?.closest('.tw'); if (g2) { g2.scrollLeft = gx; g2.scrollTop = gy; } };
   if ($('lf-lang')) $('lf-lang').onchange = () => { LF.lang = val('lf-lang'); keep(); $('lf-lang')?.focus(); };
   document.querySelectorAll('[data-lfl]').forEach(b => b.onclick = () => { LF.level = b.dataset.lfl; keep(); document.querySelector(`[data-lfl="${LF.level}"]`)?.focus(); });
+  const cellItems = cell => { const [w, k] = cell.split('|'), pk = `${w}_${k}`, cur = lc.placements[pk] || [], c = offered(s).find(x => x.key === k);
+    const back = () => { keep(); document.querySelector(`[data-cell="${CSS.escape(cell)}"]`)?.focus(); };
+    return [...lc.labTypes.map(l => ({ label: `${cur.includes(l.id) ? 'Remove' : 'Add'} ${l.label}`, run: () => { const ids = lc.placements[pk] ||= []; if (ids.includes(l.id)) lc.placements[pk] = ids.filter(i => i !== l.id); else ids.push(l.id); if (!lc.placements[pk].length) delete lc.placements[pk]; changed(false); back(); } })),
+      ...(cur.length ? [{ label: `Clear week ${w} for ${c?.name || k}`, danger: true, run: () => { delete lc.placements[pk]; changed(false); back(); } }] : []),
+      { label: 'Choose labs…', run: () => cellPane(s, cell) },
+      { label: `Take ${c?.name || k} off the lab calendar…`, danger: true, run: () => removeLabClasses([k]) }]; };
+  const lItems = k => { const c = offered(s).find(x => x.key === k), many = LPICK.size > 1 && LPICK.has(k), tgt = many ? [...LPICK] : [k];
+    return [{ label: LPICK.has(k) ? 'Unselect' : 'Select', run: () => { LPICK.has(k) ? LPICK.delete(k) : LPICK.add(k); keep(); document.querySelector(`[data-lmenu="${k}"]`)?.focus(); } },
+      { label: `Clear every due week for ${many ? `the ${LPICK.size} selected` : c?.name || k}`, run: () => { if (!confirm('Remove the labs placed in their weeks? Their due day stays.')) return; tgt.forEach(t => Object.keys(lc.placements).forEach(p => { if (p.endsWith('_' + t)) delete lc.placements[p]; })); changed(false); keep(); } },
+      { label: `Take ${many ? `the ${LPICK.size} selected` : c?.name || k} off the lab calendar…`, danger: true, run: () => removeLabClasses(tgt) }]; };
+  document.querySelectorAll('[data-lmenu]').forEach(b => b.onclick = e => menuFor(b, e, lItems(b.dataset.lmenu)));
+  document.querySelectorAll('tr[data-lkey]').forEach(tr => tr.oncontextmenu = e => { if (e.target.closest('select,input')) return; e.preventDefault(); menuFor(tr, e, lItems(tr.dataset.lkey)); });
+  document.querySelectorAll('[data-lpick]').forEach(x => x.onchange = () => { x.checked ? LPICK.add(x.dataset.lpick) : LPICK.delete(x.dataset.lpick); keep(); document.querySelector(`[data-lpick="${x.dataset.lpick}"]`)?.focus(); });
+  if ($('lpick-all')) $('lpick-all').onchange = () => { const on = $('lpick-all').checked; offered(s).forEach(c => on ? LPICK.add(c.key) : LPICK.delete(c.key)); keep(); $('lpick-all')?.focus(); };
   document.querySelectorAll('[data-sess]').forEach(x => x.onchange = () => { lc.sessionToggles[x.dataset.sess] = x.checked; changed(false); keep(); });
   document.querySelectorAll('[data-cls]').forEach(x => x.onchange = () => { const k = x.dataset.cls; lc.classesOffered[k] = x.checked; if (x.checked && !lc.dueDayTimes[k]) lc.dueDayTimes[k] = { day: 'Wednesday', time: '11:59 PM' }; changed(false); keep(); document.querySelector(`[data-cls="${k}"]`)?.focus(); });
   document.querySelectorAll('[data-dd]').forEach(x => x.onchange = () => { (lc.dueDayTimes[x.dataset.dd] ||= { day: 'Wednesday', time: '11:59 PM' })[x.dataset.k] = x.value; changed(false); keep(); });
@@ -1576,7 +1592,9 @@ AFTER.labs = () => {
     td.ondrop = e => { e.preventDefault(); td.classList.remove('over'); if (!drag) return; const [w, k] = td.dataset.cell.split('|'), to = `${w}_${k}`;
       if (drag.from) { const [fw, fk] = drag.from.split('|'), from = `${fw}_${fk}`; if (from === to) return; lc.placements[from] = (lc.placements[from] || []).filter(x => x !== drag.id); if (!lc.placements[from].length) delete lc.placements[from]; }
       (lc.placements[to] ||= []); if (!lc.placements[to].includes(drag.id)) lc.placements[to].push(drag.id); drag = null; changed(false); keep(); };
-    const open = () => cellPane(s, td.dataset.cell); td.onclick = e => { if (!e.target.closest('.pill')) open(); }; td.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } };
+    const open = () => cellPane(s, td.dataset.cell); td.onclick = e => { if (!e.target.closest('.pill')) open(); };
+    td.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } else if (e.key === 'ContextMenu' || (e.shiftKey && e.key === 'F10')) { e.preventDefault(); menuFor(td, null, cellItems(td.dataset.cell)); } };
+    td.oncontextmenu = e => { e.preventDefault(); menuFor(td, e, cellItems(td.dataset.cell)); };
   });
 };
 function cellPane(s, cell) {
@@ -1586,7 +1604,22 @@ function cellPane(s, cell) {
     `<span></span><button class="btn primary" type="button" data-close>Done</button>`);
   $('dlg').querySelectorAll('[data-pt]').forEach(x => x.onchange = () => { const ids = lc.placements[pk] ||= []; if (x.checked) { if (!ids.includes(x.dataset.pt)) ids.push(x.dataset.pt); } else lc.placements[pk] = ids.filter(i => i !== x.dataset.pt); if (!lc.placements[pk].length) delete lc.placements[pk]; changed(); });
 }
-ACTS.allDue = () => { const s = sem(), lc = labCal(s), d = val('all-day'), t = val('all-time'); if (!d && !t) return toast('Choose a day or a time.'); offered(s).forEach(c => { const x = lc.dueDayTimes[c.key] ||= { day: 'Wednesday', time: '11:59 PM' }; if (d) x.day = d; if (t) x.time = t; }); changed(); };
+const LPICK = new Set(); // lab calendar classes selected (step 2)
+ACTS.lUnpick = () => { LPICK.clear(); const y = window.scrollY; show('labs', false); window.scrollTo(0, y); };
+ACTS.lRemove = () => removeLabClasses([...LPICK]);
+/* take classes off the lab calendar: the class, its due day and its due weeks (confirm first; a copy of the plan is kept) */
+function removeLabClasses(keys) {
+  const s = sem(), lc = labCal(s), cls = offered(s).filter(c => keys.includes(c.key)); if (!cls.length) return;
+  const n = cls.length, word = `${n} class${n === 1 ? '' : 'es'}`, placed = k => Object.keys(lc.placements).filter(p => p.endsWith('_' + k)).reduce((a, p) => a + lc.placements[p].length, 0);
+  pane(`Take ${word} off the lab calendar?`, 'Lab calendar', `<p class="lede" style="margin:0 0 12px">Their due day and every lab placed in their weeks are removed. The courses themselves stay on Language courses. A copy of the plan from before is kept on the Plan file page.</p>`
+    + `<ul class="del-list">${cls.map(c => `<li><b>${esc(c.name)}</b> · ${placed(c.key)} due date${placed(c.key) === 1 ? '' : 's'} placed</li>`).join('')}</ul>`,
+    `<span></span><div class="row"><button class="btn" type="button" data-close>Cancel</button><button class="btn danger" type="button" id="lrm-go">Take ${word} off</button></div>`);
+  $('dlg').querySelector('.row [data-close]')?.focus();
+  $('lrm-go').onclick = async () => { await backupLocal(`before taking ${word} off the lab calendar`);
+    cls.forEach(c => { lc.classesOffered[c.key] = false; delete lc.dueDayTimes[c.key]; Object.keys(lc.placements).forEach(p => { if (p.endsWith('_' + c.key)) delete lc.placements[p]; }); LPICK.delete(c.key); });
+    $('dlg').close(); changed(); toast(`${word.charAt(0).toUpperCase() + word.slice(1)} taken off the lab calendar.`); };
+}
+ACTS.allDue = () => { const s = sem(), lc = labCal(s), d = val('all-day'), t = val('all-time'); if (!d && !t) return toast('Choose a day or a time.'); offered(s).filter(c => !LPICK.size || LPICK.has(c.key)).forEach(c => { const x = lc.dueDayTimes[c.key] ||= { day: 'Wednesday', time: '11:59 PM' }; if (d) x.day = d; if (t) x.time = t; }); changed(); };
 ACTS.clsFromCourses = () => { const s = sem(), lc = labCal(s); let n = 0; LAB_LANGS.forEach(([code]) => LAB_LEVELS.forEach(lv => { if (courses().some(c => `${c.SUBJ}${c.CRSE}` === code + lv)) activeSessions(s).forEach(se => { const k = classKey(code, lv, se); if (!lc.classesOffered[k]) { lc.classesOffered[k] = true; lc.dueDayTimes[k] ||= { day: 'Wednesday', time: '11:59 PM' }; n++; } }); })); changed(); toast(n ? `${n} class${n > 1 ? 'es' : ''} added from the course list.` : 'Every class in the course list is already chosen.'); };
 ACTS.addType = () => {
   const s = sem(), lc = labCal(s), n = lc.labTypes.filter(l => !/workshop/i.test(l.label)).length + 1;
