@@ -1,0 +1,34 @@
+{
+  "id": "mango",
+  "group": "tech",
+  "title": "Mango Languages sign-up",
+  "summary": "The first sign-up must happen on a campus computer.",
+  "roles": [
+    "la"
+  ],
+  "tasks": {
+    "la": [
+      "Help students sign up for Mango"
+    ]
+  },
+  "sections": [
+    {
+      "id": "signup",
+      "role": "la",
+      "title": "First sign-up (on campus only)",
+      "steps": [
+        "Sit at a computer on the UNG campus network.",
+        "Open the UNG Language Lab web page and choose **Mango Languages** under Links.",
+        "**Sign Up** with the UNG email address.",
+        "Pick the language."
+      ],
+      "note": "Signing up off campus doesn't give UNG access. That's the usual reason it \"doesn't work.\""
+    },
+    {
+      "id": "after",
+      "role": "la",
+      "title": "After that, anywhere",
+      "text": "Students log in on the web or in the Mango app (App Store or Google Play) with the account they just made."
+    }
+  ]
+}

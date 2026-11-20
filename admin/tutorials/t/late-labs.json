@@ -1,0 +1,132 @@
+{
+  "id": "late-labs",
+  "group": "assess",
+  "title": "Late labs and excused absences",
+  "summary": "No late labs. One make-up path for excused absences, run by email.",
+  "roles": [
+    "la",
+    "lc"
+  ],
+  "tasks": {
+    "la": [
+      "Send late-lab and absence questions to email"
+    ],
+    "lc": [
+      "Reopen labs for excused absences",
+      "Exempt labs after the close"
+    ]
+  },
+  "flow": {
+    "lanes": [
+      "student",
+      "la",
+      "lc"
+    ],
+    "nodes": [
+      {
+        "id": "a",
+        "lane": "student",
+        "type": "start",
+        "text": "Missed a lab",
+        "next": [
+          {
+            "to": "b"
+          }
+        ]
+      },
+      {
+        "id": "b",
+        "lane": "la",
+        "type": "step",
+        "text": "No answer at the desk: email the Lab",
+        "go": "email-first",
+        "next": [
+          {
+            "to": "c"
+          }
+        ]
+      },
+      {
+        "id": "c",
+        "lane": "student",
+        "type": "email",
+        "text": "Emails {email} by the 2nd business day",
+        "next": [
+          {
+            "to": "d"
+          }
+        ]
+      },
+      {
+        "id": "d",
+        "lane": "lc",
+        "type": "step",
+        "text": "Standard reply; reopen the lab",
+        "go": "#lc",
+        "next": [
+          {
+            "to": "e"
+          }
+        ]
+      },
+      {
+        "id": "e",
+        "lane": "student",
+        "type": "step",
+        "text": "Submits + Dean's email within 7 days",
+        "next": [
+          {
+            "to": "f"
+          }
+        ]
+      },
+      {
+        "id": "f",
+        "lane": "lc",
+        "type": "end",
+        "text": "Graded with the batch; then closed"
+      }
+    ]
+  },
+  "sections": [
+    {
+      "id": "rule",
+      "role": "all",
+      "title": "The rule",
+      "text": "Labs close at 5:00 PM on the due date. Late work isn't accepted, technology problems included. The one routine exception is an Excused Absence, and telling the Lab is the student's job."
+    },
+    {
+      "id": "la",
+      "role": "la",
+      "title": "Lab assistant",
+      "list": [
+        "Don't approve, promise or reopen anything.",
+        "Say: \"Please email {email} by 5:00 PM on the 2nd business day after the due date. You don't need your approval yet.\"",
+        "Don't ask why and don't accept medical records.",
+        "Grading: every lab not turned in by 5:00 PM gets 0, even if the student emailed. See [Grading lab videos](#/grading/missing)."
+      ]
+    },
+    {
+      "id": "student",
+      "role": "student",
+      "title": "What the student does",
+      "steps": [
+        "Emails the Lab by 5:00 PM on the 2nd business day after the due date (or before, if they know ahead).",
+        "Submits the lab and forwards the Dean of Students' email by 5:00 PM, 7 days after the due date."
+      ]
+    },
+    {
+      "id": "lc",
+      "role": "lc",
+      "title": "Coordinator",
+      "list": [
+        "Send the standard reply; don't ask why.",
+        "Reopen the lab with Bongo and quiz special access.",
+        "Grade it with that lab's batch and replace the lab assistant's 0. Nothing is graded after the close.",
+        "Told on time but the Dean's email came late, or the absence ran past the close: exempt the lab. One per student per course.",
+        "Bongo or D2L down for everyone, or a campus closed: extend for all sections with one announcement.",
+        "Accommodations: work with SAS and the professor directly."
+      ]
+    }
+  ]
+}

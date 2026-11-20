@@ -1,0 +1,280 @@
+{
+  "id": "grading",
+  "group": "assess",
+  "title": "Grading lab videos",
+  "summary": "The speaking rubric, the rules that cap a row, missing labs, how to word feedback, and what goes to the coordinator.",
+  "roles": [
+    "la",
+    "lc"
+  ],
+  "tasks": {
+    "la": [
+      "Grade lab videos with the rubric",
+      "Give 0 for every lab not turned in by 5:00 PM",
+      "Mark Lab 0 Complete or Not yet"
+    ],
+    "lc": [
+      "Replace the 0 for excused make-ups",
+      "Disputed grades",
+      "Academic honesty reports"
+    ]
+  },
+  "flow": {
+    "lanes": [
+      "la",
+      "lc"
+    ],
+    "nodes": [
+      {
+        "id": "a",
+        "lane": "la",
+        "type": "start",
+        "text": "Open the lab in Bongo",
+        "next": [
+          {
+            "to": "b"
+          }
+        ]
+      },
+      {
+        "id": "b",
+        "lane": "la",
+        "type": "decision",
+        "text": "Turned in by the due time?",
+        "next": [
+          {
+            "to": "c",
+            "label": "Yes"
+          },
+          {
+            "to": "g0",
+            "label": "No"
+          }
+        ]
+      },
+      {
+        "id": "g0",
+        "lane": "la",
+        "side": true,
+        "type": "end",
+        "text": "Not turned in: 0, always",
+        "go": "#missing",
+        "beside": true
+      },
+      {
+        "id": "c",
+        "lane": "la",
+        "type": "decision",
+        "text": "Face and audio for most of it?",
+        "go": "#zero",
+        "next": [
+          {
+            "to": "d",
+            "label": "Yes"
+          },
+          {
+            "to": "z",
+            "label": "No"
+          }
+        ]
+      },
+      {
+        "id": "z",
+        "lane": "la",
+        "side": true,
+        "beside": true,
+        "type": "end",
+        "text": "Nothing to rate: 0"
+      },
+      {
+        "id": "d",
+        "lane": "la",
+        "type": "step",
+        "text": "Score the 4 rows, apply the caps",
+        "go": "#rubric",
+        "next": [
+          {
+            "to": "e"
+          }
+        ]
+      },
+      {
+        "id": "e",
+        "lane": "la",
+        "type": "decision",
+        "text": "Honesty concern?",
+        "go": "#honesty",
+        "next": [
+          {
+            "to": "f",
+            "label": "No"
+          },
+          {
+            "to": "h",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "id": "h",
+        "lane": "lc",
+        "beside": true,
+        "type": "end",
+        "text": "Report it; coordinator decides"
+      },
+      {
+        "id": "f",
+        "lane": "la",
+        "type": "end",
+        "text": "Write feedback, publish",
+        "go": "#feedback"
+      }
+    ]
+  },
+  "sections": [
+    {
+      "id": "missing",
+      "role": "la",
+      "title": "Missing labs",
+      "steps": [
+        "Lab not turned in by the due time (5:00 PM): give 0. Every time, even if the student emailed the Lab.",
+        "Don't search the inbox, ask why, or wait for a reason."
+      ],
+      "note": "The Lab accepts no late labs. When the coordinator reopens a lab for an Excused Absence, the coordinator grades it and replaces your 0, so you never need to know who or why."
+    },
+    {
+      "id": "rubric",
+      "role": "la",
+      "title": "Speaking rubric (25 points)",
+      "rubric": true
+    },
+    {
+      "id": "zero",
+      "role": "la",
+      "title": "Nothing to rate",
+      "text": "Nothing to rate (0 in every row): no face or no audio for most of the video, mostly not Spanish, a different lab's task, an edited upload, or a video sent outside Bongo. Bongo needs this column to record a 0."
+    },
+    {
+      "id": "caps",
+      "role": "la",
+      "title": "Caps",
+      "list": [
+        "**Notecard:** students hold it up to the camera for about 5 seconds at the start. Sentences on the card or the slides: Fluency & Discourse is scored no higher than Does not meet. Rehearsed speech is fine; reading is scored as delivery, not as a separate penalty.",
+        "**Slides not visible** in a slide lab for most of the video (Bongo tab or wrong window shared): Task Completion is scored no higher than Does not meet (2). The speaking rows are scored as usual.",
+        "**Labs with a video comment:** a missing comment counts as one missing part in Task Completion.",
+        "**Lab 0's Bongo setup check** has no rubric: Complete or Not yet, worth 0% of the grade."
+      ]
+    },
+    {
+      "id": "feedback",
+      "role": "la",
+      "title": "Feedback",
+      "list": [
+        "Start with what worked, then one thing to improve.",
+        "Describe what you hear, not what you suspect: \"Try answering with fewer long pauses,\" not \"You were reading.\"",
+        "Use **Record Audio** in the feedback box to model a sound."
+      ]
+    },
+    {
+      "id": "honesty",
+      "role": "la",
+      "title": "Honesty concern",
+      "steps": [
+        "Don't mention it in the feedback.",
+        "Note the time stamps, the link and the section.",
+        "Fill in the Academic Misconduct Form on the Lab Assistant Training SharePoint site."
+      ],
+      "note": "The coordinator decides what happens. You never accuse a student."
+    },
+    {
+      "id": "lc",
+      "role": "lc",
+      "title": "Coordinator",
+      "list": [
+        "Grade reopened labs with that lab's batch, replacing the 0",
+        "Answer grade questions (they come by email)",
+        "Review honesty reports"
+      ]
+    }
+  ],
+  "rubric": {
+    "total": 25,
+    "levels": [
+      "Exceeds",
+      "Meets",
+      "Approaches",
+      "Does not meet",
+      "Nothing to rate"
+    ],
+    "rows": [
+      {
+        "name": "Fluency & Discourse",
+        "points": [
+          10,
+          8,
+          6,
+          4,
+          0
+        ],
+        "d": [
+          "Connected sentences joined with linking words; talks to the camera; pauses only to think.",
+          "Mostly complete sentences with some linking words; pauses or restarts don't break the message.",
+          "A mix of sentences and fragments with long pauses, or flat, list-like delivery with eyes off the camera.",
+          "Mostly single words or fragments with long silences, or recited for most of the video.",
+          "The whole video can't be scored (see below)."
+        ]
+      },
+      {
+        "name": "Comprehensibility & Accuracy",
+        "points": [
+          5,
+          4,
+          3,
+          2,
+          0
+        ],
+        "d": [
+          "Easy to understand throughout; this lab's grammar used correctly.",
+          "Understood without effort; this lab's grammar used with a few errors.",
+          "Needs a patient listener, or this lab's grammar is missing or often wrong.",
+          "Hard to understand even after replaying.",
+          "The whole video can't be scored (see below)."
+        ]
+      },
+      {
+        "name": "Vocabulary Range",
+        "points": [
+          5,
+          4,
+          3,
+          2,
+          0
+        ],
+        "d": [
+          "Varied: chapter words plus descriptive words and different verbs; rarely repeats; no English.",
+          "Chapter vocabulary used correctly, with some variety and description.",
+          "A small set of words repeated; little description; some English.",
+          "Very few words; frequent English or invented words.",
+          "The whole video can't be scored (see below)."
+        ]
+      },
+      {
+        "name": "Task Completion",
+        "points": [
+          5,
+          4,
+          3,
+          2,
+          0
+        ],
+        "d": [
+          "Every part answered with specific details; meets the length.",
+          "Every part answered; some answers brief; meets the length.",
+          "One part missing, or under the length.",
+          "Two or more parts missing, or under half the length.",
+          "The whole video can't be scored (see below)."
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "id": "ipad-checkout",
+  "group": "desk",
+  "title": "iPad checkout and check-in",
+  "summary": "Lend and take back iPads, pencils, adapters and cables in the rental site.",
+  "roles": [
+    "la"
+  ],
+  "tasks": {
+    "la": [
+      "Check iPads and accessories in and out"
+    ]
+  },
+  "flow": {
+    "lanes": [
+      "la"
+    ],
+    "nodes": [
+      {
+        "id": "a",
+        "lane": "la",
+        "type": "start",
+        "text": "Log in, pick your campus store",
+        "go": "#out",
+        "next": [
+          {
+            "to": "b"
+          }
+        ]
+      },
+      {
+        "id": "b",
+        "lane": "la",
+        "type": "decision",
+        "text": "Lending or returning?",
+        "next": [
+          {
+            "to": "c",
+            "label": "Lending"
+          },
+          {
+            "to": "e",
+            "label": "Returning"
+          }
+        ]
+      },
+      {
+        "id": "c",
+        "lane": "la",
+        "type": "step",
+        "text": "User Search, Quick Checkout, scan items",
+        "go": "#out",
+        "next": [
+          {
+            "to": "d"
+          }
+        ]
+      },
+      {
+        "id": "d",
+        "lane": "la",
+        "type": "end",
+        "text": "Checkout; status shows Active"
+      },
+      {
+        "id": "e",
+        "lane": "la",
+        "type": "step",
+        "text": "Open the Active rental card",
+        "go": "#in",
+        "next": [
+          {
+            "to": "f"
+          }
+        ]
+      },
+      {
+        "id": "f",
+        "lane": "la",
+        "type": "end",
+        "text": "Quick Checkin (all) or pick items"
+      }
+    ]
+  },
+  "sections": [
+    {
+      "id": "out",
+      "role": "la",
+      "title": "Check out",
+      "steps": [
+        "Log in to `langlabrentals.ung.edu` (Staff Interface).",
+        "Select Store for your campus (for example **GVL - Student** or **DAH - Student**).",
+        "**User Search**: type the student's name, then **Select User**.",
+        "**Quick Checkout**: pickup date is today, return date is the agreed due date.",
+        "Add items: click in Search and scan each barcode (iPad, Apple Pencil, adapter, cable). No scanner? Type the item name (for example `ADAPT 1`), **Filter Items**, **Add to Cart**.",
+        "**Checkout**. Check the reservation shows **Active**."
+      ]
+    },
+    {
+      "id": "in",
+      "role": "la",
+      "title": "Check in",
+      "steps": [
+        "Select your store and open **Reservations**.",
+        "Click the student's card under **Active**.",
+        "Everything back: tick **Quick Checkin (All Items)** and press **Checkin**.",
+        "Only some items back: press **Checkin** without the tick and pick the items.",
+        "Check the card is gone from Active."
+      ]
+    },
+    {
+      "id": "stores",
+      "role": "la",
+      "title": "Stores",
+      "table": {
+        "head": [
+          "Store",
+          "Who"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "DAH - FACULTY",
+              "Dahlonega faculty"
+            ]
+          },
+          {
+            "cells": [
+              "DAH - Student",
+              "Dahlonega students"
+            ]
+          },
+          {
+            "cells": [
+              "GVL - Student",
+              "Gainesville"
+            ]
+          },
+          {
+            "cells": [
+              "OCN - Student",
+              "Oconee"
+            ]
+          }
+        ]
+      },
+      "note": "A user marked **Disabled** can't borrow. Don't override it: the student emails {email}."
+    }
+  ]
+}

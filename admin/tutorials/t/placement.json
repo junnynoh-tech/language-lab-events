@@ -1,0 +1,203 @@
+{
+  "id": "placement",
+  "group": "assess",
+  "title": "Placement tests",
+  "summary": "Who tests, how to send and proctor the test, and where the score report goes.",
+  "roles": [
+    "la",
+    "lc",
+    "dept"
+  ],
+  "tasks": {
+    "la": [
+      "Proctor placement tests and send the score report"
+    ],
+    "lc": [
+      "Recommend a placement; set up oral interviews"
+    ],
+    "dept": [
+      "Course overrides in Banner"
+    ]
+  },
+  "flow": {
+    "lanes": [
+      "student",
+      "la",
+      "lc",
+      "dept"
+    ],
+    "nodes": [
+      {
+        "id": "a",
+        "lane": "student",
+        "type": "start",
+        "text": "Wants to place higher",
+        "next": [
+          {
+            "to": "b"
+          }
+        ]
+      },
+      {
+        "id": "b",
+        "lane": "la",
+        "type": "decision",
+        "text": "Aiming for 2001 or higher?",
+        "go": "#who",
+        "next": [
+          {
+            "to": "z",
+            "label": "No, 1002"
+          },
+          {
+            "to": "c",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "id": "z",
+        "lane": "la",
+        "type": "end",
+        "text": "No test: student registers"
+      },
+      {
+        "id": "c",
+        "lane": "la",
+        "type": "step",
+        "text": "Send the test, proctor it",
+        "go": "#send",
+        "next": [
+          {
+            "to": "d"
+          }
+        ]
+      },
+      {
+        "id": "d",
+        "lane": "la",
+        "type": "step",
+        "text": "Save the report as PDF, email it",
+        "go": "#report",
+        "next": [
+          {
+            "to": "e"
+          }
+        ]
+      },
+      {
+        "id": "e",
+        "lane": "lc",
+        "type": "decision",
+        "text": "Heritage or native speaker?",
+        "go": "#decide",
+        "next": [
+          {
+            "to": "f",
+            "label": "Yes"
+          },
+          {
+            "to": "g",
+            "label": "No"
+          }
+        ]
+      },
+      {
+        "id": "f",
+        "lane": "lc",
+        "type": "step",
+        "text": "Oral interview with faculty",
+        "next": [
+          {
+            "to": "g"
+          }
+        ]
+      },
+      {
+        "id": "g",
+        "lane": "lc",
+        "type": "step",
+        "text": "Email the recommendation",
+        "next": [
+          {
+            "to": "h"
+          }
+        ]
+      },
+      {
+        "id": "h",
+        "lane": "dept",
+        "type": "end",
+        "text": "Override in Banner, student registers"
+      }
+    ]
+  },
+  "sections": [
+    {
+      "id": "who",
+      "role": "la",
+      "title": "Who takes the test",
+      "list": [
+        "**1002**: no test. There's no prerequisite, so the student just registers.",
+        "**2001 and higher**: the test is required.",
+        "**Cumming, Blue Ridge or online students**: remote testing only if the coordinator approves it. Everyone else tests in the Lab."
+      ],
+      "note": "Answering a placement email? Start with the [first reply](#/replies/placement-intake). The Lab never advises on courses: that's the student's advisor or the department."
+    },
+    {
+      "id": "intake",
+      "role": "la",
+      "title": "Seat the student",
+      "steps": [
+        "Student sits at a Lab computer, opens Chrome and their UNG email.",
+        "Check the student's name and UNG email; that's where the test is sent. Don't write them down anywhere else."
+      ]
+    },
+    {
+      "id": "send",
+      "role": "la",
+      "title": "Send the test (Emmersion)",
+      "steps": [
+        "Log in to Emmersion with your campus Lab account. Passwords are on the internal quick reference sheet, never in an email.",
+        "**Send Assessments** > **Get Started** under Send via Email.",
+        "Enter the student's UNG email (commas between several), **Continue**.",
+        "Open **Assessments**, pick the language (Chinese, English, French, German, Italian, Russian, Spanish), **Continue**.",
+        "Skip Groups and Custom Message, **Review**, **Send**.",
+        "The student refreshes their inbox, opens the link and finishes every part."
+      ]
+    },
+    {
+      "id": "report",
+      "role": "la",
+      "title": "Send the score report",
+      "steps": [
+        "**Dashboard** > Assessment Results > click the student's name.",
+        "Click **Show Scale** and open **Survey Details**, so every sub-score shows.",
+        "Ctrl + P, Destination **Save as PDF**, tick Background graphics.",
+        "Name it `Lastname_Firstname_Placement.pdf`.",
+        "From the Lab email, send it to the coordinator: \"[Name] finished the [language] placement test.\""
+      ],
+      "note": "Don't tell the student a course. Placement is the coordinator's call."
+    },
+    {
+      "id": "decide",
+      "role": "lc",
+      "title": "Coordinator: recommend",
+      "list": [
+        "Read the report (CEFR estimate and score range).",
+        "Heritage or native speaker: set up an oral interview with a faculty member.",
+        "Email the recommendation, the PDF and the student's details to the department ({dept}) or that language's lead.",
+        "Approve or refuse remote testing; handle exceptions and honesty concerns."
+      ]
+    },
+    {
+      "id": "dept",
+      "role": "dept",
+      "title": "Department",
+      "list": [
+        "Enter the override in Banner.",
+        "Tell the student to register."
+      ]
+    }
+  ]
+}

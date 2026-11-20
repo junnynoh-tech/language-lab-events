@@ -1,0 +1,124 @@
+{
+  "id": "example",
+  "title": "Example tutorial",
+  "group": "desk",
+  "summary": "One line that says what this tutorial is for.",
+  "roles": [
+    "la",
+    "lc"
+  ],
+  "tasks": {
+    "la": [
+      "What the lab assistant does"
+    ],
+    "lc": [
+      "What the coordinator does"
+    ]
+  },
+  "flow": {
+    "lanes": [
+      "student",
+      "la",
+      "lc"
+    ],
+    "nodes": [
+      {
+        "id": "a",
+        "lane": "student",
+        "type": "start",
+        "text": "Student asks",
+        "next": [
+          {
+            "to": "b"
+          }
+        ]
+      },
+      {
+        "id": "b",
+        "lane": "la",
+        "type": "decision",
+        "text": "Can you settle it now?",
+        "next": [
+          {
+            "to": "c",
+            "label": "Yes"
+          },
+          {
+            "to": "d",
+            "label": "No"
+          }
+        ]
+      },
+      {
+        "id": "c",
+        "lane": "la",
+        "type": "end",
+        "text": "Settle it",
+        "go": "#do"
+      },
+      {
+        "id": "d",
+        "lane": "student",
+        "type": "email",
+        "text": "Emails {email}",
+        "next": [
+          {
+            "to": "e"
+          }
+        ]
+      },
+      {
+        "id": "e",
+        "lane": "lc",
+        "type": "end",
+        "text": "Coordinator answers"
+      }
+    ]
+  },
+  "_flow_from_visio": "Instead of nodes, a flow can be a picture: {\"image\": \"flows/name.svg\", \"alt\": \"what it shows\"}. In Visio: File > Save As > SVG.",
+  "sections": [
+    {
+      "id": "do",
+      "role": "la",
+      "title": "Do it",
+      "steps": [
+        "Open `the-site.ung.edu`.",
+        "Click **Save**."
+      ],
+      "note": "Not sure? Send it to email."
+    },
+    {
+      "id": "say",
+      "role": "la",
+      "title": "What to say",
+      "script": "Please email {email} with your name, your class and your question."
+    },
+    {
+      "id": "tbl",
+      "role": "all",
+      "title": "A table",
+      "table": {
+        "head": [
+          "Thing",
+          "What"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "A",
+              "B"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "lc",
+      "role": "lc",
+      "title": "Coordinator",
+      "list": [
+        "Answer by email."
+      ]
+    }
+  ]
+}

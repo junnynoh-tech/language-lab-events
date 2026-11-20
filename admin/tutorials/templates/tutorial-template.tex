@@ -1,0 +1,41 @@
+% Language Lab tutorial written in LaTeX. The hub (index.html) reads this subset directly:
+%   \tutorialid \title \group \summary \roles \task  (metadata)
+%   \begin{flow}{lanes} \node{id}{lane}{type}{text}{next[:Label],...}{optional link} \end{flow}
+%   \section[role]{Title}\label{id}  then plain text, enumerate (steps), itemize (list),
+%   \begin{script}...\end{script} (what to say), \begin{note}...\end{note}
+% Roles: student, la, lc, dept, all.  Node types: start, step, decision, end, email.
+% Inline: \textbf \emph \texttt \href{url}{text}; {email} becomes the chosen campus's Lab email.
+% To use it: save as t/<id>.tex and put "t/<id>.tex" in tutorials.json's "tutorials" list.
+\documentclass{article}
+\newcommand{\tutorialid}[1]{}\newcommand{\group}[1]{}\newcommand{\summary}[1]{\emph{#1}}
+\newcommand{\roles}[1]{}\newcommand{\task}[2]{}\newenvironment{flow}[1]{}{}\newcommand{\node}[6]{}
+\newenvironment{script}{\begin{quote}}{\end{quote}}\newenvironment{note}{\begin{quote}\itshape}{\end{quote}}
+\begin{document}
+\tutorialid{example}
+\title{Example tutorial}
+\group{desk}
+\summary{One line that says what this tutorial is for.}
+\roles{la,lc}
+\task{la}{What the lab assistant does}
+\task{lc}{What the coordinator does}
+
+\begin{flow}{student,la,lc}
+\node{a}{student}{start}{Student asks}{b}
+\node{b}{la}{decision}{Can you settle it now?}{c:Yes,d:No}
+\node{c}{la}{end}{Settle it}{}{\#do}
+\node{d}{student}{email}{Emails {email}}{e}
+\node{e}{lc}{end}{Coordinator answers}{}
+\end{flow}
+
+\section[la]{Do it}\label{do}
+\begin{enumerate}
+  \item Open \texttt{the-site.ung.edu}.
+  \item Click \textbf{Save}.
+\end{enumerate}
+\begin{note}Not sure? Send it to email.\end{note}
+
+\section[lc]{Coordinator}\label{lc}
+\begin{itemize}
+  \item Answer by email.
+\end{itemize}
+\end{document}

@@ -1,0 +1,70 @@
+{
+  "id": "desk-phone",
+  "group": "desk",
+  "title": "Desk phone (ShoreTel IP 230)",
+  "summary": "Answer, transfer, voicemail, and send unsettled calls to email.",
+  "roles": [
+    "la"
+  ],
+  "tasks": {
+    "la": [
+      "Answer the Lab phone and transfer calls"
+    ]
+  },
+  "sections": [
+    {
+      "id": "calls",
+      "role": "la",
+      "title": "Calls",
+      "table": {
+        "head": [
+          "To",
+          "Do this"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "Answer or call",
+              "Lift the handset or press Speaker. Dial the extension, or 9 then the outside number."
+            ]
+          },
+          {
+            "cells": [
+              "Transfer",
+              "Press Transfer, dial the extension, press Transfer again."
+            ]
+          },
+          {
+            "cells": [
+              "Conference",
+              "Press Confrn, dial the second person, press Confrn again."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "mode",
+      "role": "la",
+      "title": "Call handling mode",
+      "text": "Press the **Mode** softkey: **Standard** for normal use, **In a Meeting** sends calls to voicemail, **Out of Office** sends calls to the backup line."
+    },
+    {
+      "id": "vm",
+      "role": "la",
+      "title": "Voicemail",
+      "steps": [
+        "Press Voicemail.",
+        "Enter the code.",
+        "Follow the prompts to listen or delete."
+      ]
+    },
+    {
+      "id": "route",
+      "role": "la",
+      "title": "A call you can't settle",
+      "script": "Thank you for calling the UNG Language Lab. So your request is on record and reaches the right person, please email {email} with your full name, your class (for example, SPAN 1001, section 02) and your question.",
+      "note": "Same rule as at the desk: see [Student questions](#/email-first)."
+    }
+  ]
+}

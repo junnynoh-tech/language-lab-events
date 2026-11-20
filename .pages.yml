@@ -1676,6 +1676,420 @@ content:
                 pattern:
                   regex: "^#[0-9A-Fa-f]{6}$"
                   message: "Use a hex color like #D9631E"
+  - name: "tutorials"
+    label: "Tutorials"
+    type: "collection"
+    path: "admin/tutorials/t"
+    format: "json"
+    filename: "{fields.id}.json"
+    description: "Lab tutorials. A new one shows up once it's added to Tutorial list. Public page: no student data, no passwords."
+    fields:
+      - name: "id"
+        label: "Short id"
+        type: "string"
+        description: "Lowercase letters, numbers and dashes. Links use it, so don't change it once it's in use."
+        required: true
+        pattern:
+          regex: "^[a-z0-9-]+$"
+          message: "lowercase letters, numbers, dashes"
+      - name: "title"
+        label: "Title"
+        type: "string"
+        required: true
+      - name: "group"
+        label: "Group"
+        type: "select"
+        options:
+          values:
+            - name: "desk"
+              label: "At the desk"
+            - name: "tech"
+              label: "Helping with technology"
+            - name: "assess"
+              label: "Placement and grading"
+            - name: "admin"
+              label: "Coordinator tools"
+        required: true
+      - name: "summary"
+        label: "One-line summary"
+        type: "text"
+        required: true
+      - name: "roles"
+        label: "Who it involves"
+        type: "select"
+        options:
+          values:
+            - name: "la"
+              label: "Lab assistant"
+            - name: "lc"
+              label: "Lab coordinator"
+            - name: "dept"
+              label: "Department"
+            - name: "student"
+              label: "Student"
+          multiple: true
+      - name: "tasks"
+        label: "Tasks on the Who does what board"
+        type: "object"
+        fields:
+          - name: "la"
+            label: "Lab assistant"
+            type: "text"
+            list: true
+          - name: "lc"
+            label: "Lab coordinator"
+            type: "text"
+            list: true
+          - name: "dept"
+            label: "Department"
+            type: "text"
+            list: true
+      - name: "flow"
+        label: "Flowchart"
+        type: "object"
+        fields:
+          - name: "title"
+            label: "Chart title"
+            type: "string"
+          - name: "lanes"
+            label: "Lanes, left to right (la, lc, dept, student)"
+            type: "string"
+            list: true
+          - name: "nodes"
+            label: "Boxes, top to bottom"
+            type: "object"
+            list:
+              collapsible:
+                collapsed: true
+                summary: "{fields.id} · {fields.text}"
+            fields:
+              - name: "id"
+                label: "Box id"
+                type: "string"
+                description: "Short and unique in this chart, e.g. a, b, g0."
+                required: true
+                pattern:
+                  regex: "^[a-z0-9-]+$"
+                  message: "lowercase letters, numbers, dashes"
+              - name: "lane"
+                label: "Whose lane"
+                type: "select"
+                options:
+                  values:
+                    - name: "la"
+                      label: "Lab assistant"
+                    - name: "lc"
+                      label: "Lab coordinator"
+                    - name: "dept"
+                      label: "Department"
+                    - name: "student"
+                      label: "Student"
+                required: true
+              - name: "type"
+                label: "Shape"
+                type: "select"
+                options:
+                  values:
+                    - name: "start"
+                      label: "Start"
+                    - name: "step"
+                      label: "Step"
+                    - name: "decision"
+                      label: "Question"
+                    - name: "end"
+                      label: "Finish"
+                    - name: "email"
+                      label: "Email"
+                required: true
+              - name: "text"
+                label: "Text"
+                type: "string"
+                required: true
+              - name: "go"
+                label: "Opens"
+                type: "string"
+                description: "A tutorial id (bongo), a section of this tutorial (#rubric), or tutorial/section (grading/missing)."
+              - name: "side"
+                label: "Put it in the side column"
+                type: "boolean"
+                default: false
+              - name: "beside"
+                label: "Same row as the box before it"
+                type: "boolean"
+                default: false
+              - name: "row"
+                label: "Force a row (number, optional)"
+                type: "number"
+              - name: "next"
+                label: "Arrows out"
+                type: "object"
+                list: true
+                fields:
+                  - name: "to"
+                    label: "To box id"
+                    type: "string"
+                    required: true
+                  - name: "label"
+                    label: "Arrow label (Yes, No…)"
+                    type: "string"
+          - name: "image"
+            label: "Or a Visio chart (SVG file)"
+            type: "string"
+          - name: "alt"
+            label: "Chart description"
+            type: "string"
+          - name: "caption"
+            label: "Caption"
+            type: "string"
+      - name: "sections"
+        label: "Sections"
+        type: "object"
+        list:
+          collapsible:
+            collapsed: true
+            summary: "{fields.title}"
+        fields:
+          - name: "id"
+            label: "Section id"
+            type: "string"
+            description: "Lowercase letters, numbers and dashes. Links use it, so don't change it once it's in use."
+            required: true
+            pattern:
+              regex: "^[a-z0-9-]+$"
+              message: "lowercase letters, numbers, dashes"
+          - name: "role"
+            label: "Whose part"
+            type: "select"
+            options:
+              values:
+                - name: "all"
+                  label: "Everyone"
+                - name: "la"
+                  label: "Lab assistant"
+                - name: "lc"
+                  label: "Lab coordinator"
+                - name: "dept"
+                  label: "Department"
+                - name: "student"
+                  label: "Student"
+            default: "all"
+          - name: "title"
+            label: "Heading"
+            type: "string"
+            required: true
+          - name: "text"
+            label: "Paragraph"
+            type: "text"
+          - name: "steps"
+            label: "Numbered steps"
+            type: "text"
+            description: "One step per box. **bold**, `code` and [text](#/tutorial) links work."
+            list: true
+          - name: "list"
+            label: "Bullet points"
+            type: "text"
+            description: "One point per box."
+            list: true
+          - name: "script"
+            label: "Say this (script)"
+            type: "text"
+          - name: "note"
+            label: "Note"
+            type: "text"
+          - name: "table"
+            label: "Table"
+            type: "object"
+            fields:
+              - name: "caption"
+                label: "Caption"
+                type: "string"
+              - name: "head"
+                label: "Column headings"
+                type: "string"
+                list: true
+              - name: "rows"
+                label: "Rows"
+                type: "object"
+                list: true
+                fields:
+                  - name: "cells"
+                    label: "Cells, left to right"
+                    type: "string"
+                    list: true
+          - name: "rubric"
+            label: "Show the speaking rubric here"
+            type: "boolean"
+            description: "Grading only. The rubric comes from policy.json."
+            default: false
+          - name: "image"
+            label: "Image file"
+            type: "string"
+          - name: "alt"
+            label: "Image description"
+            type: "string"
+    view:
+      primary: "title"
+      fields:
+        - "title"
+        - "group"
+      sort:
+        - "title"
+  - name: "tutorial-list"
+    label: "Tutorial list"
+    type: "file"
+    path: "admin/tutorials/tutorials.json"
+    format: "json"
+    description: "Order of the tutorials, groups, campuses and the email rule."
+    fields:
+      - name: "tutorials"
+        label: "Tutorial files, in order"
+        type: "string"
+        description: "t/<id>.json"
+        list: true
+      - name: "groups"
+        label: "Groups"
+        type: "object"
+        list: true
+        fields:
+          - name: "id"
+            label: "Short id"
+            type: "string"
+            description: "Lowercase letters, numbers and dashes. Links use it, so don't change it once it's in use."
+            required: true
+            pattern:
+              regex: "^[a-z0-9-]+$"
+              message: "lowercase letters, numbers, dashes"
+          - name: "title"
+            label: "Title"
+            type: "string"
+            required: true
+          - name: "when"
+            label: "When"
+            type: "string"
+      - name: "campuses"
+        label: "Campuses"
+        type: "object"
+        list: true
+        fields:
+          - name: "code"
+            label: "Code"
+            type: "string"
+            required: true
+          - name: "name"
+            label: "Name"
+            type: "string"
+            required: true
+          - name: "email"
+            label: "Lab email"
+            type: "string"
+            required: true
+      - name: "rule"
+        label: "The email rule"
+        type: "object"
+        fields:
+          - name: "title"
+            label: "Title"
+            type: "string"
+          - name: "text"
+            label: "Text"
+            type: "text"
+  - name: "replies"
+    label: "Email replies"
+    type: "file"
+    path: "admin/tutorials/replies.json"
+    format: "json"
+    description: "Ready-to-copy answers for the Lab inbox. Public page: no student data."
+    fields:
+      - name: "replies"
+        label: "Replies"
+        type: "object"
+        list:
+          collapsible:
+            collapsed: true
+            summary: "{fields.title}"
+        fields:
+          - name: "id"
+            label: "Short id"
+            type: "string"
+            description: "Lowercase letters, numbers and dashes. Links use it, so don't change it once it's in use."
+            required: true
+            pattern:
+              regex: "^[a-z0-9-]+$"
+              message: "lowercase letters, numbers, dashes"
+          - name: "title"
+            label: "Name"
+            type: "string"
+            required: true
+          - name: "group"
+            label: "Group"
+            type: "select"
+            options:
+              values:
+                - name: "route"
+                  label: "Every inbox"
+                - name: "placement"
+                  label: "Placement and credit"
+                - name: "tech"
+                  label: "D2L and technology"
+                - name: "labs"
+                  label: "Labs and grades"
+            required: true
+          - name: "who"
+            label: "Who sends it"
+            type: "select"
+            options:
+              values:
+                - name: "la"
+                  label: "Any lab assistant"
+                - name: "lc"
+                  label: "Coordinator only"
+            default: "la"
+          - name: "when"
+            label: "When to use it"
+            type: "text"
+            required: true
+          - name: "to"
+            label: "To (only if not the student)"
+            type: "string"
+          - name: "subject"
+            label: "Subject"
+            type: "string"
+            required: true
+          - name: "body"
+            label: "Email, one paragraph per box"
+            type: "text"
+            description: "{email} and {campus} fill in; put blanks in [square brackets]. Never ask for a 900 number."
+            list: true
+          - name: "note"
+            label: "Before you send (staff only, not copied)"
+            type: "text"
+          - name: "go"
+            label: "Opens"
+            type: "string"
+            description: "A tutorial id (bongo), a section of this tutorial (#rubric), or tutorial/section (grading/missing)."
+      - name: "signature"
+        label: "Signature"
+        type: "text"
+      - name: "groups"
+        label: "Groups"
+        type: "object"
+        list: true
+        fields:
+          - name: "id"
+            label: "Short id"
+            type: "string"
+            description: "Lowercase letters, numbers and dashes. Links use it, so don't change it once it's in use."
+            required: true
+            pattern:
+              regex: "^[a-z0-9-]+$"
+              message: "lowercase letters, numbers, dashes"
+          - name: "title"
+            label: "Title"
+            type: "string"
+            required: true
+          - name: "when"
+            label: "When"
+            type: "string"
 settings:
   content:
     merge: true

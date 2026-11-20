@@ -1,0 +1,80 @@
+{
+  "id": "ipad-admin",
+  "group": "admin",
+  "title": "Rental site: make someone an admin",
+  "summary": "Two sites, same steps: the test site first, then the live site.",
+  "roles": [
+    "lc"
+  ],
+  "tasks": {
+    "lc": [
+      "Give admin access in the rental site"
+    ]
+  },
+  "flow": {
+    "lanes": [
+      "la",
+      "lc"
+    ],
+    "nodes": [
+      {
+        "id": "a",
+        "lane": "la",
+        "type": "start",
+        "text": "New staff member logs in once",
+        "next": [
+          {
+            "to": "b"
+          }
+        ]
+      },
+      {
+        "id": "b",
+        "lane": "lc",
+        "type": "step",
+        "text": "Test site: add as Admin",
+        "go": "#dev",
+        "next": [
+          {
+            "to": "c"
+          }
+        ]
+      },
+      {
+        "id": "c",
+        "lane": "lc",
+        "type": "end",
+        "text": "Live site: add as Admin",
+        "go": "#live"
+      }
+    ]
+  },
+  "sections": [
+    {
+      "id": "before",
+      "role": "all",
+      "title": "Before you start",
+      "text": "Both people must be on the UNG network. The new staff member logs in to each site once first, so the system can find them. Lab assistants never make admins."
+    },
+    {
+      "id": "dev",
+      "role": "lc",
+      "title": "1. Test site",
+      "steps": [
+        "Log in to `langlabrentals-dev.northgeorgia.edu`.",
+        "**Staff / User Management** > **Staff Management** > **Add Staff**.",
+        "Search by 900 number or username, then **Add**.",
+        "Staff Level **Admin**, **Submit**. Check the list shows Admin. Log out."
+      ]
+    },
+    {
+      "id": "live",
+      "role": "lc",
+      "title": "2. Live site",
+      "steps": [
+        "Log in to `langlabrentals.ung.edu`, then Staff Interfaces > **Language Lab**.",
+        "Repeat the same four steps."
+      ]
+    }
+  ]
+}

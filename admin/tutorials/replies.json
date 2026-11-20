@@ -1,0 +1,382 @@
+{
+  "_about": "Email reply templates for the Lab inbox, shown on the hub's Email replies page (#/replies). Edit the text here, never in index.html. {email} and {campus} fill in from the campus picker; [square brackets] are blanks the sender fills in. 'who' is who sends it: la (any lab assistant) or lc (coordinator only). 'go' links the related tutorial. See README.md.",
+  "groups": [
+    {
+      "id": "route",
+      "title": "Every inbox",
+      "when": "Acknowledge and forward"
+    },
+    {
+      "id": "placement",
+      "title": "Placement and credit",
+      "when": "Students who already know the language"
+    },
+    {
+      "id": "tech",
+      "title": "D2L and technology",
+      "when": "Week 1 and lab weeks"
+    },
+    {
+      "id": "labs",
+      "title": "Labs and grades",
+      "when": "Due dates"
+    }
+  ],
+  "signature": "UNG Language Lab, {campus}\n{email}",
+  "replies": [
+    {
+      "id": "forwarded",
+      "group": "route",
+      "who": "la",
+      "title": "We passed it on",
+      "when": "Anything on the always-send list: grades, late or missed labs, placement results, complaints, honesty, accommodations.",
+      "subject": "Re: [their subject]",
+      "body": [
+        "Hello [Student name],",
+        "Thank you for your email. I've passed it to the Language Lab coordinator, who will reply to you by email.",
+        "Best regards,"
+      ],
+      "note": "Then forward the email to the coordinator with one line on what the student needs. Don't answer the question yourself or promise an outcome.",
+      "go": "email-first"
+    },
+    {
+      "id": "to-coordinator",
+      "group": "route",
+      "who": "la",
+      "to": "Coordinator",
+      "title": "Forward to the coordinator",
+      "when": "The note you add when you forward a student's email.",
+      "subject": "Fwd: [their subject]",
+      "body": [
+        "[Student name], [class and section]: [what they need, in one line].",
+        "I replied that you will answer by email."
+      ],
+      "note": "Leave the original email in the inbox so the record stays complete."
+    },
+    {
+      "id": "need-details",
+      "group": "route",
+      "who": "la",
+      "title": "We need a few details",
+      "when": "An email that doesn't say who they are or which class it's about.",
+      "subject": "Re: [their subject]",
+      "body": [
+        "Hello,",
+        "Thank you for contacting the Language Lab. So we can help, please reply with:\n- Your full name\n- Your class (for example, SPAN 1001, section 02) and your professor\n- Your question, with a screenshot if something isn't working",
+        "Best regards,"
+      ],
+      "note": "Never ask for a 900 number. Reply only to a UNG email address."
+    },
+    {
+      "id": "ungmail",
+      "group": "route",
+      "who": "la",
+      "title": "Please write from your UNG email",
+      "when": "A student writes from a personal address (Gmail, Yahoo and so on) about grades, labs or placement.",
+      "subject": "Re: [their subject]",
+      "body": [
+        "Hello,",
+        "Thank you for your email. To protect your privacy, we can only discuss your classes and grades through your UNG email. Please send your question again from your UNG email address.",
+        "Best regards,"
+      ],
+      "note": "General questions (hours, how to sign up for Mango) can be answered from any address. Nothing about a specific student's work."
+    },
+    {
+      "id": "third-party",
+      "group": "route",
+      "who": "la",
+      "title": "Someone else asks about a student",
+      "when": "A parent, friend or classmate asks about a student's grades, labs, placement or attendance.",
+      "subject": "Re: [their subject]",
+      "body": [
+        "Hello,",
+        "Thank you for reaching out. Under federal privacy law (FERPA), the Language Lab can discuss a student's records only with the student. Please ask the student to email us from their UNG email address.",
+        "Best regards,"
+      ],
+      "note": "Don't confirm whether the student is enrolled, and don't forward anything. Tell the coordinator if the person insists.",
+      "go": "email-first/ferpa"
+    },
+    {
+      "id": "hours",
+      "group": "route",
+      "who": "la",
+      "title": "Lab hours and location",
+      "when": "When is the Lab open? Where is it?",
+      "subject": "Re: Language Lab hours",
+      "body": [
+        "Hello [Student name],",
+        "The Language Lab hours and locations for each campus are posted here: https://ung.edu/modern-languages/language-labs/index.php",
+        "[Optional: This week the {campus} Lab is open (hours).]",
+        "Best regards,"
+      ],
+      "note": "Only add hours you've checked on the posted schedule."
+    },
+    {
+      "id": "placement-intake",
+      "group": "placement",
+      "who": "la",
+      "title": "First reply: wants a placement test",
+      "when": "A student asks to take the placement test, or to start above the first course, with no other details.",
+      "subject": "Re: Placement test",
+      "body": [
+        "Hello [Student name],",
+        "Thank you for your interest in the placement test. Before we schedule it, could you please answer a few questions?\n1. Where did you learn [language] (at home, in high school, or somewhere else), and for how many years?\n2. Which UNG campus are you registered at?\n3. Do you plan to transfer to another school?\n4. What is your goal: to start in a higher course at UNG, or to earn college credit?\n5. Which days and times are you available to take the test?",
+        "A few things to check first:\n- The placement test places you in a course at UNG. It does not award college credit, and it does not transfer to other schools.\n- If you want college credit, ask us about the CLEP exam instead.\n- Which course you need for your degree is a question for your academic advisor or the Modern Languages department. The Language Lab doesn't give advising.",
+        "Best regards,"
+      ],
+      "note": "Don't tell the student which course to take. If the answers show they want credit, send \"CLEP or the placement test?\". If they want to know what counts for their degree, send \"That's a question for your advisor.\"",
+      "go": "placement"
+    },
+    {
+      "id": "clep-vs-placement",
+      "group": "placement",
+      "who": "la",
+      "title": "CLEP or the placement test?",
+      "when": "A student asks about credit, CLEP, or the difference between CLEP and the placement test. Spanish only: the CLEP scores below are for Spanish.",
+      "subject": "Re: CLEP and the Spanish placement test",
+      "body": [
+        "Hello [Student name],",
+        "There are two options for students who already know some Spanish. They serve different purposes.",
+        "1. The Spanish CLEP exam (College-Level Examination Program)\nCLEP is a standardized exam from the College Board. It can earn you college credit without taking the courses. The Spanish Language CLEP exam tests listening and reading comprehension, vocabulary and grammar. UNG currently awards this credit:\n- Score of 45: SPAN 1001 (3 credit hours)\n- Score of 50: SPAN 1001 and SPAN 1002 (6 credit hours)\n- Score of 56: SPAN 1001, SPAN 1002 and SPAN 2001 (9 credit hours)\n- Score of 63: SPAN 1001, SPAN 1002, SPAN 2001 and SPAN 2002 (12 credit hours)\nUNG accepts the Spanish Language: Levels 1 & 2 exam. It does not accept the separate Spanish with Writing CLEP exam.\nCLEP credit policies vary between schools. If you might transfer, check with that school first to see whether it accepts CLEP credit and how it counts toward your degree.\nFor registration, scheduling and fees, please contact the UNG Testing Center.",
+        "2. The UNG Spanish placement test (Emmersion)\nThe Language Lab gives this test. It does not award college credit. It measures your Spanish now and helps decide which course is the right starting point for you at UNG, so you may be able to start higher than SPAN 1001. It's especially useful if you took Spanish before, speak it at home, or learned it some other way. The result is for placement at UNG only and does not transfer.\nMore about the Language Lab and placement testing: https://ung.edu/modern-languages/language-labs/index.php",
+        "In short: if you want college credit, look into CLEP. If you want to know where to start at UNG, the placement test is the better fit. Which courses you need for your degree is a question for your academic advisor.",
+        "If you'd like to take the placement test, just reply with the days and times you're available.",
+        "Best regards,"
+      ],
+      "go": "placement"
+    },
+    {
+      "id": "placement-schedule",
+      "group": "placement",
+      "who": "la",
+      "title": "Test time confirmed",
+      "when": "The student has answered the first-reply questions and picked a time.",
+      "subject": "Re: Placement test appointment",
+      "body": [
+        "Hello [Student name],",
+        "Your [language] placement test is set for [day, date] at [time] in the {campus} Language Lab, [room].",
+        "Please bring a way to sign in to your UNG email. The test link comes from Emmersion to your UNG email when you arrive. Plan to finish every part in one sitting.",
+        "If you need to change the time, reply to this email.",
+        "Best regards,"
+      ],
+      "go": "placement/intake"
+    },
+    {
+      "id": "placement-done",
+      "group": "placement",
+      "who": "la",
+      "title": "After the test",
+      "when": "The student has finished the test and asks what happens next or what course they placed into.",
+      "subject": "Re: Placement test results",
+      "body": [
+        "Hello [Student name],",
+        "Thank you for taking the placement test. Your results have gone to the Language Lab coordinator, who reviews them and sends a recommendation to the Modern Languages department. The department will contact you about registration.",
+        "We can't tell you a course before then. Placement decisions come from the department.",
+        "Best regards,"
+      ],
+      "note": "Never tell the student a score means a course. Send the score report to the coordinator first (see the tutorial).",
+      "go": "placement/report"
+    },
+    {
+      "id": "placement-remote",
+      "group": "placement",
+      "who": "la",
+      "title": "Asks to test remotely",
+      "when": "A Cumming, Blue Ridge or online student asks to take the test from home.",
+      "subject": "Re: Placement test",
+      "body": [
+        "Hello [Student name],",
+        "Remote testing needs the Language Lab coordinator's approval. I've passed your request on, and the coordinator will reply by email.",
+        "To help, please reply with the campus you're registered at and the days and times you're available.",
+        "Best regards,"
+      ],
+      "note": "Forward to the coordinator. Students at other campuses test in the Lab.",
+      "go": "placement/who"
+    },
+    {
+      "id": "already-enrolled",
+      "group": "placement",
+      "who": "la",
+      "title": "Already in a class that's too easy",
+      "when": "A student is enrolled in a course and thinks they belong higher.",
+      "subject": "Re: Changing levels",
+      "body": [
+        "Hello [Student name],",
+        "You're welcome to take the placement test. It shows which course is the right starting point for you at UNG.",
+        "Changing classes depends on registration deadlines and on your degree plan, so please talk with your academic advisor and your professor before you drop or add anything. The Language Lab can't make schedule changes.",
+        "If you'd like to test, reply with the days and times you're available.",
+        "Best regards,"
+      ],
+      "go": "placement"
+    },
+    {
+      "id": "advising",
+      "group": "placement",
+      "who": "la",
+      "title": "That's a question for your advisor",
+      "when": "Which course should I take? Does this count for my major or minor? Will my credit transfer?",
+      "subject": "Re: [their subject]",
+      "body": [
+        "Hello [Student name],",
+        "That's a great question for your academic advisor. The Language Lab doesn't give advising, so we don't want to give you the wrong answer. For questions about language requirements, you can also contact the Modern Languages department at {dept}.",
+        "If you want to take the placement test, we're happy to schedule it. Just reply with the days and times you're available.",
+        "Best regards,"
+      ],
+      "go": "placement"
+    },
+    {
+      "id": "d2l-where",
+      "group": "tech",
+      "who": "la",
+      "title": "Where are the labs in D2L?",
+      "when": "Can't find the labs, the instructions, or who to contact.",
+      "subject": "Re: Finding the labs",
+      "body": [
+        "Hello [Student name],",
+        "In your D2L course, go to Content > LAB. Everything for the labs is in that one folder:\n1. The folder description. Its tabs cover the requirements, the lab tasks, quizzes and accents, troubleshooting, and how to contact us.\n2. Lab 0: the Guidelines Quiz and the Bongo setup check. Together they unlock the labs.\n3. Each lab in order: the Mini-Quiz, then the Bongo recording, both due at 5:00 PM.",
+        "There's also an announcement on Course Home with buttons to the LAB folder and the Guidelines Quiz.",
+        "Best regards,"
+      ],
+      "note": "Folder layout from the lab proposal (one LAB folder, no Start Here module). Update this reply if the D2L setup changes."
+    },
+    {
+      "id": "d2l-grade",
+      "group": "tech",
+      "who": "la",
+      "title": "Where are my grade and feedback?",
+      "when": "Can't find a lab grade or the grader's comments.",
+      "subject": "Re: Lab grade",
+      "body": [
+        "Hello [Student name],",
+        "In your D2L course, open Grades in the course menu and find the lab. Click it to see the rubric and the feedback.",
+        "If you have a question about the grade itself, reply to this email and we'll pass it to the coordinator.",
+        "Best regards,"
+      ],
+      "note": "Questions about the grade itself go to the coordinator. Don't change or discuss a grade.",
+      "go": "grading"
+    },
+    {
+      "id": "lab0",
+      "group": "tech",
+      "who": "la",
+      "title": "What is Lab 0?",
+      "when": "Why can't I open the labs? What's the setup check?",
+      "subject": "Re: Lab 0",
+      "body": [
+        "Hello [Student name],",
+        "Lab 0 is in Content > LAB and has two parts: the Guidelines Quiz, then the Bongo setup check, a one-minute test recording with your camera and your PowerPoint slides. Both count 0% of your grade, and together they unlock the labs. The setup check makes sure your computer can record your camera and your screen at the same time. If it works, every lab will.",
+        "Please do it in the first week, so there's time to fix a problem. Watch your recording before you submit: your face should be visible the whole time and your voice clear.",
+        "Best regards,"
+      ],
+      "go": "bongo"
+    },
+    {
+      "id": "bongo",
+      "group": "tech",
+      "who": "la",
+      "title": "Bongo isn't working",
+      "when": "Blank screen, video won't load or record, or an error in Bongo.",
+      "subject": "Re: Bongo problem",
+      "body": [
+        "Hello [Student name],",
+        "Please try these in order:\n1. On an iPad: open the lab in Google Chrome, tap the menu and choose Request Desktop Site.\n2. Clear your browser's cache and cookies.\n3. Update Chrome or Firefox.\n4. Turn off ad and pop-up blockers.\n5. Try a private (Incognito) window.",
+        "If Bongo still won't record, the Troubleshooting tab in Content > LAB explains the backup for your kind of lab. If nothing works, reply with a screenshot of the error and your class and section.",
+        "Please start each lab early. A technology problem doesn't extend the due date (5:00 PM). If you're stuck, the Language Lab can help during open hours.",
+        "Best regards,"
+      ],
+      "go": "bongo"
+    },
+    {
+      "id": "bongo-off",
+      "group": "tech",
+      "who": "la",
+      "title": "No Bongo link in the course",
+      "when": "The lab has no Bongo link, or says the tool is unavailable.",
+      "subject": "Re: Bongo link",
+      "body": [
+        "Hello [Student name],",
+        "Thank you for letting us know. Bongo needs to be turned on for your course, and we've passed this on so it can be fixed. We'll email you when it's working.",
+        "Best regards,"
+      ],
+      "note": "Tell the coordinator the course and section. You can't fix this one.",
+      "go": "bongo"
+    },
+    {
+      "id": "file-format",
+      "group": "tech",
+      "who": "la",
+      "title": "D2L can't open my file",
+      "when": "An upload fails, or the file won't open for grading (Pages, HEIC, very large PDFs).",
+      "subject": "Re: File upload",
+      "body": [
+        "Hello [Student name],",
+        "D2L opens these formats: documents as .pdf, video as .mp4, audio as .mp3, images as .jpg or .png, and folders as .zip.",
+        "Please save or convert your file to one of these yourself and upload it again. For example, export a Pages file as PDF, and change iPhone photos (.heic) to .jpg. The Language Lab can't convert or upload files for you.",
+        "Best regards,"
+      ],
+      "go": "files",
+      "note": "Never take, convert or upload a student's file, and don't suggest a converter website."
+    },
+    {
+      "id": "mango",
+      "group": "tech",
+      "who": "la",
+      "title": "Mango sign-up doesn't work",
+      "when": "Mango asks to pay, or doesn't recognize the UNG account.",
+      "subject": "Re: Mango Languages",
+      "body": [
+        "Hello [Student name],",
+        "The first Mango sign-up has to happen on a computer on the UNG campus network. Signing up off campus doesn't give UNG access.",
+        "On a campus computer, open the UNG Language Lab web page, choose Mango Languages under Links, and sign up with your UNG email. After that, you can log in anywhere on the web or in the Mango app.",
+        "Best regards,"
+      ],
+      "go": "mango"
+    },
+    {
+      "id": "ipad",
+      "group": "tech",
+      "who": "la",
+      "title": "Borrowing an iPad",
+      "when": "Can I borrow an iPad, a pencil or an adapter?",
+      "subject": "Re: Borrowing an iPad",
+      "body": [
+        "Hello [Student name],",
+        "Please stop by the {campus} Language Lab desk during open hours. A lab assistant will check it out to you and agree on a return date with you.",
+        "Best regards,"
+      ],
+      "go": "ipad-checkout"
+    },
+    {
+      "id": "late-tech",
+      "group": "labs",
+      "who": "lc",
+      "title": "Late because of a technology problem",
+      "when": "A student missed the due time because Bongo, the computer or the internet failed.",
+      "subject": "Re: Late lab",
+      "body": [
+        "Hello [Student name],",
+        "I'm sorry the technology gave you trouble. Labs close at 5:00 PM on the due date, and a technology problem doesn't extend the deadline, even when it's reported before the due time. That's why Lab 0 is in the first week and why we ask everyone to start early.",
+        "If the Language Lab or UNG confirms that Bongo or D2L is down for everyone, the lab is extended for all sections with an announcement.",
+        "For the next lab, please start early. If something goes wrong, the Language Lab can help during open hours.",
+        "Best regards,"
+      ],
+      "go": "late-labs"
+    },
+    {
+      "id": "excused",
+      "group": "labs",
+      "who": "lc",
+      "title": "Excused absence: lab reopened",
+      "when": "A student told the Lab on time about an excused absence.",
+      "subject": "Re: Excused absence, [Lab number]",
+      "body": [
+        "Hello [Student name],",
+        "Thank you for letting us know. We've reopened [Lab number] for you.",
+        "By 5:00 PM on [date, 7 days after the due date], please:\n1. Submit the lab.\n2. Forward the Dean of Students' email about your absence to this address.",
+        "Nothing is graded after that date. Please don't send medical records.",
+        "Best regards,"
+      ],
+      "go": "late-labs"
+    }
+  ]
+}

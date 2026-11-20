@@ -1,0 +1,133 @@
+{
+  "id": "bongo",
+  "group": "tech",
+  "title": "Bongo problems",
+  "summary": "Four checks in order. Most problems end at step 1 or 3.",
+  "roles": [
+    "la",
+    "lc"
+  ],
+  "tasks": {
+    "la": [
+      "Walk students through the Bongo checks"
+    ],
+    "lc": [
+      "Turn Bongo on in a D2L course"
+    ]
+  },
+  "flow": {
+    "lanes": [
+      "la",
+      "lc"
+    ],
+    "nodes": [
+      {
+        "id": "a",
+        "lane": "la",
+        "type": "start",
+        "text": "On an iPad? Chrome, desktop site",
+        "go": "#ipad",
+        "next": [
+          {
+            "to": "b"
+          }
+        ]
+      },
+      {
+        "id": "b",
+        "lane": "la",
+        "type": "decision",
+        "text": "Bongo link missing in D2L?",
+        "go": "#active",
+        "next": [
+          {
+            "to": "x",
+            "label": "Yes"
+          },
+          {
+            "to": "c",
+            "label": "No"
+          }
+        ]
+      },
+      {
+        "id": "x",
+        "lane": "lc",
+        "type": "end",
+        "text": "Coordinator turns Bongo on"
+      },
+      {
+        "id": "c",
+        "lane": "la",
+        "type": "step",
+        "text": "Cache, update, extensions, private window",
+        "go": "#browser",
+        "next": [
+          {
+            "to": "d"
+          }
+        ]
+      },
+      {
+        "id": "d",
+        "lane": "la",
+        "type": "decision",
+        "text": "Still broken?",
+        "next": [
+          {
+            "to": "e",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "id": "e",
+        "lane": "la",
+        "type": "email",
+        "text": "Student emails {email} with a screenshot",
+        "go": "#escalate"
+      }
+    ]
+  },
+  "sections": [
+    {
+      "id": "ipad",
+      "role": "la",
+      "title": "1. iPads: Chrome, desktop site",
+      "text": "Blank screen or video won't load on an iPad: open the lab in **Google Chrome**, tap the menu, choose **Request Desktop Site**."
+    },
+    {
+      "id": "active",
+      "role": "la",
+      "title": "2. Is Bongo turned on?",
+      "text": "No Bongo link in the course, or a \"tool unavailable\" message: Bongo isn't turned on for that course yet. Tell the coordinator; you can't fix this one."
+    },
+    {
+      "id": "browser",
+      "role": "la",
+      "title": "3. Browser checks",
+      "steps": [
+        "Clear cache and cookies.",
+        "Update Chrome or Firefox.",
+        "Turn off ad and pop-up blockers.",
+        "Try a private (Incognito) window."
+      ]
+    },
+    {
+      "id": "escalate",
+      "role": "la",
+      "title": "4. Still broken",
+      "text": "The student emails {email} with their name, class and section, and a screenshot of the error.",
+      "note": "A technology problem never extends a due date. Lab 0 (the setup check) exists so problems show up in week 1."
+    },
+    {
+      "id": "lc",
+      "role": "lc",
+      "title": "Coordinator",
+      "list": [
+        "Turn Bongo on in the D2L course",
+        "Pass unsolved problems to D2L support"
+      ]
+    }
+  ]
+}

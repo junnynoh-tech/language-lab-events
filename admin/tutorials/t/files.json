@@ -1,0 +1,68 @@
+{
+  "id": "files",
+  "group": "tech",
+  "title": "File types",
+  "summary": "Which formats D2L opens. Students convert their own files; the Lab never converts, edits or uploads them.",
+  "roles": [
+    "la"
+  ],
+  "tasks": {
+    "la": [
+      "Tell students which file format to use"
+    ]
+  },
+  "sections": [
+    {
+      "id": "types",
+      "role": "la",
+      "title": "Formats D2L opens",
+      "text": "Documents `.pdf` · video `.mp4` · audio `.mp3` · images `.jpg` `.png` · folders `.zip`"
+    },
+    {
+      "id": "convert",
+      "role": "la",
+      "title": "A file D2L can't open",
+      "text": "Tell the student which format to use. They convert it themselves.",
+      "table": {
+        "head": [
+          "File",
+          "Why",
+          "What the student does"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "Pages, Numbers, Keynote",
+              "Won't open on Windows",
+              "Export as PDF from the app"
+            ]
+          },
+          {
+            "cells": [
+              "HEIC photos (iPhone)",
+              "No preview in D2L",
+              "Set the iPhone Camera to Most Compatible, or export the photo as JPG"
+            ]
+          },
+          {
+            "cells": [
+              "Publisher .pub",
+              "Closed format",
+              "Save as PDF"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "hands-off",
+      "role": "la",
+      "title": "Hands off student files",
+      "list": [
+        "Don't take a student's file, convert it, edit it or upload it for them, and don't send it to a converter website.",
+        "Lab videos are the student's job too: the Bongo recording, or the backup MP4 in the Troubleshooting tab of Content > LAB.",
+        "Still stuck? The student emails {email} with a screenshot."
+      ]
+    }
+  ]
+}

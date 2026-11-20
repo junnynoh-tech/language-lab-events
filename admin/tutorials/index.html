@@ -1,0 +1,742 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Language Lab Tutorials</title>
+<!-- Tutorial hub for lab assistants and coordinators (2026-11-19). Holds no content of its own: it reads
+     tutorials.json and the files it lists in t/ (JSON or .tex). Swap a tutorial by swapping its file. See README.md.
+     Same look as the Lab console (labs/language-lab-events/admin/console.html). -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
+<style>
+/* Canonical tokens (design-system skill), same as the Lab console. Dark mode re-maps them. */
+:root {
+  --navy: #1A3A6B; --navy-dark: #132C52; --gold: #B08D3F; --offwhite: #F7F7F5; --white: #FFFFFF; --ink: #1F2937; --muted: #5A6472;
+  --bg: var(--offwhite); --surface: var(--white); --text: var(--ink); --sub: var(--muted); --line: #DCDDD8;
+  --accent: var(--navy); --accent-ink: var(--white); --rail: var(--white); --chip: #EEF0F3;
+  --r-student: var(--ink); --r-la: var(--navy); --r-lc: #7A5F22; --r-dept: var(--muted);
+  --t-student: #EEF0F3; --t-la: #E6ECF5; --t-lc: #F5EEDD; --t-dept: #ECEDEF;
+  --shadow: 0 1px 2px rgba(20,30,50,.06), 0 8px 24px rgba(20,30,50,.06);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-mode="light"]) {
+  --bg: #0E1F3A; --surface: var(--navy-dark); --text: var(--offwhite); --sub: #C9CFD8; --line: #2B4670;
+  --accent: var(--offwhite); --accent-ink: var(--navy-dark); --rail: #102443; --chip: #1C3864;
+  --r-student: var(--offwhite); --r-la: #A9C1EA; --r-lc: #E2C584; --r-dept: #C9CFD8;
+  --t-student: #1C3864; --t-la: #1A3360; --t-lc: #3A3220; --t-dept: #22344F; --shadow: none; color-scheme: dark; } }
+:root[data-mode="dark"] {
+  --bg: #0E1F3A; --surface: var(--navy-dark); --text: var(--offwhite); --sub: #C9CFD8; --line: #2B4670;
+  --accent: var(--offwhite); --accent-ink: var(--navy-dark); --rail: #102443; --chip: #1C3864;
+  --r-student: var(--offwhite); --r-la: #A9C1EA; --r-lc: #E2C584; --r-dept: #C9CFD8;
+  --t-student: #1C3864; --t-la: #1A3360; --t-lc: #3A3220; --t-dept: #22344F; --shadow: none; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--text); font: 400 16px/1.55 "DM Sans", sans-serif; }
+a { color: inherit; }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; border-radius: 4px; }
+h1[tabindex="-1"]:focus { outline: none; }
+.skip { position: absolute; left: 12px; top: -48px; background: var(--surface); padding: 8px 12px; border: 1px solid var(--line); border-radius: 6px; z-index: 20; }
+.skip:focus { top: 12px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+code { font: 500 14px ui-monospace, Menlo, Consolas, monospace; background: var(--chip); border-radius: 4px; padding: 1px 6px; overflow-wrap: anywhere; }
+
+/* shell */
+.shell { display: grid; grid-template-columns: 272px 1fr; min-height: 100vh; }
+.rail { background: var(--rail); border-right: 1px solid var(--line); padding: 22px 14px; display: flex; flex-direction: column; gap: 18px; position: sticky; top: 0; height: 100vh; overflow: auto; }
+.areas { display: grid; grid-template-columns: repeat(3, auto); gap: 4px; padding: 4px; border-radius: 12px; background: var(--chip); }
+.areas[hidden] { display: none; }
+.areas a { text-align: center; padding: 8px 6px; border-radius: 9px; font-weight: 600; font-size: 14px; text-decoration: none; }
+.areas a:hover { background: var(--surface); }
+.areas a[aria-current="page"] { background: var(--accent); color: var(--accent-ink); }
+.brand { padding: 0 8px; text-decoration: none; display: block; }
+.brand small { display: block; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--sub); }
+.brand b { font: 700 23px/1.2 "Source Serif 4", serif; }
+.ctl { display: grid; gap: 6px; padding: 0 8px; }
+.ctl > label, .ctl > .lbl { font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--sub); }
+.seg { display: grid; grid-template-columns: 1fr 1.3fr .7fr; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.seg button { border: 0; background: none; padding: 7px 2px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+select, input[type="search"] { width: 100%; min-height: 38px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); padding: 6px 10px; }
+nav h2 { font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--sub); margin: 0 8px 6px; }
+nav ul { list-style: none; margin: 0 0 14px; padding: 0; }
+nav a { display: flex; align-items: center; gap: 8px; padding: 7px 8px; border-radius: 8px; font-weight: 500; text-decoration: none; }
+nav a:hover { background: var(--chip); }
+nav a[aria-current="page"] { background: var(--accent); color: var(--accent-ink); }
+nav a .only { margin-left: auto; font-size: 13px; font-weight: 600; color: var(--sub); }
+nav a[aria-current="page"] .only { color: inherit; }
+nav li[hidden] { display: none; }
+.rail-foot { margin-top: auto; display: grid; gap: 8px; padding: 0 8px; }
+
+main { padding: 28px clamp(16px, 3.5vw, 48px) 64px; min-width: 0; max-width: 1100px; }
+.eyebrow { font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--sub); margin: 0 0 4px; }
+h1 { font: 700 clamp(26px, 3vw, 34px)/1.15 "Source Serif 4", serif; margin: 0; }
+.lede { color: var(--sub); margin: 6px 0 0; max-width: 64ch; font-size: 17px; }
+h2.sec { font: 700 21px/1.3 "Source Serif 4", serif; margin: 32px 0 12px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; padding: 8px 14px; border-radius: 10px; font-weight: 600; text-decoration: none; border: 1px solid var(--line); background: var(--surface); cursor: pointer; }
+.btn:hover { background: var(--chip); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.sm { min-height: 34px; padding: 4px 12px; font-size: 14px; }
+.crumb { display: inline-block; margin-bottom: 12px; font-weight: 600; color: var(--sub); text-decoration: none; }
+.crumb:hover { color: var(--text); }
+
+/* role badges: color + the role's name (never color alone) */
+.role { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; padding: 2px 9px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; }
+.role::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.role.student { color: var(--r-student); } .role.la { color: var(--r-la); } .role.lc { color: var(--r-lc); } .role.dept { color: var(--r-dept); }
+.badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.when { font-size: 13px; color: var(--sub); }
+
+/* the one rule */
+.rule { display: grid; grid-template-columns: 40px 1fr; gap: 14px; align-items: start; background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--gold); border-radius: 0 14px 14px 0; padding: 16px 18px; margin: 22px 0 0; }
+.rule svg { width: 34px; height: 34px; color: var(--gold); }
+.rule b { font: 700 19px/1.3 "Source Serif 4", serif; display: block; }
+.rule p { margin: 4px 0 0; }
+.mail { font-weight: 700; white-space: nowrap; }
+
+/* flowchart: CSS grid of swimlanes; connectors drawn on top in SVG from the real box positions */
+.flowbox { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px; overflow-x: auto; }
+.flow { position: relative; display: grid; column-gap: 14px; row-gap: 38px; min-width: calc(var(--lanes) * 150px); padding-bottom: 4px; }
+.lanebg { grid-row: 1 / -1; border-radius: 10px; background: var(--lt); margin: -6px -7px; }
+.lanehd { grid-row: 1; z-index: 2; font-size: 13px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--lc); padding: 4px 6px 0; display: flex; gap: 6px; align-items: center; }
+.lanehd::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: currentColor; }
+.lanehd .you { font-size: 13px; letter-spacing: .04em; border: 1px solid currentColor; border-radius: 999px; padding: 0 6px; }
+.nd { position: relative; z-index: 2; align-self: start; display: flex; gap: 8px; align-items: flex-start; background: var(--surface); color: var(--text); border: 1.5px solid var(--lc); border-radius: 10px; padding: 8px 10px; font-size: 15px; line-height: 1.35; text-decoration: none; margin: 0 4px; }
+.nd svg { flex: none; width: 18px; height: 18px; margin-top: 1px; color: var(--lc); }
+.nd.start { border-radius: 999px; padding-inline: 14px; }
+.nd.decision { border-style: dashed; font-weight: 600; }
+.nd.end { box-shadow: inset 0 0 0 3px var(--surface), inset 0 0 0 4.5px var(--lc); }
+.nd.email { border-width: 2.5px; font-weight: 700; }
+a.nd:hover { background: var(--chip); }
+a.nd::after { content: "›"; margin-left: auto; padding-left: 4px; color: var(--sub); font-weight: 700; }
+.flow svg.wires { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; overflow: visible; }
+.wires path { fill: none; stroke: var(--sub); stroke-width: 1.6; }
+.wires text { font: 600 13px "DM Sans", sans-serif; fill: var(--text); paint-order: stroke; stroke: var(--surface); stroke-width: 5px; stroke-linejoin: round; }
+.flow .lane-student { --lc: var(--r-student); --lt: var(--t-student); }
+.flow .lane-la { --lc: var(--r-la); --lt: var(--t-la); }
+.flow .lane-lc { --lc: var(--r-lc); --lt: var(--t-lc); }
+.flow .lane-dept { --lc: var(--r-dept); --lt: var(--t-dept); }
+.flowimg { display: block; max-width: 100%; height: auto; margin: 0 auto; }
+.flowcap { font-size: 14px; color: var(--sub); margin: 8px 2px 0; }
+
+/* who does what */
+.who { display: grid; grid-template-columns: 1fr 120px 1fr 1fr; gap: 12px; align-items: stretch; }
+.col { background: var(--surface); border: 1px solid var(--line); border-top: 4px solid var(--rc); border-radius: 12px; padding: 14px 16px; }
+.col.la { --rc: var(--r-la); } .col.lc { --rc: var(--r-lc); } .col.dept { --rc: var(--r-dept); }
+.col h3 { font: 700 18px/1.25 "Source Serif 4", serif; margin: 0 0 2px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.col h3 .you { font: 600 13px "DM Sans", sans-serif; padding: 1px 8px; border-radius: 999px; background: var(--accent); color: var(--accent-ink); }
+.col > p { margin: 0 0 10px; font-size: 14px; color: var(--sub); }
+.col ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.col li a { display: block; padding: 5px 8px; margin: 0 -8px; border-radius: 8px; text-decoration: none; }
+.col li a:hover { background: var(--chip); }
+.col li a small { display: block; color: var(--sub); font-size: 13px; }
+.col.dim { opacity: .62; }
+.handoff { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 6px; font-size: 13px; color: var(--sub); }
+.handoff svg { width: 100%; height: 34px; color: var(--gold); }
+.handoff b { color: var(--text); font-size: 14px; overflow-wrap: anywhere; }
+
+/* cards */
+.group { margin-top: 26px; }
+.group h3 { font: 700 18px/1.3 "Source Serif 4", serif; margin: 0 0 10px; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+.card { display: flex; flex-direction: column; gap: 6px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; text-decoration: none; }
+.card:hover { border-color: var(--sub); }
+.card b { font: 600 17px/1.3 "Source Serif 4", serif; }
+.card span { color: var(--sub); font-size: 15px; }
+.card .badges { margin-top: auto; padding-top: 6px; }
+.card .role { white-space: normal; }
+.card.dim { opacity: .62; }
+
+/* a tutorial */
+.mytasks { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin: 18px 0 0; }
+.mytasks div { border: 1px solid var(--line); border-left: 4px solid var(--rc); border-radius: 0 10px 10px 0; padding: 8px 12px; background: var(--surface); }
+.mytasks .la { --rc: var(--r-la); } .mytasks .lc { --rc: var(--r-lc); } .mytasks .dept { --rc: var(--r-dept); }
+.mytasks ul { margin: 4px 0 0; padding-left: 18px; }
+.secs { display: grid; gap: 12px; margin-top: 6px; }
+.secs > section, .secs > details { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--rc, var(--line)); border-radius: 0 12px 12px 0; padding: 14px 18px; scroll-margin-top: 16px; }
+.secs .student { --rc: var(--r-student); } .secs .la { --rc: var(--r-la); } .secs .lc { --rc: var(--r-lc); } .secs .dept { --rc: var(--r-dept); }
+.secs h2 { font: 700 19px/1.3 "Source Serif 4", serif; margin: 0 0 8px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.secs details > summary { cursor: pointer; font-weight: 600; color: var(--sub); list-style-position: outside; }
+.secs details[open] > summary { margin-bottom: 10px; }
+.secs p { margin: 0 0 8px; }
+.secs ol, .secs ul { margin: 0 0 8px; padding-left: 22px; }
+.secs li + li { margin-top: 4px; }
+.secs :target, .secs .flash { outline: 3px solid var(--gold); outline-offset: 2px; }
+.script { margin: 4px 0 8px; padding: 10px 14px; border-radius: 10px; background: var(--chip); font-size: 16px; }
+.script::before { content: "Say: "; font-weight: 700; }
+.note { margin: 4px 0 0; padding: 8px 12px; border-left: 3px solid var(--gold); background: var(--bg); border-radius: 0 8px 8px 0; font-size: 15px; }
+.tbl { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 15px; margin: 2px 0 8px; }
+caption { text-align: left; font-weight: 600; padding-bottom: 6px; }
+th, td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
+thead th { background: var(--chip); }
+td.pts { white-space: nowrap; font-weight: 700; }
+.pager { display: flex; justify-content: space-between; gap: 12px; margin-top: 28px; flex-wrap: wrap; }
+
+/* email replies */
+.rjump { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 4px 18px; margin: 16px 0 0; }
+.rjump div b { display: block; font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--sub); margin: 8px 0 2px; }
+.rjump ul { list-style: none; margin: 0; padding: 0; }
+.rjump a { display: flex; gap: 6px; align-items: baseline; padding: 3px 0; text-decoration: none; }
+.rjump a:hover { text-decoration: underline; }
+.rjump a .only { font-size: 13px; color: var(--sub); }
+.reply .when { display: block; font-size: 15px; margin: 0 0 10px; }
+.mailbox { position: relative; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); padding: 12px 14px; }
+.copy { position: absolute; top: 8px; right: 8px; display: inline-flex; align-items: center; gap: 5px; border: 1px solid transparent; background: none; border-radius: 7px; padding: 3px 8px; font-size: 13px; font-weight: 600; color: var(--sub); cursor: pointer; }
+.copy:hover { border-color: var(--line); background: var(--surface); color: var(--text); }
+.copy svg { width: 15px; height: 15px; }
+.copy.done { color: var(--r-la); }
+.mailbox .subj:first-of-type { padding-right: 84px; }
+.mailbox .subj { font-size: 14px; color: var(--sub); border-bottom: 1px solid var(--line); padding-bottom: 6px; margin-bottom: 10px; }
+.mailbox .subj b { color: var(--text); }
+.mailbox p { white-space: pre-line; margin: 0 0 10px; }
+.mailbox p:last-child { margin: 0; }
+mark { background: var(--t-lc); color: var(--text); border: 1px dashed var(--r-lc); border-radius: 4px; padding: 0 3px; }
+.rtut { display: inline-block; margin-top: 8px; font-size: 14px; font-weight: 600; color: var(--sub); text-decoration: none; }
+.rtut:hover { color: var(--text); text-decoration: underline; }
+
+/* loader / preview */
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px; max-width: 640px; }
+.panel h1 { font-size: 26px; margin-bottom: 8px; }
+.banner { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; background: var(--t-lc); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; margin-bottom: 18px; }
+.drop { position: fixed; inset: 0; z-index: 30; display: none; place-items: center; background: color-mix(in srgb, var(--bg) 88%, transparent); border: 4px dashed var(--gold); font: 700 24px "Source Serif 4", serif; }
+.drop.on { display: grid; }
+.err { color: var(--r-lc); font-weight: 600; }
+
+@media (max-width: 900px) {
+  .who { grid-template-columns: 1fr; }
+  .handoff { flex-direction: row; justify-content: flex-start; text-align: left; }
+  .handoff svg { width: 34px; height: 34px; transform: rotate(90deg); flex: none; }
+}
+@media (max-width: 820px) {
+  .shell { grid-template-columns: 1fr; }
+  .rail { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); padding: 14px 16px; gap: 12px; }
+  .ctl { padding: 0; }
+  nav { display: none; }
+  .rail-foot { margin: 0; padding: 0; grid-template-columns: 1fr 1fr; }
+  main { padding-top: 20px; }
+}
+@media (prefers-reduced-motion: no-preference) { main > * { animation: in .16s ease-out; } @keyframes in { from { opacity: 0; transform: translateY(3px); } } }
+@page { size: letter; margin: 0.65in; }
+@media print {
+  .rail, .skip, .pager, .crumb, .banner { display: none !important; }
+  .shell { display: block; } body { background: #fff; color: #000; }
+  .secs details { display: block; } .secs details > * { display: block; }
+  section, .col, .card, .flowbox { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the tutorial</a>
+<div class="drop" id="drop" aria-hidden="true">Drop tutorial files to preview them</div>
+<div class="shell">
+  <header class="rail">
+    <nav class="areas" id="areas" aria-label="Console areas" hidden></nav>
+    <a class="brand" href="#/"><small>Language Lab</small><b id="brandTitle">Tutorials</b></a>
+    <div class="ctl">
+      <span class="lbl" id="roleLbl">I am</span>
+      <div class="seg" role="group" aria-labelledby="roleLbl" id="roleSeg">
+        <button type="button" data-role="la" aria-pressed="false">Assistant</button>
+        <button type="button" data-role="lc" aria-pressed="false">Coordinator</button>
+        <button type="button" data-role="all" aria-pressed="true">All</button>
+      </div>
+    </div>
+    <div class="ctl">
+      <label for="campus">My campus</label>
+      <select id="campus"></select>
+    </div>
+    <div class="ctl">
+      <label for="q">Find a task</label>
+      <input type="search" id="q" placeholder="iPad, grade, Bongo…" autocomplete="off">
+      <span class="sr" id="qStatus" aria-live="polite"></span>
+    </div>
+    <nav aria-label="Tutorials" id="nav"></nav>
+    <div class="rail-foot">
+      <button class="btn sm" type="button" id="modeBtn">Dark mode</button>
+      <button class="btn sm" type="button" id="openBtn">Open files…</button>
+    </div>
+  </header>
+  <main id="main" tabindex="-1"><p>Loading the tutorials…</p></main>
+</div>
+<script>
+"use strict";
+/* ---------- state (role, campus and theme are per-viewer conveniences in localStorage) ---------- */
+const store = {
+  get(k, d) { try { return localStorage.getItem("labTutorials." + k) ?? d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem("labTutorials." + k, v); } catch {} }
+};
+let M = null;            // manifest
+let TUT = [];            // tutorials in order
+let PREVIEW = [];        // file names previewed this session
+let localFiles = null;   // Map(name -> File) when opened from disk
+let REP = null;          // email replies (replies.json)
+let role = store.get("role", "all");
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+/* ---------- loading ---------- */
+async function readText(path) {
+  if (localFiles) {
+    const f = localFiles.get(path) || localFiles.get(path.split("/").pop());
+    if (!f) throw new Error(`${path} is not in the files you opened`);
+    return await f.text();
+  }
+  const r = await fetch(path, { cache: "no-cache" });
+  if (!r.ok) throw new Error(`${path}: ${r.status}`);
+  return await r.text();
+}
+function parseAny(name, text) {
+  if (/\.tex$/i.test(name)) return parseTex(text);
+  return JSON.parse(text);
+}
+async function load() {
+  try {
+    M = JSON.parse(await readText("tutorials.json"));
+    const out = [];
+    for (const f of M.tutorials) {
+      try { out.push(check(parseAny(f, await readText(f)), f)); }
+      catch (e) { out.push({ id: "error-" + out.length, title: f, group: "", summary: "Couldn't read this file: " + e.message, roles: [], sections: [], broken: true }); }
+    }
+    TUT = out;
+    REP = null;
+    if (M.replies) { try { REP = JSON.parse(await readText(M.replies)); } catch (e) { REP = { groups: [], replies: [], error: e.message }; } }
+    PREVIEW = [];
+    start();
+  } catch (e) {
+    showLoader(e);
+  }
+}
+function check(t, file) {
+  if (!t || !t.id || !t.title) throw new Error("needs an id and a title");
+  t.file = file; t.roles = t.roles || []; t.sections = t.sections || []; t.tasks = t.tasks || {};
+  return t;
+}
+function showLoader(e) {
+  const fromDisk = location.protocol === "file:";
+  $("#main").innerHTML = `<div class="panel">
+    <h1 tabindex="-1">Open the tutorial files</h1>
+    <p>${fromDisk ? "This page was opened from your computer, and browsers don't let a page read the files next to it that way." : "The tutorial list couldn't be loaded" + (e ? ` (<span class="err">${esc(e.message)}</span>)` : "") + "."}</p>
+    <p>Choose <b>Open files…</b> and pick the <code>tutorials</code> folder (Edge or Chrome), or drag <code>tutorials.json</code> and the files in <code>t/</code> onto this page.</p>
+    <p><button class="btn primary" type="button" data-open>Open the tutorials folder</button></p></div>`;
+  $("[data-open]").onclick = openFolder;
+}
+async function openFolder() {
+  if (!window.showDirectoryPicker) { alert("This browser can't open a folder. Drag the files onto the page instead."); return; }
+  try {
+    const dir = await window.showDirectoryPicker();
+    const files = new Map();
+    async function walk(h, prefix) {
+      for await (const [n, c] of h.entries()) {
+        if (c.kind === "file") files.set(prefix + n, await c.getFile());
+        else if (prefix.split("/").length < 3) await walk(c, prefix + n + "/");
+      }
+    }
+    await walk(dir, "");
+    await useFiles(files);
+  } catch (e) { if (e.name !== "AbortError") alert(e.message); }
+}
+async function useFiles(files) {
+  if (files.has("tutorials.json") || [...files.keys()].some(k => k.endsWith("/tutorials.json"))) {
+    if (!files.has("tutorials.json")) { const k = [...files.keys()].find(k => k.endsWith("/tutorials.json")); const base = k.slice(0, -14); const m = new Map(); for (const [n, f] of files) if (n.startsWith(base)) m.set(n.slice(base.length), f); files = m; }
+    localFiles = files; await load(); return;
+  }
+  if (!M) { alert("Open the whole tutorials folder (or include tutorials.json) the first time."); return; }
+  // single tutorial files: preview them in place of the tutorial with the same id (this session only)
+  for (const [name, f] of files) {
+    if (!/\.(json|tex)$/i.test(name)) continue;
+    try {
+      const t = check(parseAny(name, await f.text()), name);
+      const i = TUT.findIndex(x => x.id === t.id);
+      if (i >= 0) TUT[i] = t; else TUT.push(t);
+      PREVIEW.push(name.split("/").pop());
+      location.hash = "#/" + t.id;
+    } catch (e) { alert(`${name}: ${e.message}`); }
+  }
+  render();
+}
+// drag and drop (files or a folder)
+let dragDepth = 0;
+addEventListener("dragenter", e => { if ([...e.dataTransfer.types].includes("Files")) { dragDepth++; $("#drop").classList.add("on"); } });
+addEventListener("dragleave", () => { if (--dragDepth <= 0) { dragDepth = 0; $("#drop").classList.remove("on"); } });
+addEventListener("dragover", e => e.preventDefault());
+addEventListener("drop", async e => {
+  e.preventDefault(); dragDepth = 0; $("#drop").classList.remove("on");
+  const files = new Map();
+  const items = [...e.dataTransfer.items].map(i => i.webkitGetAsEntry && i.webkitGetAsEntry()).filter(Boolean);
+  const readEntry = (en, prefix) => new Promise(res => {
+    if (en.isFile) en.file(f => { files.set(prefix + f.name, f); res(); });
+    else { const rd = en.createReader(); const all = []; const more = () => rd.readEntries(async ents => { if (!ents.length) { for (const c of all) await readEntry(c, prefix + en.name + "/"); res(); } else { all.push(...ents); more(); } }); more(); }
+  });
+  if (items.length) for (const en of items) await readEntry(en, "");
+  else for (const f of e.dataTransfer.files) files.set(f.name, f);
+  // a dropped folder: strip its own name so tutorials.json sits at the root
+  const keys = [...files.keys()]; const top = keys[0] && keys[0].split("/")[0];
+  if (keys.length && keys.every(k => k.startsWith(top + "/"))) { const m = new Map(); for (const [k, f] of files) m.set(k.slice(top.length + 1), f); await useFiles(m); }
+  else await useFiles(files);
+});
+
+/* ---------- LaTeX tutorials (a small, fixed subset; see templates/tutorial-template.tex) ---------- */
+function texArg(s, i) { // s[i] === "{" -> [content, nextIndex]
+  let d = 0, j = i;
+  for (; j < s.length; j++) { if (s[j] === "\\") { j++; continue; } if (s[j] === "{") d++; else if (s[j] === "}" && --d === 0) break; }
+  return [s.slice(i + 1, j), j + 1];
+}
+function texInline(s) {
+  s = s.replace(/\\(textbf|emph|textit|texttt|url)\{/g, "\u0001$1{");
+  let out = "", i = 0;
+  while (i < s.length) {
+    if (s[i] === "\u0001") {
+      const m = /^\u0001(\w+)\{/.exec(s.slice(i)); const [a, n] = texArg(s, i + m[0].length - 1); const inner = texInline(a);
+      out += { textbf: `**${inner}**`, emph: `*${inner}*`, textit: `*${inner}*`, texttt: "`" + a + "`", url: `[${a}](${a})` }[m[1]]; i = n;
+    } else if (s.startsWith("\\href{", i)) {
+      const [u, n] = texArg(s, i + 5); const [t, n2] = texArg(s, n); out += `[${texInline(t)}](${u})`; i = n2;
+    } else { out += s[i]; i++; }
+  }
+  return out.replace(/\\&/g, "&").replace(/\\%/g, "%").replace(/\\_/g, "_").replace(/\\#/g, "#").replace(/\\\$/g, "$")
+    .replace(/``|''/g, '"').replace(/\\ldots\{?\}?/g, "...").replace(/~/g, " ").replace(/\\\\/g, " ").replace(/\s+/g, " ").trim();
+}
+function parseTex(src) {
+  src = src.replace(/(^|[^\\])%.*$/gm, "$1");
+  const one = name => { const i = src.indexOf("\\" + name + "{"); return i < 0 ? "" : texInline(texArg(src, i + name.length + 1)[0]); };
+  const t = { id: one("tutorialid"), title: one("title"), group: one("group"), summary: one("summary"),
+    roles: one("roles").split(",").map(x => x.trim()).filter(Boolean), tasks: {}, sections: [] };
+  src.replace(/\\task\{(\w+)\}\{([^}]*)\}/g, (_, r, x) => { (t.tasks[r] ||= []).push(texInline(x)); });
+  // flow: \begin{flow}{la,lc} \node{id}{lane}{type}{text}{next:Label,next2} ... \end{flow}
+  const fm = /\\begin\{flow\}\{([^}]*)\}([\s\S]*?)\\end\{flow\}/.exec(src);
+  if (fm) {
+    const nodes = [];
+    fm[2].replace(/\\node\{([^}]*)\}\{([^}]*)\}\{([^}]*)\}\{((?:[^{}]|\{[^}]*\})*)\}\{([^}]*)\}(?:\{([^}]*)\})?/g, (_, id, lane, type, text, next, go) => {
+      nodes.push({ id, lane, type, text: texInline(text), go: go ? go.replace(/\\/g, "") : undefined,
+        next: next.split(",").map(x => x.trim()).filter(Boolean).map(x => { const [to, label] = x.split(":"); return label ? { to, label } : to; }) });
+    });
+    t.flow = { lanes: fm[1].split(",").map(x => x.trim()), nodes };
+  }
+  // sections: \section[role]{Title}\label{id}
+  const parts = src.split(/\\section(?=[\[{])/).slice(1);
+  for (const p of parts) {
+    let i = 0, r = "all";
+    if (p[0] === "[") { const j = p.indexOf("]"); r = p.slice(1, j).trim(); i = j + 1; }
+    const [title, n] = texArg(p, i);
+    let body = p.slice(n).replace(/\\end\{document\}[\s\S]*/, "");
+    const s = { role: r, title: texInline(title) };
+    body = body.replace(/\\label\{([^}]*)\}/, (_, id) => { s.id = id; return ""; });
+    s.id ||= s.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    const env = (name, key, list) => { body = body.replace(new RegExp(`\\\\begin\\{${name}\\}([\\s\\S]*?)\\\\end\\{${name}\\}`), (_, x) => { s[key] = list ? x.split(/\\item\b/).slice(1).map(texInline).filter(Boolean) : texInline(x); return ""; }); };
+    env("enumerate", "steps", true); env("itemize", "list", true); env("script", "script"); env("note", "note");
+    const text = texInline(body);
+    if (text) s.text = text;
+    t.sections.push(s);
+  }
+  return t;
+}
+
+/* ---------- text: **bold**, *em*, `code`, [text](link), {email} {campus} {dept} ---------- */
+function campus() { const c = M.campuses || []; return c.find(x => x.code === store.get("campus", "")) || c[0] || { email: "the Lab email", name: "" }; }
+function fill(s) {
+  return String(s ?? "").replace(/\{email\}/g, campus().email).replace(/\{campus\}/g, campus().name)
+    .replace(/\{dept\}/g, (M.roles?.dept?.contact) || "the department");
+}
+function fmt(s, inLink) {
+  let h = esc(fill(s));
+  const codes = [];
+  h = h.replace(/`([^`]+)`/g, (_, c) => { codes.push(c); return `\u0002${codes.length - 1}\u0002`; });
+  h = h.replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>").replace(/(^|[^*])\*([^*\s][^*]*)\*/g, "$1<em>$2</em>");
+  if (inLink) return h.replace(/\[([^\]]+)\]\([^)\s]+\)/g, "$1").replace(/\u0002(\d+)\u0002/g, (_, i) => `<code>${codes[i]}</code>`);
+  h = h.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, t, u) => {
+    const ext = /^https?:/.test(u);
+    return `<a href="${u.replace(/"/g, "")}"${ext ? ' target="_blank" rel="noopener"' : ""}>${t}${ext ? '<span class="sr"> (opens in a new tab)</span>' : ""}</a>`;
+  });
+  h = h.replace(/[\w.+-]+@[\w-]+\.[\w.]+/g, m => `<a class="mail" href="mailto:${m}">${m}</a>`);
+  return h.replace(/\u0002(\d+)\u0002/g, (_, i) => `<code>${codes[i]}</code>`);
+}
+const roleName = r => (M.roles?.[r]?.name) || r;
+const roleShort = r => (M.roles?.[r]?.short) || r;
+const badge = r => `<span class="role ${esc(r)}">${esc(roleName(r))}</span>`;
+const coordOnly = t => t.roles.length && t.roles.every(r => r === "lc" || r === "dept");
+const notMine = t => role === "la" && coordOnly(t);
+
+/* ---------- icons ---------- */
+const ICON = {
+  start: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5"/></svg>',
+  step: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h12M13 7l5 5-5 5"/></svg>',
+  decision: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3 21 12 12 21 3 12Z"/></svg>',
+  end: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>',
+  email: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="m3.5 7 8.5 6.5L20.5 7"/></svg>'
+};
+const TYPE_WORD = { start: "Start", step: "Step", decision: "Question", end: "Finish", email: "Email" };
+
+/* ---------- flowchart ---------- */
+const nexts = n => (n.next || []).map(x => typeof x === "string" ? { to: x } : x);
+function goHref(go, tid) {
+  if (!go) return "";
+  if (go.startsWith("#") && tid) return `#/${tid}/${go.slice(1)}`;
+  if (/^https?:/.test(go)) return go;
+  return "#/" + go.replace("#", "/");
+}
+function flowHTML(flow, tid) {
+  if (flow.image) {
+    return `<figure class="flowbox" style="margin:0"><img class="flowimg" src="${esc(flow.image)}" alt="${esc(flow.alt || "Flowchart")}">${flow.caption ? `<figcaption class="flowcap">${fmt(flow.caption)}</figcaption>` : ""}</figure>`;
+  }
+  const lanes = flow.lanes.filter(l => flow.nodes.some(n => n.lane === l));
+  // a lane gets a second column when any of its nodes sits "side"; "beside" keeps a node on its parent's row
+  const key = n => n.lane + (n.side ? ":s" : "");
+  const cols = lanes.flatMap(l => flow.nodes.some(n => n.lane === l && n.side) ? [l, l + ":s"] : [l]);
+  const col = Object.fromEntries(cols.map((c, i) => [c, i + 1]));
+  const span = l => col[l + ":s"] ? 2 : 1;
+  const row = {}, taken = new Set();
+  flow.nodes.forEach((n, i) => {
+    let r = n.row ?? 0;
+    flow.nodes.slice(0, i).forEach(p => { if (nexts(p).some(e => e.to === n.id)) r = Math.max(r, row[p.id] + (n.beside ? 0 : 1)); });
+    while (taken.has(key(n) + ":" + r)) r++;
+    taken.add(key(n) + ":" + r); row[n.id] = r;
+  });
+  const rows = Math.max(0, ...Object.values(row)) + 1;
+  const byId = Object.fromEntries(flow.nodes.map(n => [n.id, n]));
+  let h = `<div class="flow" style="--lanes:${cols.length};grid-template-columns:repeat(${cols.length},minmax(0,1fr));grid-template-rows:auto repeat(${rows},auto)" data-flow>`;
+  lanes.forEach(l => {
+    const you = (role === l) ? ' <span class="you">You</span>' : "";
+    h += `<div class="lanebg lane-${esc(l)}" style="grid-column:${col[l]} / span ${span(l)}" aria-hidden="true"></div><div class="lanehd lane-${esc(l)}" style="grid-column:${col[l]} / span ${span(l)}" aria-hidden="true">${esc(roleShort(l))}${you}</div>`;
+  });
+  h += `<ol class="sr">`;
+  flow.nodes.forEach(n => {
+    const outs = nexts(n).map(e => `${e.label ? e.label + ": " : ""}${byId[e.to] ? fill(byId[e.to].text) : e.to}`).join("; ");
+    h += `<li>${esc(roleName(n.lane))}, ${TYPE_WORD[n.type] || "Step"}: ${esc(fill(n.text))}${outs ? `. Then ${esc(outs)}` : ""}.</li>`;
+  });
+  h += `</ol>`;
+  flow.nodes.forEach(n => {
+    const t = n.type || "step", href = goHref(n.go, tid);
+    const tag = href ? "a" : "div";
+    h += `<${tag} class="nd ${esc(t)} lane-${esc(n.lane)}" data-id="${esc(n.id)}" style="grid-column:${col[key(n)]};grid-row:${row[n.id] + 2}"${href ? ` href="${esc(href)}"` : ' aria-hidden="true"'}>${ICON[t] || ICON.step}<span>${href ? `<span class="sr">${esc(roleName(n.lane))}: </span>` : ""}${fmt(n.text, true)}</span></${tag}>`;
+  });
+  h += `<svg class="wires" aria-hidden="true"><defs><marker id="arr-${esc(tid)}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" style="fill:var(--sub);stroke:none"/></marker></defs></svg></div>`;
+  return { html: h, wire: el => drawWires(el, flow, row, tid, key) };
+}
+function drawWires(el, flow, row, tid, key) {
+  const svg = $("svg.wires", el); if (!svg) return;
+  [...svg.querySelectorAll("path:not(marker path),text")].forEach(x => x.remove());
+  const box = el.getBoundingClientRect();
+  const R = {}; el.querySelectorAll(".nd").forEach(n => { const b = n.getBoundingClientRect(); R[n.dataset.id] = { l: b.left - box.left, r: b.right - box.left, t: b.top - box.top, b: b.bottom - box.top, x: (b.left + b.right) / 2 - box.left, y: (b.top + b.bottom) / 2 - box.top }; });
+  const laneR = {}; el.querySelectorAll(".lanebg").forEach(n => { const b = n.getBoundingClientRect(); laneR[[...n.classList].find(c => c.startsWith("lane-")).slice(5)] = b.right - box.left; });
+  const busy = (k, from, to) => flow.nodes.some(n => key(n) === k && row[n.id] > from && row[n.id] < to);
+  const G = 19; // half the row gap
+  const ns = "http://www.w3.org/2000/svg";
+  flow.nodes.forEach(a => nexts(a).forEach(e => {
+    const b = flow.nodes.find(n => n.id === e.to); if (!b || !R[a.id] || !R[b.id]) return;
+    const A = R[a.id], B = R[b.id], ra = row[a.id], rb = row[b.id];
+    let d, lx, ly, anchor = "middle";
+    const ka = key(a), kb = key(b);
+    if (rb > ra && ka === kb && !busy(ka, ra, rb)) {
+      d = `M${A.x},${A.b} V${B.t}`; lx = A.x + 8; ly = A.b + G + 12; anchor = "start";
+    } else if (rb > ra && ka !== kb && !busy(kb, ra, rb)) {
+      const y = A.b + G; d = `M${A.x},${A.b} V${y} H${B.x} V${B.t}`; lx = (A.x + B.x) / 2; ly = y - 6;
+    } else if (rb > ra && ka !== kb && !busy(ka, ra, rb)) {
+      const y = B.t - G; d = `M${A.x},${A.b} V${y} H${B.x} V${B.t}`; lx = A.x + 8; ly = A.b + G; anchor = "start";
+    } else if (rb === ra) {
+      const right = B.x > A.x; d = `M${right ? A.r : A.l},${A.y} H${right ? B.l : B.r}`; lx = (A.x + B.x) / 2; ly = A.y - 6;
+    } else { // around the right edge of the lane (skips over boxes, or loops back up)
+      const gx = Math.min(laneR[a.lane] ?? A.r + 10, Math.max(A.r, B.r) + 12) - 2;
+      const y1 = A.b + G, y2 = B.t - G;
+      d = `M${A.x},${A.b} V${y1} H${gx} V${y2} H${B.x} V${B.t}`; lx = gx - 6; ly = y1 - 6; anchor = "end";
+    }
+    const p = document.createElementNS(ns, "path"); p.setAttribute("d", d); p.setAttribute("marker-end", `url(#arr-${tid})`); svg.appendChild(p);
+    if (e.label) { const t = document.createElementNS(ns, "text"); t.setAttribute("x", lx); t.setAttribute("y", ly); t.setAttribute("text-anchor", anchor); t.textContent = e.label; svg.appendChild(t); }
+  }));
+}
+let wirers = [];
+const ro = new ResizeObserver(() => wirers.forEach(([el, f]) => f(el)));
+function mountFlows() {
+  ro.disconnect();
+  wirers.forEach(([el, f]) => { ro.observe(el); f(el); });
+  if (document.fonts) document.fonts.ready.then(() => wirers.forEach(([el, f]) => f(el)));
+}
+
+/* ---------- views ---------- */
+function nav() {
+  const groups = M.groups || [];
+  let h = "";
+  const used = new Set();
+  const list = ts => ts.map(t => { used.add(t); return `<li data-t="${esc(t.id)}"><a href="#/${esc(t.id)}">${esc(t.title)}${coordOnly(t) ? '<span class="only">Coord.</span>' : ""}</a></li>`; }).join("");
+  if (REP) h += `<h2>Email</h2><ul><li data-t="replies"><a href="#/replies">Email replies<span class="only">${REP.replies.length}</span></a></li></ul>`;
+  groups.forEach(g => { const ts = TUT.filter(t => t.group === g.id); if (ts.length) h += `<h2>${esc(g.title)}</h2><ul>${list(ts)}</ul>`; });
+  const rest = TUT.filter(t => !used.has(t)); if (rest.length) h += `<h2>Other</h2><ul>${list(rest)}</ul>`;
+  $("#nav").innerHTML = h;
+  search();
+}
+function banner() {
+  if (!PREVIEW.length && !localFiles) return "";
+  const what = PREVIEW.length ? `Previewing ${PREVIEW.map(esc).join(", ")} from your computer (this session only).` : "Showing tutorial files opened from your computer.";
+  return `<div class="banner" role="status"><span>${what}</span><button class="btn sm" type="button" data-reset>Go back to the saved tutorials</button></div>`;
+}
+function home() {
+  wirers = [];
+  const R = M.rule || {};
+  let h = banner() + `<p class="eyebrow">Lab assistants and coordinators</p><h1 tabindex="-1">${esc(M.title || "Tutorials")}</h1>
+    <p class="lede">Find your task below, or follow the path any question takes. Boxes and tasks open their tutorial.</p>`;
+  if (R.title) h += `<div class="rule">${ICON.email.replace("<svg", '<svg role="img" aria-label="Email"')}<div><b>${fmt(R.title)}</b><p>${fmt(R.text)}</p>${REP ? `<p><a href="#/replies">Email replies</a>: ${REP.replies.length} ready-to-copy answers for the Lab inbox.</p>` : ""}</div></div>`;
+  let fw = null;
+  if (M.flow) { fw = flowHTML(M.flow, "home"); h += `<h2 class="sec">${esc(M.flow.title || "How a question moves")}</h2><div class="flowbox">${fw.html}</div>`; }
+  // who does what: built from every tutorial's tasks, so it changes when a tutorial file changes
+  const cols = ["la", "lc", "dept"].filter(r => M.roles?.[r]);
+  const tasks = r => TUT.flatMap(t => (t.tasks[r] || []).map(x => ({ x, t })));
+  const blurb = { la: "Do these yourself, on your shift.", lc: "Lab assistants hand these over by email.", dept: "The coordinator sends these on." };
+  const colHTML = r => `<div class="col ${r}${role !== "all" && role !== r ? " dim" : ""}"><h3>${esc(roleName(r))}${role === r ? '<span class="you">You</span>' : ""}</h3><p>${blurb[r] || ""}</p>
+      <ul>${tasks(r).map(({ x, t }) => `<li><a href="#/${esc(t.id)}">${fmt(x, true)}<small>${esc(t.title)}</small></a></li>`).join("") || "<li>Nothing listed yet.</li>"}</ul></div>`;
+  h += `<h2 class="sec">Who does what</h2><div class="who">${colHTML("la")}
+      <div class="handoff" aria-label="Hand-off"><svg viewBox="0 0 120 34" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M6 17h104M98 7l12 10-12 10"/></svg><span>Hand off by email<br><b>${esc(campus().email)}</b></span></div>
+      ${cols.filter(r => r !== "la").map(colHTML).join("")}</div>`;
+  // cards by group
+  (M.groups || []).forEach(g => {
+    const ts = TUT.filter(t => t.group === g.id); if (!ts.length) return;
+    h += `<section class="group" aria-label="${esc(g.title)}"><h3>${esc(g.title)} <span class="when">${esc(g.when || "")}</span></h3><div class="cards">${ts.map(card).join("")}</div></section>`;
+  });
+  const rest = TUT.filter(t => !(M.groups || []).some(g => g.id === t.group));
+  if (rest.length) h += `<section class="group" aria-label="Other"><h3>Other</h3><div class="cards">${rest.map(card).join("")}</div></section>`;
+  $("#main").innerHTML = h;
+  if (fw) wirers.push([$("[data-flow]"), fw.wire]);
+}
+const card = t => `<a class="card${notMine(t) ? " dim" : ""}" href="#/${esc(t.id)}"><b>${esc(t.title)}</b><span>${fmt(t.summary, true)}</span><div class="badges">${t.roles.filter(r => r !== "student").map(badge).join("")}${notMine(t) ? '<span class="when">Coordinator only</span>' : ""}</div></a>`;
+
+function sectionHTML(s, t) {
+  let b = "";
+  if (s.text) b += `<p>${fmt(s.text)}</p>`;
+  if (s.steps) b += `<ol>${s.steps.map(x => `<li>${fmt(x)}</li>`).join("")}</ol>`;
+  if (Array.isArray(s.list)) b += `<ul>${s.list.map(x => `<li>${fmt(x)}</li>`).join("")}</ul>`;
+  if (s.table) b += `<div class="tbl"><table>${s.table.caption ? `<caption>${fmt(s.table.caption)}</caption>` : ""}<thead><tr>${s.table.head.map(x => `<th scope="col">${fmt(x)}</th>`).join("")}</tr></thead><tbody>${s.table.rows.map(r => `<tr>${(r.cells || r).map((c, i) => i ? `<td>${fmt(c)}</td>` : `<th scope="row">${fmt(c)}</th>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+  if (s.rubric && t.rubric) {
+    const R = t.rubric;
+    b += `<div class="tbl"><table><caption>${esc(R.total)} points. Each cell starts with its points.</caption><thead><tr><th scope="col">Row</th>${R.levels.map(l => `<th scope="col">${esc(l)}</th>`).join("")}</tr></thead><tbody>${R.rows.map(r => `<tr><th scope="row">${esc(r.name)}</th>${r.d.map((d, i) => `<td><span class="pts">${r.points[i]}</span> · ${fmt(d)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+  }
+  if (s.script) b += `<p class="script">${fmt(s.script)}</p>`;
+  if (s.note) b += `<p class="note">${fmt(s.note)}</p>`;
+  if (s.image) b += `<img class="flowimg" src="${esc(s.image)}" alt="${esc(s.alt || "")}">`;
+  const r = s.role || "all";
+  const tag = r !== "all" ? badge(r) : "";
+  const other = role !== "all" && r !== "all" && r !== "student" && r !== role;
+  if (other) return `<details class="${esc(r)}" id="s-${esc(s.id)}"><summary>${esc(roleName(r))}'s part: ${fmt(s.title)}</summary>${b}</details>`;
+  return `<section class="${esc(r)}" id="s-${esc(s.id)}" aria-labelledby="h-${esc(s.id)}"><h2 id="h-${esc(s.id)}">${fmt(s.title)} ${tag}</h2>${b}</section>`;
+}
+function tutorial(t, secId) {
+  wirers = [];
+  const i = TUT.indexOf(t), g = (M.groups || []).find(x => x.id === t.group);
+  let h = banner() + `<a class="crumb" href="#/">‹ All tutorials</a><p class="eyebrow">${esc(g ? g.title : "Tutorial")}${g?.when ? " · " + esc(g.when) : ""}</p>
+    <h1 tabindex="-1">${esc(t.title)}</h1><p class="lede">${fmt(t.summary)}</p>
+    <div class="badges">${t.roles.map(badge).join("")}</div>`;
+  if (notMine(t)) h += `<p class="note" style="margin-top:14px">This one is the coordinator's job. You only need to know it exists, so you can send people the right way.</p>`;
+  const tr = ["la", "lc", "dept"].filter(r => t.tasks[r]?.length);
+  if (tr.length) h += `<div class="mytasks">${tr.map(r => `<div class="${r}"><b>${esc(roleName(r))}</b><ul>${t.tasks[r].map(x => `<li>${fmt(x)}</li>`).join("")}</ul></div>`).join("")}</div>`;
+  let fw = null;
+  if (t.flow) { fw = flowHTML(t.flow, t.id); h += `<h2 class="sec">At a glance</h2><div class="flowbox">${fw.html}</div>`; }
+  h += `<h2 class="sec">Step by step</h2><div class="secs">${t.sections.map(s => sectionHTML(s, t)).join("")}</div>`;
+  const prev = TUT[i - 1], next = TUT[i + 1];
+  h += `<div class="pager">${prev ? `<a class="btn" href="#/${esc(prev.id)}">‹ ${esc(prev.title)}</a>` : "<span></span>"}${next ? `<a class="btn" href="#/${esc(next.id)}">${esc(next.title)} ›</a>` : ""}</div>`;
+  $("#main").innerHTML = h;
+  if (fw) wirers.push([$("[data-flow]"), fw.wire]);
+  if (secId) {
+    const el = document.getElementById("s-" + secId);
+    if (el) { if (el.tagName === "DETAILS") el.open = true; el.scrollIntoView({ block: "start" }); el.classList.add("flash"); setTimeout(() => el.classList.remove("flash"), 1600); el.setAttribute("tabindex", "-1"); el.focus({ preventScroll: true }); return true; }
+  }
+}
+/* ---------- email replies: copy, fill the [blanks], send from the Lab email ---------- */
+const rWho = r => r.who === "lc" ? "lc" : "la";
+function replyText(r) {
+  const body = [...r.body, fill(REP.signature || "")].filter(Boolean).map(x => fill(x).replace(/\*\*([^*]+)\*\*/g, "$1")).join("\n\n");
+  return `Subject: ${fill(r.subject || "")}\n\n${body}`;
+}
+const COPY_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>';
+const CHECK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>';
+const blanks = h => h.replace(/\[([^\]]+)\]/g, "<mark>[$1]</mark>");
+function replyHTML(r) {
+  const who = rWho(r);
+  const tut = r.go ? "#/" + r.go : "";
+  const tname = r.go ? (TUT.find(t => t.id === r.go.split("/")[0]) || {}).title : "";
+  const b = `<p class="when"><b>When:</b> ${fmt(r.when)}</p>
+    <div class="mailbox"><button class="copy" type="button" data-copy="${esc(r.id)}" aria-label="Copy ${esc(fill(r.title))}">${COPY_ICON}<span aria-live="polite">Copy</span></button>${r.to ? `<div class="subj">To: <b>${esc(r.to)}</b></div>` : ""}<div class="subj">Subject: <b>${blanks(fmt(r.subject || ""))}</b></div>${[...r.body, REP.signature || ""].filter(Boolean).map(x => `<p>${blanks(fmt(x))}</p>`).join("")}</div>
+    ${r.note ? `<p class="note"><b>Before you send:</b> ${fmt(r.note)}</p>` : ""}
+    ${tut && tname ? `<a class="rtut" href="${esc(tut)}">Tutorial: ${esc(tname)} ›</a>` : ""}`;
+  const other = role === "la" && who === "lc";
+  if (other) return `<details class="reply ${who}" id="s-${esc(r.id)}"><summary>Coordinator sends: ${fmt(r.title)}</summary>${b}</details>`;
+  return `<section class="reply ${who}" id="s-${esc(r.id)}" aria-labelledby="h-${esc(r.id)}"><h2 id="h-${esc(r.id)}">${fmt(r.title)} ${badge(who)}</h2>${b}</section>`;
+}
+function replies(secId) {
+  wirers = [];
+  const gs = [...(REP.groups || [])];
+  const rest = REP.replies.filter(r => !gs.some(g => g.id === r.group));
+  if (rest.length) gs.push({ id: "", title: "Other" });
+  const inG = g => REP.replies.filter(r => g.id ? r.group === g.id : rest.includes(r));
+  let h = banner() + `<a class="crumb" href="#/">‹ All tutorials</a><p class="eyebrow">Lab inbox</p><h1 tabindex="-1">Email replies</h1>
+    <p class="lede">Copy a reply, fill in the <mark>[highlighted]</mark> parts, and send it from the Lab email. Replies marked <b>Lab coordinator</b> are the coordinator's to send; lab assistants forward those emails instead.</p>`;
+  if (REP.error) h += `<p class="err">Couldn't read the replies file: ${esc(REP.error)}</p>`;
+  h += `<nav class="rjump" aria-label="Replies">${gs.map(g => `<div><b>${esc(g.title)}</b><ul>${inG(g).map(r => `<li><a href="#/replies/${esc(r.id)}">${fmt(r.title, true)}${rWho(r) === "lc" ? '<span class="only">Coord.</span>' : ""}</a></li>`).join("")}</ul></div>`).join("")}</nav>`;
+  gs.forEach(g => { h += `<h2 class="sec">${esc(g.title)}${g.when ? ` <span class="when">${esc(g.when)}</span>` : ""}</h2><div class="secs">${inG(g).map(replyHTML).join("")}</div>`; });
+  $("#main").innerHTML = h;
+  document.querySelectorAll("[data-copy]").forEach(btn => btn.onclick = async () => {
+    const r = REP.replies.find(x => x.id === btn.dataset.copy), txt = replyText(r);
+    let ok = true;
+    try { await navigator.clipboard.writeText(txt); }
+    catch { const ta = document.createElement("textarea"); ta.value = txt; ta.setAttribute("aria-hidden", "true"); ta.style.position = "fixed"; ta.style.opacity = "0"; document.body.appendChild(ta); ta.select(); try { ok = document.execCommand("copy"); } catch { ok = false; } ta.remove(); }
+    btn.classList.toggle("done", ok);
+    btn.innerHTML = (ok ? CHECK_ICON : COPY_ICON) + `<span aria-live="polite">${ok ? "Copied" : "Couldn't copy"}</span>`;
+    clearTimeout(btn._t); btn._t = setTimeout(() => { btn.classList.remove("done"); btn.innerHTML = COPY_ICON + '<span aria-live="polite">Copy</span>'; }, 2000);
+  });
+  if (secId) {
+    const el = document.getElementById("s-" + secId);
+    if (el) { if (el.tagName === "DETAILS") el.open = true; el.scrollIntoView({ block: "start" }); el.classList.add("flash"); setTimeout(() => el.classList.remove("flash"), 1600); el.setAttribute("tabindex", "-1"); el.focus({ preventScroll: true }); return true; }
+  }
+}
+function render() {
+  if (!M) return;
+  const [, id, sec] = (location.hash.match(/^#\/([^/]*)\/?(.*)$/) || []);
+  const t = TUT.find(x => x.id === id);
+  if (id === "replies" && REP) { if (!replies(sec)) { scrollTo(0, 0); $("h1").focus({ preventScroll: true }); } document.title = `Email replies · ${M.title}`; }
+  else if (t) { if (!tutorial(t, sec)) { scrollTo(0, 0); $("h1").focus({ preventScroll: true }); } document.title = `${t.title} · ${M.title}`; }
+  else { home(); scrollTo(0, 0); $("h1").focus({ preventScroll: true }); document.title = M.title || "Tutorials"; }
+  mountFlows();
+  document.querySelectorAll("#nav a").forEach(a => { if ((t || id === "replies") && a.getAttribute("href") === "#/" + id) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
+  const rb = $("[data-reset]"); if (rb) rb.onclick = () => { localFiles = null; PREVIEW = []; load(); };
+}
+
+/* ---------- search: titles, summaries, tasks and every step ---------- */
+function haystack(t) { return [t.title, t.summary, ...Object.values(t.tasks).flat(), ...t.sections.flatMap(s => [s.title, s.text, s.script, s.note, ...(s.steps || []), ...(Array.isArray(s.list) ? s.list : [])])].join(" ").toLowerCase(); }
+const repHay = () => REP ? REP.replies.map(r => [r.title, r.when, r.subject, r.note, ...r.body].join(" ")).join(" ").toLowerCase() : "";
+function search() {
+  const q = $("#q").value.trim().toLowerCase();
+  let n = 0;
+  document.querySelectorAll("#nav li").forEach(li => { const t = TUT.find(x => x.id === li.dataset.t); const hay = li.dataset.t === "replies" ? repHay() : t ? haystack(t) : ""; const hit = !q || q.split(/\s+/).every(w => hay.includes(w)); li.hidden = !hit; if (hit) n++; });
+  document.querySelectorAll("#nav h2").forEach(h2 => { h2.hidden = ![...h2.nextElementSibling.children].some(li => !li.hidden); });
+  if (innerWidth <= 820 && q) $("#nav").style.display = "block"; else $("#nav").style.removeProperty("display");
+  $("#qStatus").textContent = q ? `${n} tutorial${n === 1 ? "" : "s"} match` : "";
+}
+
+/* ---------- start ---------- */
+function start() {
+  document.title = M.title || "Tutorials";
+  $("#brandTitle").textContent = (M.title || "Tutorials").replace(/^Language Lab\s*/, "") || "Tutorials";
+  if (M.areas) { $("#areas").innerHTML = M.areas.map(a => a.href ? `<a href="${esc(a.href)}">${esc(a.label)}</a>` : `<a href="#/" aria-current="page">${esc(a.label)}</a>`).join(""); $("#areas").hidden = false; }
+  const sel = $("#campus");
+  sel.innerHTML = (M.campuses || []).map(c => `<option value="${esc(c.code)}">${esc(c.name)} (${esc(c.code)})</option>`).join("");
+  sel.value = campus().code || "";
+  nav(); render();
+}
+document.querySelectorAll("#roleSeg button").forEach(b => {
+  b.setAttribute("aria-pressed", b.dataset.role === role);
+  b.onclick = () => { role = b.dataset.role; store.set("role", role); document.querySelectorAll("#roleSeg button").forEach(x => x.setAttribute("aria-pressed", x === b)); const y = scrollY; render(); scrollTo(0, y); };
+});
+$("#campus").onchange = e => { store.set("campus", e.target.value); const y = scrollY; render(); scrollTo(0, y); };
+$("#q").addEventListener("input", search);
+$("#q").addEventListener("keydown", e => { if (e.key === "Enter") { const li = [...document.querySelectorAll("#nav li")].find(l => !l.hidden); if (li) location.hash = "#/" + li.dataset.t; } });
+addEventListener("keydown", e => { if (e.key === "/" && !/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)) { e.preventDefault(); $("#q").focus(); } });
+$("#openBtn").onclick = openFolder;
+addEventListener("hashchange", render);
+// theme
+function setMode(m) { if (m) document.documentElement.dataset.mode = m; const dark = m ? m === "dark" : matchMedia("(prefers-color-scheme: dark)").matches; $("#modeBtn").textContent = dark ? "Light mode" : "Dark mode"; }
+setMode(store.get("mode", ""));
+$("#modeBtn").onclick = () => { const dark = $("#modeBtn").textContent === "Dark mode"; store.set("mode", dark ? "dark" : "light"); setMode(dark ? "dark" : "light"); };
+load();
+</script>
+</body>
+</html>

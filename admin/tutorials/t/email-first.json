@@ -1,0 +1,188 @@
+{
+  "id": "email-first",
+  "group": "desk",
+  "title": "Student questions: email is the record",
+  "summary": "What you settle on the spot, what goes to email, and the words to use.",
+  "roles": [
+    "la",
+    "lc"
+  ],
+  "tasks": {
+    "la": [
+      "Settle quick questions on the spot",
+      "Send everything else to the Lab email",
+      "Answer routine Lab emails from the templates"
+    ],
+    "lc": [
+      "Answer emails the lab assistants forward"
+    ]
+  },
+  "flow": {
+    "lanes": [
+      "student",
+      "la",
+      "lc"
+    ],
+    "nodes": [
+      {
+        "id": "a",
+        "lane": "student",
+        "type": "start",
+        "text": "Walk-in or phone call",
+        "next": [
+          {
+            "to": "b"
+          }
+        ]
+      },
+      {
+        "id": "b",
+        "lane": "la",
+        "type": "decision",
+        "text": "On the settle-now list?",
+        "go": "#now",
+        "next": [
+          {
+            "to": "c",
+            "label": "Yes"
+          },
+          {
+            "to": "d",
+            "label": "No"
+          }
+        ]
+      },
+      {
+        "id": "c",
+        "lane": "la",
+        "type": "end",
+        "text": "Settle it now"
+      },
+      {
+        "id": "d",
+        "lane": "la",
+        "type": "step",
+        "text": "Give the email script",
+        "go": "#scripts",
+        "next": [
+          {
+            "to": "e"
+          }
+        ]
+      },
+      {
+        "id": "e",
+        "lane": "student",
+        "type": "email",
+        "text": "Emails {email}",
+        "next": [
+          {
+            "to": "f"
+          }
+        ]
+      },
+      {
+        "id": "f",
+        "lane": "la",
+        "type": "decision",
+        "text": "Routine?",
+        "go": "#inbox",
+        "next": [
+          {
+            "to": "g",
+            "label": "Yes"
+          },
+          {
+            "to": "h",
+            "label": "No"
+          }
+        ]
+      },
+      {
+        "id": "g",
+        "lane": "la",
+        "type": "end",
+        "text": "Reply from a template"
+      },
+      {
+        "id": "h",
+        "lane": "lc",
+        "type": "end",
+        "text": "Coordinator answers"
+      }
+    ]
+  },
+  "sections": [
+    {
+      "id": "why",
+      "role": "all",
+      "title": "Why email",
+      "text": "Email gives every request a date, a sender and a written answer that anyone on staff can find later. A spoken promise at the desk disappears when your shift ends. So the rule is simple: if you can't settle it right there, the student puts it in an email to {email}."
+    },
+    {
+      "id": "ferpa",
+      "role": "all",
+      "title": "Student privacy (FERPA)",
+      "list": [
+        "Talk about a student's grades, scores, placement or records only with that student, by email from their UNG address.",
+        "Not at the desk or on the phone, and never with parents, friends or classmates. Don't confirm whether someone is in a class.",
+        "Email from a personal address: ask them to write from their UNG email. See [Email replies](#/replies/ungmail).",
+        "Student names, grades, videos and files stay in D2L, Bongo and the Lab email. Never in texts, personal email, your own drive, a converter website or an AI tool.",
+        "Log out of shared Lab computers and close the inbox when you step away."
+      ],
+      "note": "Lab staff complete FERPA training. Not sure if you can share something? Don't. Send it to email."
+    },
+    {
+      "id": "now",
+      "role": "la",
+      "title": "Settle on the spot",
+      "list": [
+        "Checking out or returning an iPad or accessories",
+        "Finding a seat or a working station",
+        "Mango sign-up on a campus computer",
+        "Bongo and browser fixes from the Bongo tutorial",
+        "Lab hours and whether the Lab is open now"
+      ],
+      "note": "Not sure of the exact answer? Don't guess. Send it to email."
+    },
+    {
+      "id": "push",
+      "role": "la",
+      "title": "Always send to email",
+      "list": [
+        "Grades, scores or a grade someone else gave",
+        "Late labs, missed labs and excused absences",
+        "Placement results and course overrides",
+        "Complaints about a class, a lab assistant or a grade",
+        "Anything about academic honesty",
+        "Accommodations (the coordinator handles these with SAS)"
+      ]
+    },
+    {
+      "id": "scripts",
+      "role": "la",
+      "title": "What to say",
+      "script": "I want to make sure this gets to the right person and stays on record. Please email {email} with your full name, your class (for example, SPAN 1001, section 02) and your question. We'll answer you by email.",
+      "note": "On the phone, say the same thing. Don't take messages on paper and don't promise an answer."
+    },
+    {
+      "id": "inbox",
+      "role": "la",
+      "title": "The Lab inbox",
+      "steps": [
+        "Routine question (hours, setup, how-to): reply from the [Email replies](#/replies).",
+        "Anything on the always-send list: forward it to the coordinator with one line on what the student needs.",
+        "Leave the email in the inbox so the record stays complete."
+      ]
+    },
+    {
+      "id": "lc",
+      "role": "lc",
+      "title": "Coordinator",
+      "list": [
+        "Answer forwarded emails, or forward to the department with the student's details",
+        "Keep the [Email replies](#/replies) current (`replies.json`)"
+      ]
+    }
+  ]
+}

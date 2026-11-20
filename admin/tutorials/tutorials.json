@@ -1,0 +1,206 @@
+{
+  "_about": "Manifest for the Language Lab Tutorials hub (index.html). Swap a tutorial by replacing its file in t/ (JSON or .tex) or by changing the list below. Order here = order on the hub. See README.md.",
+  "title": "Language Lab Tutorials",
+  "roles": {
+    "student": {
+      "name": "Student",
+      "short": "Student"
+    },
+    "la": {
+      "name": "Lab assistant",
+      "short": "LA"
+    },
+    "lc": {
+      "name": "Lab coordinator",
+      "short": "Coordinator"
+    },
+    "dept": {
+      "name": "Modern Languages department",
+      "short": "Department",
+      "contact": "Lara.DeBlois@ung.edu"
+    }
+  },
+  "campuses": [
+    {
+      "code": "GVL",
+      "name": "Gainesville",
+      "email": "languagelab-gvl@ung.edu"
+    },
+    {
+      "code": "DAH",
+      "name": "Dahlonega",
+      "email": "languagelab-dah@ung.edu"
+    },
+    {
+      "code": "OCN",
+      "name": "Oconee",
+      "email": "languagelab-ocn@ung.edu"
+    },
+    {
+      "code": "CMG",
+      "name": "Cumming",
+      "email": "languagelab-cmg@ung.edu"
+    }
+  ],
+  "rule": {
+    "title": "Can't solve it on the spot? It goes to email.",
+    "text": "Walk-ins and phone calls you can't settle right there end the same way: the student emails the Lab at {email}. Email is the Lab's only record, so nothing gets lost between shifts and the right person picks it up."
+  },
+  "groups": [
+    {
+      "id": "desk",
+      "title": "At the desk",
+      "when": "Every shift"
+    },
+    {
+      "id": "tech",
+      "title": "Helping with technology",
+      "when": "Week 1 and lab weeks"
+    },
+    {
+      "id": "assess",
+      "title": "Placement and grading",
+      "when": "Due dates and registration"
+    },
+    {
+      "id": "admin",
+      "title": "Coordinator tools",
+      "when": "Start of term"
+    }
+  ],
+  "replies": "replies.json",
+  "tutorials": [
+    "t/email-first.json",
+    "t/desk-phone.json",
+    "t/ipad-checkout.json",
+    "t/mango.json",
+    "t/bongo.json",
+    "t/files.json",
+    "t/placement.json",
+    "t/grading.json",
+    "t/late-labs.json",
+    "t/ipad-admin.json"
+  ],
+  "flow": {
+    "title": "Every question, one path",
+    "lanes": [
+      "student",
+      "la",
+      "lc",
+      "dept"
+    ],
+    "nodes": [
+      {
+        "id": "ask",
+        "lane": "student",
+        "type": "start",
+        "text": "Asks in person or calls",
+        "next": [
+          {
+            "to": "now"
+          }
+        ]
+      },
+      {
+        "id": "now",
+        "lane": "la",
+        "type": "decision",
+        "text": "Can you settle it now with a tutorial?",
+        "next": [
+          {
+            "to": "done",
+            "label": "Yes"
+          },
+          {
+            "to": "mail",
+            "label": "No"
+          }
+        ]
+      },
+      {
+        "id": "done",
+        "lane": "la",
+        "type": "end",
+        "text": "Settle it. Done."
+      },
+      {
+        "id": "mail",
+        "lane": "student",
+        "type": "email",
+        "text": "Emails {email}",
+        "go": "email-first",
+        "next": [
+          {
+            "to": "routine"
+          }
+        ]
+      },
+      {
+        "id": "routine",
+        "lane": "la",
+        "type": "decision",
+        "text": "Routine? (hours, setup, how-to)",
+        "next": [
+          {
+            "to": "reply",
+            "label": "Yes"
+          },
+          {
+            "to": "lc",
+            "label": "No"
+          }
+        ]
+      },
+      {
+        "id": "reply",
+        "lane": "la",
+        "type": "end",
+        "text": "Reply with a saved email",
+        "go": "replies"
+      },
+      {
+        "id": "lc",
+        "lane": "lc",
+        "type": "step",
+        "text": "Decides and replies by email",
+        "next": [
+          {
+            "to": "need"
+          }
+        ]
+      },
+      {
+        "id": "need",
+        "lane": "lc",
+        "type": "decision",
+        "text": "Needs a course override?",
+        "next": [
+          {
+            "to": "dept",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "id": "dept",
+        "lane": "dept",
+        "type": "end",
+        "text": "Overrides in Banner, tells the student",
+        "go": "placement"
+      }
+    ]
+  },
+  "areas": [
+    {
+      "label": "Events",
+      "href": "../console.html"
+    },
+    {
+      "label": "Semester plan",
+      "href": "../semester.html"
+    },
+    {
+      "label": "Tutorials"
+    }
+  ]
+}
