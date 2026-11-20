@@ -396,7 +396,7 @@ tr:hover .rowbtn, .rowbtn:focus-visible, .rowbtn[aria-expanded="true"] { border-
 .rowmenu button:hover, .rowmenu button:focus-visible { background: var(--chip); outline: none; }
 .rowmenu button.danger { color: var(--bad); }
 .selbar.float { position: sticky; bottom: 12px; z-index: 5; margin: 10px 0 0; border: 0; min-height: 0; padding: 0; }
-.selbar.float.on { border: 1px solid var(--bad); padding: 8px 12px; box-shadow: 0 6px 20px rgba(20,30,50,.18); }
+.selbar.float.on { border: 1px solid var(--line); border-left: 4px solid var(--accent); background: var(--surface); padding: 8px 12px; box-shadow: 0 6px 20px rgba(20,30,50,.18); }
 
 /* chart tooltips (2026-11-20) */
 .tip { position: fixed; z-index: 70; max-width: 320px; background: var(--text); color: var(--bg); border-radius: 8px; padding: 7px 10px; font-size: 14px; line-height: 1.35; pointer-events: none; box-shadow: 0 6px 18px rgba(0,0,0,.2); }
@@ -1181,7 +1181,9 @@ function editSem(id) {
 /* ---------- language courses (redesigned 2026-11-20): Banner files on top, 1001–1002 filter, sortable columns (same as
    the Lab Hub Generator's table), charts that follow the filters ---------- */
 const CF = { q: '', subj: '', loc: '', days: '', level: 'first', all: false, sort: 'LOCATION', dir: 1 };
-const PICKED = new Set(); // CRNs selected for deleting (this page only)
+const PICKED = new Set(); // CRNs selected (this page only)
+let CLOCK = null; // row order held while campuses are being changed, so a row doesn't jump away; any filter or sort releases it
+function setCampus(crns, loc) { if (!CLOCK) CLOCK = coursesShown().map(c => c.CRN); const k = new Set(crns); courses().forEach(c => { if (k.has(c.CRN)) { c.LOCATION = loc; c.LOCATION_SET = true; delete c.LOCATION_FROM; } }); changed(false); }
 const COLS = [['CRN', 'CRN'], ['SUBJ', 'Subj'], ['CRSE', 'Crse'], ['SEC', 'Sec'], ['CMP', 'Cmp'], ['CRED', 'Cred'], ['TITLE', 'Title'], ['DAYS', 'Days'], ['TIME_FROM', 'Time'],
   ['INSTRUCTOR', 'Instructor'], ['BUILDING', 'Building'], ['ROOM', 'Room'], ['LOCATION', 'Campus'], ['START', 'Start'], ['END', 'End']];
 const BANNER_CMP = { A: 'Dahlonega', GA: 'Gainesville', OC: 'Oconee', 9: 'Cumming', NGO: 'Online', OL: 'Online', F: 'Off campus' };
@@ -1228,7 +1230,7 @@ VIEWS.courses = () => {
     + (PICKED.size ? '' : `<p class="small muted" style="margin:0 0 8px">Tick classes, or use ⋯ or right-click on a row, to delete them (for example cancelled sections or ones the Lab doesn't serve).</p>`)
     + `<div class="tw"><table class="t compact"><caption>${shown.length} section${shown.length === 1 ? '' : 's'} shown${CF.level === 'all' ? '' : ` (${lvlText()})`}. Select a column heading to sort.</caption><thead><tr><th scope="col" class="pick"><input type="checkbox" id="pick-all" ${allPicked ? 'checked' : ''} aria-label="Select all ${shown.length} sections shown"></th>${COLS.map(th).join('')}</tr></thead>`
     + `<tbody>${rows || `<tr><td colspan="${COLS.length + 1}" class="muted">No sections match these filters.</td></tr>`}</tbody></table></div>`
-    + `<div class="selbar float${PICKED.size ? ' on' : ''}" role="status">${PICKED.size ? `<b>${PICKED.size} class${PICKED.size === 1 ? '' : 'es'} selected</b>${PICKED.size > pickedShown ? `<span class="muted small">(${PICKED.size - pickedShown} hidden by the filters)</span>` : ''}<button class="btn sm" type="button" data-act="unpick">Clear selection</button><button class="btn sm danger" type="button" data-act="delPicked">Delete selected…</button>` : ''}</div>`
+    + `<div class="selbar float${PICKED.size ? ' on' : ''}" role="status">${PICKED.size ? `<b>${PICKED.size} class${PICKED.size === 1 ? '' : 'es'} selected</b>${PICKED.size > pickedShown ? `<span class="muted small">(${PICKED.size - pickedShown} hidden by the filters)</span>` : ''}<span class="row" style="gap:6px">${sel('pick-loc', '', LOCATIONS.map(l => [l, l.replace(' Campus', '')]), 'Move to campus…', 'aria-label="Campus for the selected sections"')}<button class="btn sm" type="button" id="pick-move">Move</button></span><button class="btn sm" type="button" data-act="unpick">Clear selection</button><button class="btn sm danger" type="button" data-act="delPicked">Delete selected…</button>` : ''}</div>`
     + `<details class="card" style="margin-top:16px"><summary><b>Budget numbers by language and campus</b> (1001–1002 only: the lab fee)</summary>${distributionHTML()}</details>`;
 };
 /* professors' home campuses: one list for the whole plan; online sections follow their professor */
@@ -1313,10 +1315,12 @@ const lvlText = () => CF.level === '1001' || CF.level === '1002' ? CF.level : '1
 function coursesShown() {
   const q = CF.q.toLowerCase(), k = CF.sort;
   const key = c => k === 'LOCATION' ? String(CAMPUS_ORDER.indexOf(campusName(c.LOCATION))) : k === 'TIME_FROM' ? String(mins(c.TIME_FROM) + 10000) : String(c[k] ?? '');
-  return courses().filter(c => (CF.all || isLang(c.SUBJ)) && (CF.level === 'all' || (CF.level === 'first' ? ['1001', '1002'].includes(c.CRSE) : c.CRSE === CF.level)) && (!CF.subj || c.SUBJ === CF.subj)
-    && (!CF.days || normDays(c.DAYS) === CF.days) && (!CF.loc || campusName(c.LOCATION) === CF.loc)
+  const lock = CLOCK ? new Map(CLOCK.map((k, i) => [k, i])) : null;
+  const out = courses().filter(c => (CF.all || isLang(c.SUBJ)) && (CF.level === 'all' || (CF.level === 'first' ? ['1001', '1002'].includes(c.CRSE) : c.CRSE === CF.level)) && (!CF.subj || c.SUBJ === CF.subj)
+    && (!CF.days || normDays(c.DAYS) === CF.days) && (!CF.loc || campusName(c.LOCATION) === CF.loc || lock?.has(c.CRN))
     && (!q || `${c.CRN} ${c.SUBJ} ${c.CRSE}.${c.SEC} ${c.SUBJ}${c.CRSE} ${c.TITLE} ${c.INSTRUCTOR}`.toLowerCase().includes(q)))
     .sort((a, b) => CF.dir * key(a).localeCompare(key(b), undefined, { numeric: true }) || `${a.SUBJ}${a.CRSE}${a.SEC}`.localeCompare(`${b.SUBJ}${b.CRSE}${b.SEC}`, undefined, { numeric: true }));
+  return lock ? out.sort((a, b) => (lock.get(a.CRN) ?? 1e9) - (lock.get(b.CRN) ?? 1e9)) : out;
 }
 /* two charts of the sections shown: sections per campus (split by language) and each budget campus's share.
    Every number is printed (no color-only reading); each chart has a text summary for screen readers. */
@@ -1386,20 +1390,23 @@ AFTER.courses = () => {
   };
   if (drop) { $('c-file').onchange = e => take([...e.target.files]); ['dragenter', 'dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); })); ['dragleave', 'drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); })); drop.addEventListener('drop', e => take([...e.dataTransfer.files])); }
   const keep = sel => { const y = window.scrollY; show('courses', false); window.scrollTo(0, y); document.querySelector(sel)?.focus(); };
-  const refilter = () => { const pos = $('c-q')?.selectionStart; CF.q = val('c-q'); CF.subj = val('c-subj'); CF.loc = val('c-loc'); CF.days = val('c-days'); CF.all = val('c-all'); keep(refilter.from === 'q' ? '#c-q' : '#' + refilter.from); const q = $('c-q'); if (q && refilter.from === 'q' && pos != null) q.setSelectionRange(pos, pos); };
+  const refilter = () => { CLOCK = null; const pos = $('c-q')?.selectionStart; CF.q = val('c-q'); CF.subj = val('c-subj'); CF.loc = val('c-loc'); CF.days = val('c-days'); CF.all = val('c-all'); keep(refilter.from === 'q' ? '#c-q' : '#' + refilter.from); const q = $('c-q'); if (q && refilter.from === 'q' && pos != null) q.setSelectionRange(pos, pos); };
   if ($('c-q')) { $('c-q').oninput = () => { refilter.from = 'q'; clearTimeout(refilter.t); refilter.t = setTimeout(refilter, 250); }; ['c-subj', 'c-loc', 'c-days', 'c-all'].forEach(id => $(id).onchange = () => { refilter.from = id; refilter(); }); }
-  document.querySelectorAll('[data-lvl]').forEach(b => b.onclick = () => { CF.level = b.dataset.lvl; keep(`[data-lvl="${CF.level}"]`); });
-  document.querySelectorAll('[data-sort]').forEach(b => b.onclick = () => { const k = b.dataset.sort; CF.dir = CF.sort === k ? -CF.dir : 1; CF.sort = k; keep(`[data-sort="${k}"]`); });
-  const redraw = sel => { const y = window.scrollY; show('courses', false); window.scrollTo(0, y); document.querySelector(sel)?.focus(); };
+  document.querySelectorAll('[data-lvl]').forEach(b => b.onclick = () => { CLOCK = null; CF.level = b.dataset.lvl; keep(`[data-lvl="${CF.level}"]`); });
+  document.querySelectorAll('[data-sort]').forEach(b => b.onclick = () => { CLOCK = null; const k = b.dataset.sort; CF.dir = CF.sort === k ? -CF.dir : 1; CF.sort = k; keep(`[data-sort="${k}"]`); });
+  const redraw = sel => { const y = window.scrollY; show('courses', false); window.scrollTo(0, y); document.querySelector(sel)?.focus({ preventScroll: true }); };
   const cItems = crn => { const c = courses().find(y => y.CRN === crn), n = c ? `${c.SUBJ} ${c.CRSE}.${c.SEC}` : crn; return [
+    ...(() => { const many = PICKED.size > 1 && PICKED.has(crn), tgt = many ? [...PICKED] : [crn], who = many ? `the ${PICKED.size} selected` : n;
+      return LOCATIONS.filter(l => many || c?.LOCATION !== l).map(l => ({ label: `Move ${who} to ${l.replace(' Campus', '')}`, run: () => { setCampus(tgt, l); redraw(`[data-cmenu="${CSS.escape(crn)}"]`); toast(`${tgt.length === 1 ? n : tgt.length + ' sections'} moved to ${l.replace(' Campus', '')}.`); } })); })(),
     { label: PICKED.has(crn) ? 'Unselect' : 'Select', run: () => { PICKED.has(crn) ? PICKED.delete(crn) : PICKED.add(crn); redraw(`[data-cmenu="${CSS.escape(crn)}"]`); } },
     ...(PICKED.size && !(PICKED.size === 1 && PICKED.has(crn)) ? [{ label: `Delete the ${PICKED.size} selected…`, danger: true, run: () => delCourses([...PICKED]) }] : []),
     { label: `Delete ${n}…`, danger: true, run: () => delCourses([crn]) }]; };
   document.querySelectorAll('[data-cmenu]').forEach(b => b.onclick = e => menuFor(b, e, cItems(b.dataset.cmenu)));
   document.querySelectorAll('tr[data-crn]').forEach(tr => tr.oncontextmenu = e => { if (e.target.closest('select,input,a')) return; e.preventDefault(); menuFor(tr, e, cItems(tr.dataset.crn)); });
   document.querySelectorAll('[data-pick]').forEach(x => x.onchange = () => { if (x.checked) PICKED.add(x.dataset.pick); else PICKED.delete(x.dataset.pick); redraw(`[data-pick="${CSS.escape(x.dataset.pick)}"]`); });
+  if ($('pick-move')) $('pick-move').onclick = () => { const l = val('pick-loc'); if (!l) return toast('Choose a campus first.'); const n = PICKED.size; setCampus([...PICKED], l); redraw('#pick-move'); toast(`${n} section${n === 1 ? '' : 's'} moved to ${l.replace(' Campus', '')}.`); };
   if ($('pick-all')) $('pick-all').onchange = () => { coursesShown().forEach(c => $('pick-all').checked ? PICKED.add(c.CRN) : PICKED.delete(c.CRN)); redraw('#pick-all'); };
-  document.querySelectorAll('[data-loc]').forEach(x => x.onchange = () => { const c = courses().find(y => y.CRN === x.dataset.loc); c.LOCATION = x.value; c.LOCATION_SET = true; delete c.LOCATION_FROM; changed(false); const sc = window.scrollY; show('courses', false); window.scrollTo(0, sc); document.querySelector(`[data-loc="${CSS.escape(c.CRN)}"]`)?.focus(); });
+  document.querySelectorAll('[data-loc]').forEach(x => x.onchange = () => { setCampus([x.dataset.loc], x.value); const sc = window.scrollY; show('courses', false); window.scrollTo(0, sc); document.querySelector(`[data-loc="${CSS.escape(x.dataset.loc)}"]`)?.focus({ preventScroll: true }); });
 };
 ACTS.unpick = () => { PICKED.clear(); const y = window.scrollY; show('courses', false); window.scrollTo(0, y); };
 ACTS.delPicked = () => delCourses([...PICKED]);
