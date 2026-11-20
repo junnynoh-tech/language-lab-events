@@ -1386,7 +1386,7 @@ function delCourses(crns) {
   $('del-go').onclick = async () => {
     await backupLocal(`before deleting ${word}`);
     const l = P.courseLists[s.id]; l.rows = l.rows.filter(c => !pick.has(c.CRN));
-    const R = roomsOf(s.id); pick.forEach(k => { delete R.assign[k]; delete R.finalsOverrides[k]; PICKED.delete(k); });
+    const R = roomsOf(s.id); pick.forEach(k => { delete R.assign[k]; delete R.finalsOverrides[k]; PICKED.delete(k); RPICK.delete(k); });
     $('dlg').close(); changed(); toast(`${word.charAt(0).toUpperCase() + word.slice(1)} deleted.`);
   };
 }
@@ -1410,6 +1410,8 @@ function distributionCSV() {
 /* ---------- room scheduling (redesigned 2026-11-20): summary + filters on top, sortable columns (the generator's: Course,
    Days, Time, Max, Instructor, Room, Final exam), room-use chart, the week ---------- */
 const RF = { room: '', days: '', level: 'all', q: '', sort: 'DAYS', dir: 1 };
+const RPICK = new Set(); // CRNs selected on Room scheduling
+function setRooms(crns, room) { const A = roomsOf().assign; crns.forEach(k => { if (room) A[k] = room; else delete A[k]; }); changed(false); }
 const statPill = (n, l, kind = '') => `<span class="cnt ${kind}"><b>${n}</b> ${l}</span>`;
 VIEWS.rooms = () => {
   const s = sem(); if (!s) return head('Room scheduling', 'Rooms', '') + needSem();
@@ -1428,7 +1430,8 @@ VIEWS.rooms = () => {
     const r = A[c.CRN] || '', f = finalsFor(c), o = O[c.CRN];
     const fin = f.examDay ? `${f.examDay} ${fmt12(f.examStart)}–${fmt12(f.examEnd)}<div class="small muted">${f.source === 'manual' ? 'entered by hand' : esc(f.source)}${o ? ` · <button class="btn sm" type="button" data-unfin="${esc(c.CRN)}">Use the schedule</button>` : ''}</div>`
       : `<div class="small" style="color:var(--warn)">${esc(f.note)}</div>${s.type === 'summer' ? '' : `<div class="row" style="margin-top:4px">${sel('fd-' + c.CRN, o?.day, ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => [d, d]), 'Day', `data-fin="${esc(c.CRN)}" aria-label="Exam day"`)}<input type="time" data-fin="${esc(c.CRN)}" data-k="start" value="${esc(o?.start || '')}" aria-label="Exam start" style="width:auto"><input type="time" data-fin="${esc(c.CRN)}" data-k="end" value="${esc(o?.end || '')}" aria-label="Exam end" style="width:auto"></div>`}`;
-    return `<tr${clash.has(c.CRN) ? ' class="flag"' : !r ? ' class="todo"' : ''}><td class="nowrap">${isLang(c.SUBJ) ? langTag(c.SUBJ) : ''}<b>${esc(c.SUBJ)} ${esc(c.CRSE)}.${esc(c.SEC)}</b><div class="small muted">CRN ${esc(c.CRN)}${clash.has(c.CRN) ? ' · <b style="color:var(--bad)">double-booked</b>' : ''}</div></td>`
+    const nm = `${c.SUBJ} ${c.CRSE}.${c.SEC}`, on = RPICK.has(c.CRN);
+    return `<tr class="${clash.has(c.CRN) ? 'flag' : !r ? 'todo' : ''}${on ? ' picked' : ''}" data-rcrn="${esc(c.CRN)}"><td class="pick"><span class="pickwrap"><input type="checkbox" data-rpick="${esc(c.CRN)}" ${on ? 'checked' : ''} aria-label="Select ${esc(nm)}, CRN ${esc(c.CRN)}"><button type="button" class="rowbtn" data-rmenu="${esc(c.CRN)}" aria-haspopup="menu" aria-label="Actions for ${esc(nm)}" title="Actions (or right-click the row)">⋯</button></span></td><td class="nowrap">${isLang(c.SUBJ) ? langTag(c.SUBJ) : ''}<b>${esc(c.SUBJ)} ${esc(c.CRSE)}.${esc(c.SEC)}</b><div class="small muted">CRN ${esc(c.CRN)}${clash.has(c.CRN) ? ' · <b style="color:var(--bad)">double-booked</b>' : ''}</div></td>`
       + `<td class="nowrap">${esc(normDays(c.DAYS))}</td><td class="nowrap">${esc(fmt12(c.TIME_FROM))}–${esc(fmt12(c.TIME_TO))}</td><td class="num">${c.MAXENR ?? '—'}</td><td>${esc(c.INSTRUCTOR)}</td>`
       + `<td><div class="seg" role="group" aria-label="Room for ${esc(c.SUBJ + ' ' + c.CRSE + '.' + c.SEC)}">${ROOMS.map(([v, l]) => `<button type="button" data-room="${esc(c.CRN)}" data-v="${v}" aria-pressed="${r === v}" title="${esc(l)}">${v}</button>`).join('')}</div></td><td>${fin}</td></tr>`;
   }).join('');
@@ -1439,7 +1442,10 @@ VIEWS.rooms = () => {
     + `<div class="f"><span class="lbl" id="rl-l">Level</span><div class="seg" role="group" aria-labelledby="rl-l"><button type="button" data-rl="first" aria-pressed="${RF.level === 'first'}">1001–1002</button><button type="button" data-rl="all" aria-pressed="${RF.level === 'all'}">All levels</button></div></div>`
     + `<div class="f"><label for="r-days">Days</label>${sel('r-days', RF.days, pats.map(x => [x, x]), 'All')}</div><div class="f grow"><label for="r-q">Search</label><input type="search" id="r-q" value="${esc(RF.q)}" placeholder="CRN, course or instructor"></div></div>`
     + roomUseHTML(all)
-    + `<div class="tw"><table class="t compact"><caption>${list.length} class${list.length === 1 ? '' : 'es'} shown. Select a column heading to sort; shaded rows still need a room.</caption><thead><tr>${[['COURSE', 'Course'], ['DAYS', 'Days'], ['TIME_FROM', 'Time'], ['MAXENR', 'Max', 'num'], ['INSTRUCTOR', 'Instructor'], ['ROOM', 'Room'], ['FINAL', 'Final exam']].map(th).join('')}</tr></thead><tbody>${rows || '<tr><td colspan="7" class="muted">No classes match these filters.</td></tr>'}</tbody></table></div>`
+    + (RPICK.size ? '' : `<p class="small muted" style="margin:0 0 8px">Tick classes, or use ⋯ or right-click on a row, to set rooms for several at once or delete classes.</p>`)
+    + `<div class="tw"><table class="t compact"><caption>${list.length} class${list.length === 1 ? '' : 'es'} shown. Select a column heading to sort; shaded rows still need a room.</caption><thead><tr><th scope="col" class="pick"><input type="checkbox" id="rpick-all" ${list.length && list.every(c => RPICK.has(c.CRN)) ? 'checked' : ''} aria-label="Select all ${list.length} classes shown"></th>${[['COURSE', 'Course'], ['DAYS', 'Days'], ['TIME_FROM', 'Time'], ['MAXENR', 'Max', 'num'], ['INSTRUCTOR', 'Instructor'], ['ROOM', 'Room'], ['FINAL', 'Final exam']].map(th).join('')}</tr></thead><tbody>${rows || '<tr><td colspan="8" class="muted">No classes match these filters.</td></tr>'}</tbody></table></div>`
+    + (() => { [...RPICK].forEach(k => { if (!all.some(c => c.CRN === k)) RPICK.delete(k); }); const hid = [...RPICK].filter(k => !list.some(c => c.CRN === k)).length;
+      return `<div class="selbar float${RPICK.size ? ' on' : ''}" role="status">${RPICK.size ? `<b>${RPICK.size} class${RPICK.size === 1 ? '' : 'es'} selected</b>${hid ? `<span class="muted small">(${hid} hidden by the filters)</span>` : ''}${ROOMS.map(([v]) => `<button class="btn sm" type="button" data-rset="${v}">Put in ${v}</button>`).join('')}<button class="btn sm" type="button" data-rset="">No room</button><button class="btn sm" type="button" data-act="rUnpick">Clear selection</button><button class="btn sm danger" type="button" data-act="rDel">Delete selected…</button>` : ''}</div>`; })()
     + `<div class="card" style="margin-top:16px"><h2>The week</h2><p class="lede">${RF.room && RF.room !== 'none' ? `Room ${esc(RF.room)} only.` : 'Both rooms.'} Each block is a class (color = language); overlapping blocks in one room are outlined in red. The table above lists the same classes.</p>${weekGrid(list.filter(c => A[c.CRN]), clash)}</div>`;
 };
 /* booked hours per weekday and room: shows which day is full before anything is double-booked */
@@ -1469,6 +1475,16 @@ function weekGrid(list, clash = new Set(), T0 = 8 * 60, T1 = 21 * 60) {
 }
 AFTER.rooms = () => {
   const keep = sel => { const y = window.scrollY; show('rooms', false); window.scrollTo(0, y); if (sel) document.querySelector(sel)?.focus(); };
+  const rItems = crn => { const c = courses().find(y => y.CRN === crn), n = c ? `${c.SUBJ} ${c.CRSE}.${c.SEC}` : crn, many = RPICK.size > 1 && RPICK.has(crn), tgt = many ? [...RPICK] : [crn], who = many ? `the ${RPICK.size} selected` : n, cur = roomsOf().assign[crn];
+    return [...ROOMS.filter(([v]) => many || cur !== v).map(([v]) => ({ label: `Put ${who} in ${v}`, run: () => { setRooms(tgt, v); keep(`[data-rmenu="${CSS.escape(crn)}"]`); } })),
+      ...(many || cur ? [{ label: `No room for ${who}`, run: () => { setRooms(tgt, ''); keep(`[data-rmenu="${CSS.escape(crn)}"]`); } }] : []),
+      { label: RPICK.has(crn) ? 'Unselect' : 'Select', run: () => { RPICK.has(crn) ? RPICK.delete(crn) : RPICK.add(crn); keep(`[data-rmenu="${CSS.escape(crn)}"]`); } },
+      { label: `Delete ${who}…`, danger: true, run: () => delCourses(tgt) }]; };
+  document.querySelectorAll('[data-rmenu]').forEach(b => b.onclick = e => menuFor(b, e, rItems(b.dataset.rmenu)));
+  document.querySelectorAll('tr[data-rcrn]').forEach(tr => tr.oncontextmenu = e => { if (e.target.closest('select,input,a,.seg')) return; e.preventDefault(); menuFor(tr, e, rItems(tr.dataset.rcrn)); });
+  document.querySelectorAll('[data-rpick]').forEach(x => x.onchange = () => { x.checked ? RPICK.add(x.dataset.rpick) : RPICK.delete(x.dataset.rpick); keep(`[data-rpick="${CSS.escape(x.dataset.rpick)}"]`); });
+  if ($('rpick-all')) $('rpick-all').onchange = () => { const on = $('rpick-all').checked; document.querySelectorAll('[data-rpick]').forEach(x => on ? RPICK.add(x.dataset.rpick) : RPICK.delete(x.dataset.rpick)); keep('#rpick-all'); };
+  document.querySelectorAll('[data-rset]').forEach(b => b.onclick = () => { const n = RPICK.size; setRooms([...RPICK], b.dataset.rset); keep(`[data-rset="${b.dataset.rset}"]`); toast(b.dataset.rset ? `${n} class${n === 1 ? '' : 'es'} put in ${b.dataset.rset}.` : `Room cleared for ${n} class${n === 1 ? '' : 'es'}.`); });
   document.querySelectorAll('[data-rf]').forEach(b => b.onclick = () => { RF.room = b.dataset.rf; keep(`[data-rf="${RF.room}"]`); });
   document.querySelectorAll('[data-rl]').forEach(b => b.onclick = () => { RF.level = b.dataset.rl; keep(`[data-rl="${RF.level}"]`); });
   document.querySelectorAll('[data-rsort]').forEach(b => b.onclick = () => { const k = b.dataset.rsort; RF.dir = RF.sort === k ? -RF.dir : 1; RF.sort = k; keep(`[data-rsort="${k}"]`); });
@@ -1478,6 +1494,8 @@ AFTER.rooms = () => {
   document.querySelectorAll('[data-fin]').forEach(x => x.onchange = () => { const O = roomsOf().finalsOverrides, k = x.dataset.fin, o = O[k] ||= {}; if (x.tagName === 'SELECT') o.day = x.value; else o[x.dataset.k] = x.value; changed(false); if (o.day && o.start && o.end) keep(); });
   document.querySelectorAll('[data-unfin]').forEach(b => b.onclick = () => { delete roomsOf().finalsOverrides[b.dataset.unfin]; changed(false); keep(); });
 };
+ACTS.rUnpick = () => { RPICK.clear(); const y = window.scrollY; show('rooms', false); window.scrollTo(0, y); };
+ACTS.rDel = () => delCourses([...RPICK]);
 ACTS.copyRooms = id => { const r = copyRooms(id, P.activeSemesterId); changed(); toast(`${r.copied} room${r.copied === 1 ? '' : 's'} copied from ${semLabel(semById(id))}${r.missed.length ? `. No match last term: ${r.missed.slice(0, 5).join(', ')}${r.missed.length > 5 ? '…' : ''}` : '.'}`, 7000); };
 const prevWith = (s, has) => [...P.semesters].filter(x => x.id !== s.id && semOrder(x) < semOrder(s) && has(x)).sort((a, b) => (b.type === s.type) - (a.type === s.type) || semOrder(b) - semOrder(a))[0] || null;
 function roomScheduleOut(s = sem()) {
