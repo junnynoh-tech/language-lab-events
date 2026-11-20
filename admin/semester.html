@@ -486,7 +486,7 @@ function standardHolidays(type, y) {
 
 /* ---------- the plan ---------- */
 const KIND = 'ung-language-lab-semester-plan';
-const blankPlan = () => ({ kind: KIND, version: 1, savedAt: '', semesters: [], activeSemesterId: null, courseLists: {}, rooms: {}, labCalendars: {} });
+const blankPlan = () => ({ kind: KIND, version: 1, savedAt: '', semesters: [], activeSemesterId: null, courseLists: {}, rooms: {}, labCalendars: {}, instructorCampus: {} });
 let P = blankPlan();
 const F = { handle: null, name: '', lastModified: 0, dirty: false, supported: 'showOpenFilePicker' in window };
 let VIEW = 'overview';
@@ -746,7 +746,21 @@ function importCourses(semId, rows1430, rows775) {
   if (rows1430?.length) list.files['1430'] = { rows: rows1430.length, at: new Date().toISOString() };
   if (rows775?.length) list.files['775'] = { rows: rows775.length, at: new Date().toISOString() };
   list.importedAt = new Date().toISOString();
+  applyInstructorCampus(semId);
   return list;
+}
+/* professors' home campuses (2026-11-20): kept for the whole plan, so they carry over to every semester. A section with no
+   campus from Banner (online, off campus) takes its professor's home campus. A campus someone chose by hand always wins. */
+const profKey = n => String(n || '').trim().toLowerCase().replace(/\s+/g, ' ');
+function applyInstructorCampus(semId = P.activeSemesterId) {
+  const map = P.instructorCampus ||= {}; let n = 0;
+  (P.courseLists[semId]?.rows || []).forEach(c => {
+    if (c.LOCATION_SET || (c.LOCATION && c.LOCATION_FROM !== 'instructor')) return;
+    const home = map[profKey(c.INSTRUCTOR)] || '';
+    if (home) { if (c.LOCATION !== home) n++; c.LOCATION = home; c.LOCATION_FROM = 'instructor'; }
+    else if (c.LOCATION_FROM === 'instructor') { c.LOCATION = ''; delete c.LOCATION_FROM; }
+  });
+  return n;
 }
 
 /* ---------- rooms (the lab's Banner room, Nesbitt 4201, split between 4201A and 4207) ---------- */
@@ -1091,7 +1105,7 @@ VIEWS.courses = () => {
     return `<tr class="${flag ? 'flag' : ''}${on ? ' picked' : ''}"><td class="pick"><input type="checkbox" data-pick="${esc(c.CRN)}" ${on ? 'checked' : ''} aria-label="Select ${esc(name)}, CRN ${esc(c.CRN)}"></td><td>${esc(c.CRN)}</td><td class="nowrap">${isLang(c.SUBJ) ? langTag(c.SUBJ) : esc(c.SUBJ)}</td><td>${esc(c.CRSE)}</td><td>${esc(c.SEC)}</td>`
       + `<td>${esc(BANNER_CMP[c.CMP] || c.CMP || '')}</td><td class="num">${esc(c.CRED)}</td><td>${esc(c.TITLE)}</td><td class="nowrap">${esc(c.DAYS || 'TBA')}</td>`
       + `<td class="nowrap">${c.TIME_FROM ? esc(fmt12(c.TIME_FROM) + '–' + fmt12(c.TIME_TO)) : 'TBA'}</td><td>${esc(c.INSTRUCTOR)}</td><td>${esc(c.BUILDING)}</td><td>${esc(c.ROOM)}</td>`
-      + `<td><select data-loc="${esc(c.CRN)}" aria-label="Campus for ${esc(name)}">${opt('', flag ? 'Choose a campus' : '—', c.LOCATION)}${LOCATIONS.map(l => opt(l, l.replace(' Campus', ''), c.LOCATION)).join('')}</select></td>`
+      + `<td><select data-loc="${esc(c.CRN)}" aria-label="Campus for ${esc(name)}">${opt('', flag ? 'Choose a campus' : '—', c.LOCATION)}${LOCATIONS.map(l => opt(l, l.replace(' Campus', ''), c.LOCATION)).join('')}</select>${c.LOCATION_FROM === 'instructor' ? '<div class="small muted">from the professor</div>' : c.LOCATION_SET ? '<div class="small muted">chosen by hand</div>' : ''}</td>`
       + `<td class="nowrap">${esc(fmtMD(c.START))}</td><td class="nowrap">${esc(fmtMD(c.END))}</td></tr>`;
   }).join('');
   const nLang = cs.filter(c => isLang(c.SUBJ)), nFirst = nLang.filter(c => ['1001', '1002'].includes(c.CRSE));
@@ -1101,13 +1115,29 @@ VIEWS.courses = () => {
     + `<div class="f"><label for="c-loc">Campus</label>${sel('c-loc', CF.loc, CAMPUS_ORDER.map(x => [x, x]), 'All')}</div><div class="f"><label for="c-days">Days</label>${sel('c-days', CF.days, pats.map(x => [x, x]), 'All')}</div>`
     + `<div class="f grow"><label for="c-q">Search</label><input type="search" id="c-q" value="${esc(CF.q)}" placeholder="CRN, title or instructor"></div>`
     + `<label class="switch" style="margin:0 0 6px"><input type="checkbox" role="switch" id="c-all" ${CF.all ? 'checked' : ''}>Other subjects too</label></div>`
-    + (needs ? `<p class="note warn" role="status">${needs} section${needs > 1 ? 's need' : ' needs'} a campus (shaded). Choose one in the Campus column so it counts toward that campus.</p>` : '')
+    + profCard(s)
+    + (needs ? `<p class="note warn" role="status">${needs} section${needs > 1 ? 's need' : ' needs'} a campus (shaded). Set the professor's home campus above, or choose one in the Campus column.</p>` : '')
     + chartsHTML(shown)
     + `<div class="selbar${PICKED.size ? ' on' : ''}" role="status">${PICKED.size ? `<b>${PICKED.size} class${PICKED.size === 1 ? '' : 'es'} selected</b>${PICKED.size > pickedShown ? `<span class="muted small">(${PICKED.size - pickedShown} hidden by the filters)</span>` : ''}<button class="btn sm" type="button" data-act="unpick">Clear selection</button><button class="btn sm danger" type="button" data-act="delPicked">Delete selected…</button>` : '<span class="muted small">Tick classes to delete them (for example cancelled sections or ones the Lab doesn\'t serve).</span>'}</div>`
     + `<div class="tw"><table class="t compact"><caption>${shown.length} section${shown.length === 1 ? '' : 's'} shown${CF.level === 'first' ? ' (1001–1002)' : ''}. Select a column heading to sort.</caption><thead><tr><th scope="col" class="pick"><input type="checkbox" id="pick-all" ${allPicked ? 'checked' : ''} aria-label="Select all ${shown.length} sections shown"></th>${COLS.map(th).join('')}</tr></thead>`
     + `<tbody>${rows || `<tr><td colspan="${COLS.length + 1}" class="muted">No sections match these filters.</td></tr>`}</tbody></table></div>`
     + `<details class="card" style="margin-top:16px"><summary><b>Budget numbers by language and campus</b> (1001–1002 only: the lab fee)</summary>${distributionHTML()}</details>`;
 };
+/* professors' home campuses: one list for the whole plan; online sections follow their professor */
+let PROF_OPEN = null;
+function profCard(s) {
+  const map = P.instructorCampus || {}, langRows = courses().filter(c => isLang(c.SUBJ) && c.INSTRUCTOR);
+  const profs = {}; langRows.forEach(c => { const k = profKey(c.INSTRUCTOR), x = profs[k] ||= { name: c.INSTRUCTOR, n: 0, online: 0 }; x.n++; if (!AUTO_LOCATION[c.CMP] && !c.LOCATION_SET) x.online++; }); // no Banner campus (online, off campus) and nobody chose one by hand
+  const list = Object.entries(profs).sort((a, b) => (b[1].online > 0) - (a[1].online > 0) || a[1].name.localeCompare(b[1].name, undefined, { numeric: true }));
+  if (!list.length) return '';
+  const set = list.filter(([k]) => map[k]).length, onlineNoHome = list.filter(([k, x]) => x.online && !map[k]).length;
+  const open = PROF_OPEN ?? onlineNoHome > 0;
+  return `<details class="card prof" id="prof-card"${open ? ' open' : ''}><summary><b>Professors' home campuses</b> <span class="muted small">· ${set} of ${list.length} set${onlineNoHome ? ` · <b style="color:var(--warn)">${onlineNoHome} teaching online without one</b>` : ''}</span></summary>`
+    + `<p class="lede">Set each professor's campus once. Their online and off-campus sections then count toward that campus, this semester and the next ones. A campus chosen by hand in the table stays as it is.</p>`
+    + `<div class="tw"><table class="t compact"><thead><tr><th scope="col">Professor</th><th scope="col" class="num">Language sections</th><th scope="col" class="num">Online or no campus</th><th scope="col">Home campus</th></tr></thead><tbody>`
+    + list.map(([k, x]) => `<tr${x.online && !map[k] ? ' class="todo"' : ''}><th scope="row">${esc(x.name)}</th><td class="num">${x.n}</td><td class="num">${x.online || ''}</td><td><select data-prof="${esc(k)}" aria-label="Home campus for ${esc(x.name)}">${opt('', 'Not set', map[k] || '')}${LOCATIONS.map(l => opt(l, l.replace(' Campus', ''), map[k] || '')).join('')}</select></td></tr>`).join('')
+    + `</tbody></table></div></details>`;
+}
 function coursesShown() {
   const q = CF.q.toLowerCase(), k = CF.sort;
   const key = c => k === 'LOCATION' ? String(CAMPUS_ORDER.indexOf(campusName(c.LOCATION))) : k === 'TIME_FROM' ? String(mins(c.TIME_FROM) + 10000) : String(c[k] ?? '');
@@ -1172,7 +1202,10 @@ AFTER.courses = () => {
   const redraw = sel => { const y = window.scrollY; show('courses', false); window.scrollTo(0, y); document.querySelector(sel)?.focus(); };
   document.querySelectorAll('[data-pick]').forEach(x => x.onchange = () => { if (x.checked) PICKED.add(x.dataset.pick); else PICKED.delete(x.dataset.pick); redraw(`[data-pick="${CSS.escape(x.dataset.pick)}"]`); });
   if ($('pick-all')) $('pick-all').onchange = () => { coursesShown().forEach(c => $('pick-all').checked ? PICKED.add(c.CRN) : PICKED.delete(c.CRN)); redraw('#pick-all'); };
-  document.querySelectorAll('[data-loc]').forEach(x => x.onchange = () => { const c = courses().find(y => y.CRN === x.dataset.loc); c.LOCATION = x.value; c.LOCATION_SET = true; changed(false); const sc = window.scrollY; show('courses', false); window.scrollTo(0, sc); document.querySelector(`[data-loc="${CSS.escape(c.CRN)}"]`)?.focus(); });
+  if ($('prof-card')) $('prof-card').ontoggle = () => { PROF_OPEN = $('prof-card').open; };
+  document.querySelectorAll('[data-prof]').forEach(x => x.onchange = () => { const map = P.instructorCampus ||= {}; if (x.value) map[x.dataset.prof] = x.value; else delete map[x.dataset.prof]; PROF_OPEN = true;
+    const n = applyInstructorCampus(); changed(false); redraw(`[data-prof="${CSS.escape(x.dataset.prof)}"]`); if (n) toast(`${n} section${n > 1 ? 's' : ''} moved to ${x.value.replace(' Campus', '')}.`); });
+  document.querySelectorAll('[data-loc]').forEach(x => x.onchange = () => { const c = courses().find(y => y.CRN === x.dataset.loc); c.LOCATION = x.value; c.LOCATION_SET = true; delete c.LOCATION_FROM; changed(false); const sc = window.scrollY; show('courses', false); window.scrollTo(0, sc); document.querySelector(`[data-loc="${CSS.escape(c.CRN)}"]`)?.focus(); });
 };
 ACTS.unpick = () => { PICKED.clear(); const y = window.scrollY; show('courses', false); window.scrollTo(0, y); };
 ACTS.delPicked = () => {
