@@ -404,6 +404,7 @@ tr:hover .rowbtn, .rowbtn:focus-visible, .rowbtn[aria-expanded="true"] { border-
 [data-tip] { cursor: default; }
 [data-tip]:focus-visible { outline: 3px solid var(--gold); outline-offset: 1px; position: relative; z-index: 1; }
 .bar-n[data-tip] { border-radius: 4px; }
+.bar-l .fold { display: block; font-weight: 400; font-size: 12px; }
 
 </style>
 </head>
@@ -728,7 +729,9 @@ function parseCSV(text) {
 const kindOfCSV = rows => { const h = Object.keys(rows[0] || {}); return h.includes('BLDGRM') || h.includes('CAMPUS_CODE') || h.includes('MAXENR') ? '1430' : h.includes('Part_of_Term') || h.includes('Ptrm_Start_Date') ? '775' : ''; };
 const CAMPUS_CODE = c => { c = String(c || '').trim().toUpperCase(); return c === 'F' ? 'A' : c === 'NGO' ? 'OL' : c; };
 const AUTO_LOCATION = { A: 'Dahlonega Campus', GA: 'Gainesville Campus', OC: 'Oconee Campus', 9: 'Cumming Campus' };
-const pivotOf = loc => /gainesville|cumming/i.test(loc || '') ? 'GVL' : /dahlonega|blue\s*ridge/i.test(loc || '') ? 'DAH' : /oconee/i.test(loc || '') ? 'OCN' : '';
+/* budget campus. Blue Ridge is NOT folded into Dahlonega (Daniel, 2026-11-20): its sections count nowhere until someone moves
+   them to a campus. Cumming still counts with Gainesville, as in the Class Distribution sheet. */
+const pivotOf = loc => /gainesville|cumming/i.test(loc || '') ? 'GVL' : /dahlonega/i.test(loc || '') ? 'DAH' : /oconee/i.test(loc || '') ? 'OCN' : '';
 function courseFrom1430(r) {
   let from = '', to = '';
   const t = String(r.TIME || '').trim(); if (t && !/TBA/i.test(t)) { const p = t.split('-'); if (p.length >= 2) { from = toHHMM(p[0]); to = toHHMM(p[1]); } }
@@ -997,7 +1000,7 @@ function issues() {
   const cs = courses();
   if (!cs.length) add('warn', 'No courses imported for this semester.', 'courses');
   else {
-    const noCampus = cs.filter(c => isLang(c.SUBJ) && !pivotOf(c.LOCATION)).length;
+    const noCampus = cs.filter(c => isLang(c.SUBJ) && !c.LOCATION).length;
     if (noCampus) add('warn', `${noCampus} language section${noCampus > 1 ? 's need' : ' needs'} a campus (online or off-campus sections count toward one campus's budget and tutors).`, 'courses');
     const n4201 = cs.filter(inNesbitt4201), A = roomsOf().assign, un = n4201.filter(c => !A[c.CRN]).length, clash = roomClashes().size;
     if (un) add('warn', `${un} class${un > 1 ? 'es' : ''} in Nesbitt 4201 without a room (4201A or 4207).`, 'rooms');
@@ -1205,13 +1208,13 @@ VIEWS.courses = () => {
   if (!cs.length) return head(semLabel(s), 'Language courses', 'Start with the two Banner reports for this semester.') + imp;
   const pool = cs.filter(c => CF.all || isLang(c.SUBJ));
   const subjects = [...new Set(pool.map(c => c.SUBJ))].sort(), pats = [...new Set(pool.map(c => normDays(c.DAYS)).filter(Boolean))].sort();
-  const shown = coursesShown(), needs = shown.filter(c => isLang(c.SUBJ) && !pivotOf(c.LOCATION)).length;
+  const shown = coursesShown(), needs = shown.filter(c => isLang(c.SUBJ) && !c.LOCATION).length, outBudget = shown.filter(c => isLang(c.SUBJ) && ['1001', '1002'].includes(c.CRSE) && c.LOCATION && !pivotOf(c.LOCATION));
   const lvl = `<div class="f"><span class="lbl" id="lvl-l">Level</span><div class="seg" role="group" aria-labelledby="lvl-l">${[['first', '1001–1002'], ['1001', '1001'], ['1002', '1002'], ['all', 'All levels']].map(([v, l]) => `<button type="button" data-lvl="${v}" aria-pressed="${CF.level === v}">${l}</button>`).join('')}</div></div>`;
   const th = ([k, l]) => `<th scope="col" aria-sort="${CF.sort === k ? (CF.dir > 0 ? 'ascending' : 'descending') : 'none'}"><button type="button" class="sorter" data-sort="${k}">${l}<span aria-hidden="true">${CF.sort === k ? (CF.dir > 0 ? ' ▲' : ' ▼') : ''}</span></button></th>`;
   [...PICKED].forEach(k => { if (!cs.some(c => c.CRN === k)) PICKED.delete(k); });
   const pickedShown = shown.filter(c => PICKED.has(c.CRN)).length, allPicked = shown.length && pickedShown === shown.length;
   const rows = shown.map(c => {
-    const flag = isLang(c.SUBJ) && !pivotOf(c.LOCATION), name = `${c.SUBJ} ${c.CRSE}.${c.SEC}`, on = PICKED.has(c.CRN);
+    const flag = isLang(c.SUBJ) && !c.LOCATION, name = `${c.SUBJ} ${c.CRSE}.${c.SEC}`, on = PICKED.has(c.CRN);
     return `<tr class="${flag ? 'flag' : ''}${on ? ' picked' : ''}" data-crn="${esc(c.CRN)}"><td class="pick"><span class="pickwrap"><input type="checkbox" data-pick="${esc(c.CRN)}" ${on ? 'checked' : ''} aria-label="Select ${esc(name)}, CRN ${esc(c.CRN)}"><button type="button" class="rowbtn" data-cmenu="${esc(c.CRN)}" aria-haspopup="menu" aria-label="Actions for ${esc(name)}" title="Actions (or right-click the row)">⋯</button></span></td><td>${esc(c.CRN)}</td><td class="nowrap">${isLang(c.SUBJ) ? langTag(c.SUBJ) : esc(c.SUBJ)}</td><td>${esc(c.CRSE)}</td><td>${esc(c.SEC)}</td>`
       + `<td>${esc(BANNER_CMP[c.CMP] || c.CMP || '')}</td><td class="num">${esc(c.CRED)}</td><td>${esc(c.TITLE)}</td><td class="nowrap">${esc(c.DAYS || 'TBA')}</td>`
       + `<td class="nowrap">${c.TIME_FROM ? esc(fmt12(c.TIME_FROM) + '–' + fmt12(c.TIME_TO)) : 'TBA'}</td><td>${esc(c.INSTRUCTOR)}</td><td>${esc(c.BUILDING)}</td><td>${esc(c.ROOM)}</td>`
@@ -1226,6 +1229,7 @@ VIEWS.courses = () => {
     + `<div class="f grow"><label for="c-q">Search</label><input type="search" id="c-q" value="${esc(CF.q)}" placeholder="CRN, title or instructor"></div>`
     + `<label class="switch" style="margin:0 0 6px"><input type="checkbox" role="switch" id="c-all" ${CF.all ? 'checked' : ''}>Other subjects too</label></div>`
     + (needs ? `<p class="note warn" role="status">${needs} section${needs > 1 ? 's need' : ' needs'} a campus (shaded). Choose one in the Campus column, or set the professor's home campus in <button class="btn sm" type="button" data-view="profs">Professors' campuses</button>.</p>` : '')
+    + (outBudget.length ? `<p class="note warn" role="status">${outBudget.length} 1001–1002 section${outBudget.length > 1 ? 's are' : ' is'} at ${esc([...new Set(outBudget.map(c => campusName(c.LOCATION)))].join(', '))}, which isn't a budget campus, so ${outBudget.length > 1 ? 'they aren\'t' : 'it isn\'t'} in the budget numbers. Move ${outBudget.length > 1 ? 'them' : 'it'} to Dahlonega, Gainesville or Oconee if ${outBudget.length > 1 ? 'they' : 'it'} should count (select them, then right-click or use the bar).</p>` : '')
     + chartsHTML(shown)
     + (PICKED.size ? '' : `<p class="small muted" style="margin:0 0 8px">Tick classes, or use ⋯ or right-click on a row, to delete them (for example cancelled sections or ones the Lab doesn't serve).</p>`)
     + `<div class="tw"><table class="t compact"><caption>${shown.length} section${shown.length === 1 ? '' : 's'} shown${CF.level === 'all' ? '' : ` (${lvlText()})`}. Select a column heading to sort.</caption><thead><tr><th scope="col" class="pick"><input type="checkbox" id="pick-all" ${allPicked ? 'checked' : ''} aria-label="Select all ${shown.length} sections shown"></th>${COLS.map(th).join('')}</tr></thead>`
@@ -1324,6 +1328,8 @@ function coursesShown() {
 }
 /* two charts of the sections shown: sections per campus (split by language) and each budget campus's share.
    Every number is printed (no color-only reading); each chart has a text summary for screen readers. */
+const BUDGET_NAME = { DAH: 'Dahlonega', GVL: 'Gainesville + Cumming', OCN: 'Oconee' };
+const FOLDS = { Cumming: 'Gainesville' };
 function chartsHTML(list) {
   // both charts count 1001–1002 only (the lab fee), and follow the Level, Language, Campus, Days and Search filters
   const lang = list.filter(c => isLang(c.SUBJ) && ['1001', '1002'].includes(String(c.CRSE).trim()));
@@ -1335,14 +1341,17 @@ function chartsHTML(list) {
   const per = CAMPUS_ORDER.map(cp => { const here = lang.filter(c => campusName(c.LOCATION) === cp); return { cp, here, n: here.length, by: langs.map(l => [l, cnt(here, l)]).filter(x => x[1]) }; }).filter(x => x.n);
   const max = Math.max(...per.map(x => x.n));
   const tip = t => `data-tip="${esc(t)}" tabindex="0" aria-label="${esc(t)}"`;
-  const bars = per.map(x => `<div class="bar-row"><span class="bar-l">${esc(x.cp)}</span><span class="bar-track"><span class="bar-fill" style="width:${(x.n / max * 100).toFixed(1)}%">`
+  const bars = per.map(x => `<div class="bar-row"><span class="bar-l">${esc(x.cp)}${FOLDS[x.cp] ? `<span class="small muted fold">in ${FOLDS[x.cp]}'s budget</span>` : x.cp !== 'Needs a campus' && !pivotOf(x.cp) ? '<span class="small muted fold">not in the budget</span>' : ''}</span><span class="bar-track"><span class="bar-fill" style="width:${(x.n / max * 100).toFixed(1)}%">`
     + x.by.map(([l, n]) => `<span class="bar-seg" style="flex:${n};background:${langColor(l)}" ${tip(`${LANG[l][0]} at ${x.cp}: ${n} section${n === 1 ? '' : 's'} (${split(x.here, l)})`)}>${n / max > .16 ? `${esc(l)} ${n}` : ''}</span>`).join('')
     + `</span></span><b class="bar-n" ${tip(`${x.cp}: ${x.n} sections. ${breakdown(x.here)}`)}>${x.n}</b></div>`).join('');
   const sum1 = per.map(x => `${x.cp} ${x.n} (${x.by.map(([l, n]) => `${LANG[l][0]} ${n}`).join(', ')})`).join('; ');
-  const piv = PIVOTS.map(([p, l]) => { const here = lang.filter(c => pivotOf(c.LOCATION) === p); return { p, l, here, n: here.length }; }), tot = piv.reduce((a, x) => a + x.n, 0);
+  /* budget campuses fold Blue Ridge into Dahlonega and Cumming into Gainesville (the Class Distribution sheet's rule): say so everywhere */
+  const piv = PIVOTS.map(([p, l]) => { const here = lang.filter(c => pivotOf(c.LOCATION) === p), parts = [...new Set(here.map(c => campusName(c.LOCATION)))].sort((a, b) => (b === l) - (a === l));
+    const full = BUDGET_NAME[p] || l, made = parts.length > 1 ? ` (${parts.map(cp => `${cp} ${here.filter(c => campusName(c.LOCATION) === cp).length}`).join(' + ')})` : '';
+    return { p, l, full, made, here, n: here.length }; }), tot = piv.reduce((a, x) => a + x.n, 0);
   const pc = n => tot ? Math.round(n / tot * 100) : 0, PCOL = { DAH: 'var(--c-dah)', GVL: 'var(--c-gvl)', OCN: 'var(--c-ocn)' };
-  const share = tot ? `<div class="share">${piv.filter(x => x.n).map(x => `<span style="flex:${x.n};background:${PCOL[x.p]}" ${tip(`${x.l}: ${x.n} sections, ${pc(x.n)}% of the budget. ${breakdown(x.here)}`)}>${pc(x.n) >= 22 ? `${x.l} ${pc(x.n)}%` : pc(x.n) >= 9 ? `${pc(x.n)}%` : ''}</span>`).join('')}</div>`
-    + `<ul class="share-key">${piv.map(x => `<li><span class="sw" style="background:${PCOL[x.p]}" aria-hidden="true"></span>${esc(x.l)}: <b>${x.n}</b> section${x.n === 1 ? '' : 's'} (${pc(x.n)}%)</li>`).join('')}</ul>` : '<p class="muted small">No sections have a campus yet.</p>';
+  const share = tot ? `<div class="share">${piv.filter(x => x.n).map(x => `<span style="flex:${x.n};background:${PCOL[x.p]}" ${tip(`${x.full}: ${x.n} sections${x.made}, ${pc(x.n)}% of the budget. ${breakdown(x.here)}`)}>${pc(x.n) >= 22 ? `${x.l} ${pc(x.n)}%` : pc(x.n) >= 9 ? `${pc(x.n)}%` : ''}</span>`).join('')}</div>`
+    + `<ul class="share-key">${piv.map(x => `<li><span class="sw" style="background:${PCOL[x.p]}" aria-hidden="true"></span>${esc(x.full)}: <b>${x.n}</b> section${x.n === 1 ? '' : 's'} (${pc(x.n)}%)${x.made ? `<span class="muted small">&nbsp;= ${esc(x.made.slice(2, -1))}</span>` : ''}</li>`).join('')}</ul>` : '<p class="muted small">No sections have a campus yet.</p>';
   /* the numbers per class, always visible (the tooltips repeat them per campus) */
   const byClass = `<div class="tw" style="margin-top:12px"><table class="t compact"><caption class="sr">Sections per class and campus</caption><thead><tr><th scope="col">Class</th>${CAMPUS_ORDER.filter(cp => per.some(x => x.cp === cp)).map(cp => `<th scope="col" class="num">${esc(cp)}</th>`).join('')}<th scope="col" class="num">Total</th></tr></thead><tbody>`
     + langs.flatMap(l => lv.filter(v => cnt(lang, l, v)).map(v => `<tr><th scope="row">${langTag(l)}${v}</th>${CAMPUS_ORDER.filter(cp => per.some(x => x.cp === cp)).map(cp => `<td class="num">${cnt(lang.filter(c => campusName(c.LOCATION) === cp), l, v) || ''}</td>`).join('')}<td class="num"><b>${cnt(lang, l, v)}</b></td></tr>`)).join('')
@@ -1351,7 +1360,7 @@ function chartsHTML(list) {
     + `<p class="sr">Sections by campus: ${esc(sum1)}.</p><div class="bars">${bars}</div>`
     + `<ul class="share-key">${langs.map(l => `<li><span class="sw" style="background:${langColor(l)}" aria-hidden="true"></span>${esc(LANG[l][0])}: <b>${cnt(lang, l)}</b> <span class="muted">(${lv.map(v => cnt(lang, l, v) ? `${v}: ${cnt(lang, l, v)}` : '').filter(Boolean).join(' · ')})</span></li>`).join('')}</ul>`
     + `<details style="margin-top:8px"><summary class="small"><b>Per class and campus</b></summary>${byClass}</details></figure>`
-    + `<figure class="card chart"><figcaption><b>Budget split</b><span class="muted small"> · ${lvlText()} sections (the lab fee), per budget campus; Cumming counts with Gainesville, Blue Ridge with Dahlonega</span></figcaption>${share}</figure></div>`;
+    + `<figure class="card chart"><figcaption><b>Budget split</b><span class="muted small"> · ${lvlText()} sections (the lab fee). Cumming counts toward Gainesville's budget. Blue Ridge counts nowhere until you move its sections to a campus.</span></figcaption>${share}</figure></div>`;
 }
 /* tooltips for chart pieces: hover or keyboard focus, Esc hides (2026-11-20) */
 (() => {
@@ -1377,9 +1386,9 @@ function distributionHTML() {
   const d = distribution(), pct = (n, t) => t ? (n / t * 100).toFixed(1) + '%' : '–';
   const rows = LANG_ORDER.filter(l => d.tot[l]).map(l => `<tr><th scope="row">${langTag(l)}${esc(LANG[l][0])}</th><td class="num">${d.tot[l]}</td>${PIVOTS.map(([p]) => `<td class="num">${d.by[l][p] || 0} <span class="muted small">${pct(d.by[l][p] || 0, d.camp[p])}</span></td>`).join('')}</tr>`).join('');
   return `<div class="card"><h2>Distribution and budget</h2><p class="lede">1001 and 1002 sections only, since the lab fee comes from those courses. Campus comes from the Campus column, so online sections count where you place them. The percentage is the language's share of that campus.</p>`
-    + `<div class="tw"><table class="t"><thead><tr><th scope="col">Language</th><th scope="col" class="num">Sections</th>${PIVOTS.map(([, l]) => `<th scope="col" class="num">${l}</th>`).join('')}</tr></thead><tbody>${rows || '<tr><td colspan="5" class="muted">No language sections.</td></tr>'}</tbody>`
+    + `<div class="tw"><table class="t"><thead><tr><th scope="col">Language</th><th scope="col" class="num">Sections</th>${PIVOTS.map(([p, l]) => `<th scope="col" class="num">${esc(BUDGET_NAME[p] || l)}</th>`).join('')}</tr></thead><tbody>${rows || '<tr><td colspan="5" class="muted">No language sections.</td></tr>'}</tbody>`
     + `<tfoot><tr><td>Total</td><td class="num">${d.grand + d.unmapped}</td>${PIVOTS.map(([p]) => `<td class="num">${d.camp[p]}</td>`).join('')}</tr></tfoot></table></div>`
-    + `<p class="small muted" style="margin:10px 0 0">First-year sections (1001–1002): ${d.quick.map(q => `${q.l} ${q.core} (Spanish ${q.span})`).join(' · ')}${d.unmapped ? ` · <b>${d.unmapped} without a campus are not counted.</b>` : ''}</p></div>`;
+    + `<p class="small muted" style="margin:10px 0 0">First-year sections (1001–1002): ${d.quick.map(q => `${q.l} ${q.core} (Spanish ${q.span})`).join(' · ')}${d.unmapped ? ` · <b>${d.unmapped} without a budget campus (no campus, or Blue Ridge) are not counted.</b>` : ''}</p></div>`;
 }
 AFTER.courses = () => {
   const drop = $('c-drop'), take = async files => {
