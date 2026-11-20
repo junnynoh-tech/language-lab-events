@@ -452,7 +452,7 @@ function vLibrary(kind) {
 function vSettings() {
   return header('Setup', 'Settings', 'Looking around needs nothing. To save from this console, connect a GitHub key once on this computer.')
     + `<ol class="howto"><li><span>Open <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub → new fine-grained token ↗</a>. Name it “Lab console”.</span></li>
-      <li><span><b>Repository access:</b> Only select repositories → <code>${REPO}</code>, <code>${REQ_REPO}</code> (requests) and <code>lab-console-data</code> (the shared Semester plan). If a repository isn't offered, make a <a href="https://github.com/settings/tokens/new?scopes=repo&description=Lab%20console" target="_blank" rel="noopener">classic token ↗</a> with <b>repo</b> ticked instead.</span></li>
+      <li><span><b>Repository access:</b> Only select repositories → <code>${REPO}</code> and <code>${REQ_REPO}</code> (requests). If a repository isn't offered, make a <a href="https://github.com/settings/tokens/new?scopes=repo&description=Lab%20console" target="_blank" rel="noopener">classic token ↗</a> with <b>repo</b> ticked instead.</span></li>
       <li><span><b>Permissions:</b> Repository → <b>Contents: Read and write</b>, and <b>Issues: Read and write</b> (closes the request emails when you decide). Nothing else.</span></li>
       <li><span>Generate it, copy it, paste it below. It stays in this browser only and is never put in a file.</span></li></ol>
       <fieldset style="max-width:620px"><legend>GitHub key</legend><div class="f"><label for="tok">Key</label><input type="password" id="tok" autocomplete="off" spellcheck="false" placeholder="github_pat_…" value="${token ? '••••••••' : ''}"></div>
