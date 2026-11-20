@@ -439,6 +439,35 @@ function changed(rerender = true) {
 }
 
 /* ---------- the plan file (shared folder) ---------- */
+/* sharing through the coordinators-only Teams folder (synced by OneDrive), no GitHub needed (2026-11-20) */
+const meName = () => { try { return localStorage.getItem('labConsoleMe') || ''; } catch (e) { return ''; } };
+function askMe() { let n = meName(); if (n) return n; n = (prompt('Your name, so the other coordinators see who saved the plan (asked once on this computer):', '') || '').trim(); if (n) try { localStorage.setItem('labConsoleMe', n); } catch (e) {} return n; }
+const whenStr = t => t ? new Date(t).toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit' }) : '';
+async function filePerm(h, ask) { const o = { mode: 'readwrite' }; if (!h?.queryPermission) return true; if ((await h.queryPermission(o)) === 'granted') return true; return ask && h.requestPermission ? (await h.requestPermission(o)) === 'granted' : false; }
+async function backupLocal(why) { if (P.semesters.length) await DB.set('planBackup', { at: new Date().toISOString(), why, plan: clone(P) }); }
+async function loadHandle(h, why) {
+  const f = await h.getFile(), o = checkPlan(JSON.parse(await f.text()));
+  if (JSON.stringify({ ...P, savedAt: '' }) !== JSON.stringify({ ...o, savedAt: '' })) await backupLocal('before loading ' + f.name);
+  P = o; F.handle = h; F.name = f.name; F.lastModified = f.lastModified; F.dirty = false; F.needsReopen = false;
+  if (!P.activeSemesterId && P.semesters.length) P.activeSemesterId = sortedSems()[0].id;
+  await DB.set('plan', P); await DB.set('handle', h); storeMeta(); render();
+  toast(why === 'teammate' ? `Loaded ${f.name}: ${P.savedBy || 'someone'} saved it${P.savedAt ? ' at ' + whenStr(P.savedAt) : ''}.` : `Opened ${f.name}`);
+}
+async function reopenPlan() {
+  const h = F.handle; if (!h) return openPlanFile();
+  try {
+    if (!(await filePerm(h, true))) throw new Error('The browser didn\'t allow it. Use Open the plan file instead.');
+    const f = await h.getFile(); F.needsReopen = false;
+    if (F.dirty && f.lastModified > F.lastModified + 1000) { if (confirm(`${f.name} was saved after your unsaved changes here.\n\nOK: load the saved file (your changes are kept as a backup on the Plan file page). Cancel: keep yours (Save then asks before replacing it).`)) await loadHandle(h, 'teammate'); else render(); }
+    else if (!F.dirty && f.lastModified !== F.lastModified) await loadHandle(h, 'teammate');
+    else { render(); toast(`Reconnected to ${f.name}`); }
+  } catch (e) { toast(e.message, 6000); }
+}
+let fileChecked = 0;
+window.addEventListener('focus', async () => {
+  if (shared() || !F.handle || F.dirty || F.needsReopen || Date.now() - fileChecked < 15000) return; fileChecked = Date.now();
+  try { if (!(await filePerm(F.handle, false))) return; const f = await F.handle.getFile(); if (f.lastModified > F.lastModified + 1000) await loadHandle(F.handle, 'teammate'); } catch (e) {}
+});
 const PICK = { types: [{ description: 'Semester plan', accept: { 'application/json': ['.json'] } }], excludeAcceptAllOption: false };
 function checkPlan(o) {
   if (!o || typeof o !== 'object') throw new Error('That file is not a semester plan.');
@@ -448,14 +477,14 @@ function checkPlan(o) {
 async function openPlanFile() {
   if (F.dirty && P.semesters.length && !confirm('Your changes are not saved to the plan file. Open another file anyway? Your changes stay in this browser until you open it.')) return;
   try {
-    const [h] = await showOpenFilePicker(PICK); const f = await h.getFile();
-    P = checkPlan(JSON.parse(await f.text())); if (shared()) { F.dirty = true; await DB.set('plan', P); storeMeta(); render(); toast(`Loaded ${f.name}. Save to put it in the shared plan.`); return; } F.handle = h; F.name = f.name; F.lastModified = f.lastModified; F.dirty = false;
-    await DB.set('plan', P); await DB.set('handle', h); storeMeta(); render(); toast(`Opened ${f.name}`);
+    const [h] = await showOpenFilePicker(PICK);
+    if (shared()) { const f = await h.getFile(); await backupLocal('before opening ' + f.name); P = checkPlan(JSON.parse(await f.text())); F.dirty = true; await DB.set('plan', P); storeMeta(); render(); toast(`Loaded ${f.name}. Save to put it in the shared plan.`); return; }
+    await loadHandle(h, 'open');
   } catch (e) { if (e.name !== 'AbortError') toast(e.message, 6000); }
 }
 async function savePlan(as = false) {
   if (shared() && !as) return pushShared();
-  P.savedAt = new Date().toISOString();
+  P.savedAt = new Date().toISOString(); P.savedBy = askMe();
   const text = JSON.stringify(P, null, 2);
   if (!F.supported) { download(planName(), text, 'application/json'); F.dirty = false; F.name ||= planName(); storeMeta(); fileUI(); toast('Downloaded. Put it in the shared folder so the others get it.'); return; }
   try {
@@ -463,12 +492,12 @@ async function savePlan(as = false) {
     if ((await F.handle.queryPermission?.({ mode: 'readwrite' })) !== 'granted' && (await F.handle.requestPermission?.({ mode: 'readwrite' })) !== 'granted') throw new Error('Saving needs permission to change the file.');
     const cur = await F.handle.getFile();
     if (!as && F.lastModified && cur.lastModified > F.lastModified + 1000) { // someone else saved it after this page opened it
-      const when = new Date(cur.lastModified).toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit' });
-      if (!confirm(`Someone saved ${cur.name} at ${when}, after you opened it. Saving now replaces their changes.\n\nOK: save mine anyway. Cancel: keep theirs (then use "Open the plan file" to load their version).`)) return;
+      let who = 'Someone'; try { who = JSON.parse(await cur.text()).savedBy || who; } catch (e) {}
+      if (!confirm(`${who} saved ${cur.name} at ${whenStr(cur.lastModified)}, after you opened it. Saving now replaces their changes.\n\nOK: save mine anyway. Cancel: load theirs (your changes are kept as a backup on the Plan file page).`)) { await backupLocal('your unsaved changes'); await loadHandle(F.handle, 'teammate'); return; }
     }
     const w = await F.handle.createWritable(); await w.write(text); await w.close();
-    const f = await F.handle.getFile(); F.name = f.name; F.lastModified = f.lastModified; F.dirty = false;
-    await DB.set('plan', P); storeMeta(); fileUI(); toast(`Saved to ${f.name}`);
+    const f = await F.handle.getFile(); F.name = f.name; F.lastModified = f.lastModified; F.dirty = false; F.needsReopen = false;
+    await DB.set('plan', P); storeMeta(); fileUI(); toast(`Saved to ${f.name}. OneDrive shares it with the other coordinators.`);
   } catch (e) { if (e.name !== 'AbortError') toast(e.message, 6000); }
 }
 const storeMeta = () => DB.set('fileMeta', { name: F.name, lastModified: F.lastModified, dirty: F.dirty });
@@ -477,6 +506,10 @@ function fileUI() {
   const el = $('fileState'), dot = el.querySelector('.dot'), t = el.querySelector('span:last-child');
   dot.classList.toggle('on', shared() ? !F.dirty && !G.err : !!F.name && !F.dirty);
   if (shared()) { t.textContent = G.err ? 'Shared plan: not reachable' : F.dirty ? 'Changes not saved to the shared plan' : G.sha ? 'Saved in the shared plan' : 'Shared plan is empty'; document.title = (F.dirty ? '• ' : '') + 'Lab Console · Semester plan'; return; }
+  const by = P.savedBy ? ` · ${P.savedBy}, ${whenStr(P.savedAt)}` : '';
+  let rb = $('reopenBtn');
+  if (F.needsReopen && F.handle) { if (!rb) { rb = document.createElement('button'); rb.id = 'reopenBtn'; rb.type = 'button'; rb.className = 'btn sm primary'; rb.onclick = reopenPlan; el.after(rb); } rb.textContent = `Reopen ${F.handle.name}`; } else if (rb) rb.remove();
+  if (F.name && !F.dirty) { t.textContent = `Saved in ${F.name}${by}`; document.title = 'Lab Console · Semester plan'; return; }
   t.textContent = !F.name ? (P.semesters.length ? 'Not in a plan file yet' : 'No plan file yet') : F.dirty ? `Changes not saved to ${F.name}` : `Saved in ${F.name}`;
   document.title = (F.dirty ? '• ' : '') + 'Lab Console · Semester plan';
 }
@@ -514,6 +547,7 @@ async function remotePlan() { // -> null (nothing saved yet) or { sha, plan }
 async function pullShared() {
   const r = await remotePlan(); G.err = ''; G.checked = Date.now();
   if (!r) { G.sha = ''; return false; }
+  if (P.semesters.length && JSON.stringify({ ...P, savedAt: '' }) !== JSON.stringify({ ...r.plan, savedAt: '' })) await backupLocal('before loading the shared plan');
   P = r.plan; G.sha = r.sha; F.name = 'the shared plan'; F.dirty = false;
   if (!P.activeSemesterId && P.semesters.length) P.activeSemesterId = sortedSems()[0].id;
   await DB.set('plan', P); storeMeta(); return true;
@@ -1229,8 +1263,9 @@ ACTS.zip = async () => {
 };
 
 /* ---------- plan file & imports ---------- */
-VIEWS.plan = () => head('Plan file', 'Share the plan', 'Every coordinator opens this page and works on the same shared plan. Save (or Ctrl+S) puts your changes there; if someone saved after you opened it, you are asked first.')
-  + sharedCard()
+VIEWS.plan = () => head('Plan file', 'Share the plan', 'Keep the plan file in the coordinators-only Teams folder, synced to each computer by OneDrive. Everyone opens that one file; Save (Ctrl+S) writes into it, and you are asked first if someone saved after you opened it.')
+  + (shared() ? sharedCard() : teamsCard() + `<details class="card"><summary>Optional: save to GitHub instead (only with your own GitHub account; never share a key)</summary>${sharedCard()}</details>`)
+  + backupCard()
   + (shared() ? `<div class="card"><h2>A plan file (backup)</h2><p class="lede">Save a copy as a file for a backup or for someone without GitHub. Opening a plan file loads it here; Save then puts it in the shared plan.</p>`
     + `<div class="row">${F.supported ? '<button class="btn" type="button" data-act="saveAs">Save a copy as…</button><button class="btn" type="button" data-act="openPlan">Open a plan file</button>' : '<label class="btn">Open a plan file<input type="file" id="pl-open" accept=".json" class="sr"></label>'}</div></div>` : '')
   + (shared() ? '' : `<div class="card"><h2>The plan file (without GitHub)</h2><p class="lede">${F.name ? `This browser is working on <b>${esc(F.name)}</b>${F.dirty ? ', with changes not saved yet' : ''}.` : 'Not saved to a file yet.'} ${F.supported ? 'Saving writes straight into the file; if someone else saved it after you opened it, you are asked first.' : 'This browser can\'t save into a file directly: Save downloads a copy to put in the shared folder (Edge or Chrome can save in place).'}</p>`
@@ -1239,13 +1274,24 @@ VIEWS.plan = () => head('Plan file', 'Share the plan', 'Every coordinator opens 
   + `<div class="drop big" id="imp-drop"><p style="margin:0">Drop files here, or</p><input type="file" id="imp-file" accept=".json" multiple aria-label="Choose files to import"></div><ul class="report" id="imp-rep"></ul></div>`
   + `<div class="card"><h2>Lab Hub Generator</h2><p class="lede">The generator keeps the lab assistants' work (shifts, availability, grading, class visits). Its <b>Load semester plan</b> button reads this plan file, so its courses, rooms, calendar and lab due dates match yours. Plan those four here; the generator only reads them.</p></div>`
   + `<div class="card"><h2>Start over</h2><p class="lede">Clears the plan from this browser. The plan file is not touched.</p><button class="btn danger" type="button" data-act="reset">Clear this browser's copy</button></div>`;
+function teamsCard() {
+  return `<div class="card"><h2>Share through Teams (no GitHub)</h2><ol class="howto">`
+    + `<li><span>Put the plan file in the coordinators-only Teams folder (first time: <b>Save as a plan file</b> and pick that folder).</span></li>`
+    + `<li><span>Each coordinator syncs that folder to their computer once: Teams → the folder → <b>Add shortcut to OneDrive</b> (or <b>Sync</b>).</span></li>`
+    + `<li><span>Each coordinator presses <b>Open the plan file</b> once and picks it from the synced folder. After that this page reopens it by itself (after a browser restart, one click on <b>Reopen</b>), picks up a teammate's save when you come back to the tab, and shows who saved last.</span></li></ol>`
+    + `<p class="hint">${F.name ? `This browser uses <b>${esc(F.name)}</b>${P.savedBy ? `, last saved by ${esc(P.savedBy)} (${esc(whenStr(P.savedAt))})` : ''}.` : 'No plan file opened in this browser yet.'} Works in Edge and Chrome.</p></div>`;
+}
+function backupCard() {
+  return `<div class="card" id="bk-card" hidden><h2>This browser's earlier copy</h2><p class="lede" id="bk-text"></p><button class="btn" type="button" data-act="restore">Restore it here</button></div>`;
+}
+ACTS.restore = async () => { const b = await DB.get('planBackup'); if (!b) return; if (!confirm('Put the earlier copy back in this page? Then Save to share it.')) return; const cur = clone(P); P = checkPlan(b.plan); await DB.set('planBackup', { at: new Date().toISOString(), why: 'before restoring', plan: cur }); F.dirty = true; await DB.set('plan', P); storeMeta(); render(); toast('Restored. Press Save to share it.'); };
 function sharedCard() {
   if (shared()) return `<div class="card"><h2>Shared plan <span class="tag ${G.err ? 'bad' : 'ok'}">${G.err ? 'Not reachable' : 'Connected'}</span></h2>`
     + `<p class="lede">${G.err ? esc(G.err) : G.sha ? `Everyone connected sees the plan saved here.${F.dirty ? ' <b>Your changes are not saved yet.</b>' : ''}` : 'Nothing is saved yet. Save puts this browser\'s plan there.'} Coming back to this page picks up a teammate's save by itself.</p>`
     + `<div class="row"><button class="btn primary" type="button" data-act="save">Save to the shared plan</button><button class="btn" type="button" data-act="pull">Get the latest</button>`
     + `<a class="btn" href="${SH_HISTORY}" target="_blank" rel="noopener">Who changed what ↗</a><button class="btn danger" type="button" data-act="disconnect">Disconnect this browser</button></div>`
     + `<p class="hint">Private repository <code>${SH.repo}</code>. Calendar, courses, rooms and lab due dates only: never students.</p></div>`;
-  return `<div class="card"><h2>Shared plan <span class="tag">Not connected</span></h2><p class="lede">Connect a GitHub key once on this computer. It's the same key as the Events console: if you connected there on this computer, you're already connected.</p>`
+  return `<div class="card"><h2>Shared plan <span class="tag">Not connected</span></h2><p class="lede">For someone with their own GitHub account who's been added to the private repository. Each person uses their own key; never share yours. It's the same key as the Events console: if you connected there on this computer, you're already connected.</p>`
     + `<ol class="howto"><li><span>Get added to the private repository <code>${SH.repo}</code> (the Lab coordinator invites you on GitHub).</span></li>`
     + `<li><span>Open <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub → new fine-grained token ↗</a>, named “Lab console”. Repository access: <code>language-lab-events</code>, <code>lab-event-requests</code> and <code>${SH.repo}</code>. Permissions: <b>Contents: Read and write</b> (plus Issues: Read and write for event requests). If the repository isn't offered, make a <a href="https://github.com/settings/tokens/new?scopes=repo&description=Lab%20console" target="_blank" rel="noopener">classic token ↗</a> with <b>repo</b> ticked instead.</span></li>`
     + `<li><span>Paste it below. It stays in this browser only and is never put in a file.</span></li></ol>`
@@ -1269,6 +1315,8 @@ AFTER.plan = () => {
     changed(false); semPicker();
   };
   if (drop) { $('imp-file').onchange = e => take([...e.target.files]); ['dragenter', 'dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); })); ['dragleave', 'drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); })); drop.addEventListener('drop', e => take([...e.dataTransfer.files])); }
+  DB.get('planBackup').then(b => { const c = $('bk-card'); if (!b || !c) return; const n = Object.values(b.plan.courseLists || {}).reduce((a, l) => a + (l.rows || []).length, 0);
+    $('bk-text').textContent = `Saved ${whenStr(b.at)} (${b.why}): ${b.plan.semesters.length} semester${b.plan.semesters.length === 1 ? '' : 's'}, ${n} course${n === 1 ? '' : 's'}. If something you entered went missing, it may be here.`; c.hidden = false; });
   if ($('sh-connect')) $('sh-connect').onclick = async () => {
     const v = $('sh-tok').value.trim(), msg = $('sh-msg'); if (!v) { msg.textContent = 'Paste the key first.'; return; }
     const old = G.token; G.token = v; msg.textContent = 'Checking…';
@@ -1278,8 +1326,8 @@ AFTER.plan = () => {
       if (!r.ok) throw new Error(`This key can't open ${SH.repo}. Check step 1 and the repository access in step 2.`);
       if (!(await r.json()).permissions?.push) throw new Error('This key can read but not save. Give it Contents: Read and write.');
       try { localStorage.setItem(SH.tokenKey, v); } catch (e) {}
-      const mine = F.dirty && P.semesters.length ? clone(P) : null, got = await pullShared();
-      if (got && mine && JSON.stringify(mine) !== JSON.stringify(P) && !confirm('Connected. The shared plan is loaded.\n\nThis browser also had unsaved changes. OK: use the shared plan. Cancel: keep this browser\'s version (Save then replaces the shared plan with it).')) { P = mine; F.dirty = true; }
+      const mine = P.semesters.length ? clone(P) : null, got = await pullShared();
+      if (got && mine && JSON.stringify({ ...mine, savedAt: '' }) !== JSON.stringify({ ...P, savedAt: '' }) && !confirm('Connected. The shared plan is loaded.\n\nThis browser had a different plan (kept as a backup on this page). OK: use the shared plan. Cancel: keep this browser\'s version (Save then replaces the shared plan with it).')) { P = mine; F.dirty = true; }
       if (!got) F.dirty = !!P.semesters.length;
       render(); toast(got ? 'Connected. You\'re on the shared plan.' : 'Connected. The shared plan is empty: Save to put yours there.');
     } catch (e) { G.token = old; msg.textContent = e.message; }
@@ -1334,6 +1382,10 @@ function importAny(o) {
   const meta = await DB.get('fileMeta');
   if (h) { F.handle = h; F.name = h.name; }
   if (meta) { F.name = meta.name || F.name; F.lastModified = meta.lastModified || 0; F.dirty = !!meta.dirty; } else F.dirty = !!saved?.semesters?.length;
+  if (!shared() && F.handle && F.supported) {
+    try { if (await filePerm(F.handle, false)) { const f = await F.handle.getFile(); if (!F.dirty && f.lastModified !== F.lastModified) { const o = checkPlan(JSON.parse(await f.text())); P = o; F.lastModified = f.lastModified; await DB.set('plan', P); storeMeta(); } } else F.needsReopen = true; }
+    catch (e) { F.needsReopen = true; }
+  }
   if (shared()) {
     try {
       const mine = F.dirty && P.semesters.length ? clone(P) : null, got = await pullShared();
