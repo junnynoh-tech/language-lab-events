@@ -8,7 +8,9 @@
 <!-- Student view (2026-11-21, Daniel): what students see in each course's D2L section, by language and lab type, with
      the editor one click away. Holds NO data: it reads labs/registry.json, types.json, themes.json and
      instructions/manifest.json from the site, and saves (theme, due dates file) as one commit through GitHub's API with
-     the key the Events console keeps in this browser (CLAUDE.md rule 11). Pages are built by labs/build_labs.py. -->
+     the key the Events console keeps in this browser (CLAUDE.md rule 11). Pages are built by labs/build_labs.py.
+     Edit tab: the student page itself, built in this browser by the same engine (Pyodide in a worker runs
+     labs/preview.py); click text to type over it, ↑ ↓ + ✕ on boxes. The copy being edited stays in memory until Save. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
@@ -140,7 +142,7 @@ table.t th { font-size: 13px; letter-spacing: .04em; text-transform: uppercase; 
 .objbody { padding: 4px 12px 12px; display: grid; gap: 12px; }
 .tools { display: inline-flex; gap: 4px; flex-wrap: wrap; }
 .savebar { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; background: var(--bg); padding: 10px 0; margin: 0 0 6px; border-bottom: 1px solid var(--line); }
-.savebar #edState { margin-right: auto; font-weight: 600; }
+.savebar #edState, .savebar #peState { margin-right: auto; font-weight: 600; }
 pre.code { white-space: pre-wrap; overflow-wrap: anywhere; background: var(--chip); padding: 10px 12px; border-radius: 8px; font-size: 14px; margin: 0; }
 @media (max-width: 1100px) { .d2l { grid-template-columns: 1fr; } .pv iframe { height: 720px; } }
 @media (max-width: 860px) {
@@ -234,7 +236,7 @@ function nav() {
 }
 function show(v, focus = true) {
   if (dirty() && v !== S.view && !confirm('Leave without saving your changes?')) return;
-  if (v !== S.view) S.edit = null;
+  if (v !== S.view) { S.edit = null; S.pe = null; S.pick.form = false; }
   if (!['overview', 'types', 'themes', 'dates', 'd2l'].includes(v) && !S.reg.courses[v]) v = 'overview';
   S.view = v; history.replaceState(null, '', '#' + v);
   $('nav').querySelectorAll('[data-go]').forEach(b => b.dataset.go === v ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'));
@@ -254,8 +256,8 @@ function overview() {
 <p class="lede">Each course's LAB folder, Lab 0 and lab pages, exactly as students get them. Pick a course to look through its D2L section, change its theme, or open the part you want to edit.</p>
 ${w.length ? w.map(x => `<p class="alert"><b>${esc(C(x.course)?.course || x.course)}:</b> ${esc(x.text)}</p>`).join('') : ''}
 <div class="card"><h2 class="h3">How an edit goes live</h2><ol class="steps">
-<li><span>Open a course, then <b>Edit</b>: each part of the instructions (requirements, labs, section types, settings) opens its own form in the website editor.</span></li>
-<li><span>Change the text and press <b>Save</b>. The pages rebuild on GitHub by themselves.</span></li>
+<li><span>Open a course, then <b>Edit</b>: the student page opens with its text ready to click and type over. Boxes like tips and questions can be moved, added or removed.</span></li>
+<li><span>Press <b>Save</b>. The pages rebuild on GitHub by themselves.</span></li>
 <li><span>About two minutes later the change shows here and on the students' pages. Pages last built: <b>${esc(built)}</b>${S.man.semester ? ` · ${esc(S.man.semester)}` : ''}.</span></li></ol></div>
 ${cards}`;
 }
@@ -311,7 +313,7 @@ function preview(code, x) {
   return `<div class="pv"><div class="bar"><span class="where">${esc(x.t)}</span>
 <a class="btn sm" href="../${esc(url)}" target="_blank" rel="noopener">Open (new tab)</a>
 <button class="btn sm" type="button" data-copy="${esc(iframeCode(code, x))}">Copy iframe code for D2L</button>
-<button class="btn sm" type="button" data-edit="${x.edit === 'policy' && !S.man.courses[code].has_policy ? 'lab-policy' : `lab-${code}-${x.edit}`}">Edit this part</button></div>
+<button class="btn sm" type="button" data-pe="1">Edit this page</button></div>
 <iframe id="pvf" title="${esc(x.t)}: what students see" src="../${esc(url)}" loading="lazy"></iframe></div>`;
 }
 
@@ -325,8 +327,9 @@ const PARTS = [['requirements', 'Requirements', 'The Requirements tab students r
 const entry = name => (S.forms?.entries || []).find(e => e.name === name);
 function editTab(code) {
   if (S.edit && S.edit.code === code) return '<div id="editor"></div>';
+  if (!S.pick.form) return pageEditor(code);
   const parts = PARTS.filter(([k]) => entry(`lab-${code}-${k}`));
-  return `<p class="lede">Pick a part to edit. Saving puts it on GitHub, and the pages in D2L and on the site update about two minutes later. Words in the target language go between *asterisks* to show in italics.</p>
+  return `<p class="row" style="margin:0 0 12px"><button class="btn" type="button" id="peBack">← Back to editing on the page</button></p><p class="lede">Every setting, including the ones not shown on a page (pictures, links, quiz settings). Pick a part to edit. Saving puts it on GitHub, and the pages in D2L and on the site update about two minutes later. Words in the target language go between *asterisks* to show in italics.</p>
 ${token ? '' : '<p class="alert"><b>Viewing only.</b> To save, connect your GitHub key once in Events › Settings, then come back.</p>'}
 <div class="grid">${parts.map(([k, l, d]) => `<div class="card"><h2 class="h3">${l}</h2><p>${d}</p><button class="btn pri" type="button" data-edit="lab-${code}-${k}">Edit ${l.toLowerCase()}</button></div>`).join('')}
 <div class="card"><h2 class="h3">Shared by every course</h2><p>The Language Lab policy (Lab 0, rubric, excused absences, accommodations), and each course's due day, type and theme.</p><div class="row"><button class="btn" type="button" data-edit="lab-policy">Edit the shared policy</button><button class="btn" type="button" data-edit="lab-courses">Edit course settings</button></div></div></div>
@@ -359,7 +362,7 @@ function renderEditor() {
   $('edUndo').onclick = () => { if (!confirm('Discard every change since you opened this part?')) return; ed.data = JSON.parse(ed.orig); ed.bad.clear(); renderEditor(); };
   $('edSave').onclick = saveEdit; changed();
 }
-const dirty = () => !!S.edit && JSON.stringify(S.edit.data) !== S.edit.orig;
+const dirty = () => (!!S.edit && JSON.stringify(S.edit.data) !== S.edit.orig) || peDirty();
 window.addEventListener('beforeunload', e => { if (dirty()) { e.preventDefault(); e.returnValue = ''; } });
 function changed() {
   if (!$('edState')) return;
@@ -489,6 +492,262 @@ async function watchBuild(sha) {
   }
 }
 
+/* ---------- Edit on the page (2026-11-21, Daniel: "like Canva … see it update live") ----------
+   The real student page, built in this browser by the same engine GitHub uses (labs/preview.py in Pyodide). Text that
+   comes from course.json or the shared policy is tagged, so it can be clicked and typed over. Boxes (a tip, a question,
+   a rule) get ↑ ↓ + ✕ on hover. Layout, colors and fixed wording stay with the page design and the theme.
+   Nothing is kept in this page: the copy being edited lives in memory until Save writes it to GitHub. */
+const PYODIDE = 'https://cdn.jsdelivr.net/pyodide/v0.29.0/full/';
+const ENGINE_FILES = ['engine/build.py', 'engine/make_site.py', 'engine/keyboard.py', 'engine/keyboard_fr.py', 'engine/fr_locale.py', 'build_labs.py', 'preview.py',
+  'registry.json', 'themes.json', 'shared/campuses.json', 'shared/lab-due-dates.json'];
+const NOMOVE = new Set(['labs', 'variants', 'overrides', 'order', 'campus_codes']);   // whole labs and section types: forms only
+const ITEM = { tips: 'Tip', questions: 'Question', question_groups: 'Question group', parts: 'Part', items: 'Item', video_rules: 'Rule', checklist: 'Checklist item',
+  rules: 'Rule', steps: 'Step', words: 'Word', lab_vocab: 'Word group', photo_links: 'Link', help: 'Help item', allowed: 'Item', not_allowed: 'Item' };
+let PY = null, PYE = null;
+async function getText(path) {
+  for (const u of [`https://raw.githubusercontent.com/${OWNER}/${REPO}/${S.head || BRANCH}/${path}`, '../' + path]) {
+    try { const r = await fetch(u, { cache: 'no-store' }); if (r.ok) return await r.text(); } catch (e) {}
+  }
+  return null;
+}
+/* the builder runs in a worker: the page stays responsive, and Pyodide's names can't clash with this page's */
+const WORKER = `importScripts('${PYODIDE}pyodide.js'); let py, pv;
+const put = files => { for (const [p, t] of files) { py.FS.mkdirTree(p.slice(0, p.lastIndexOf('/'))); py.FS.writeFile(p, t); } };
+onmessage = async e => { const { id, op, a } = e.data; try { let r = true;
+  if (op === 'init') { py = await loadPyodide({ indexURL: '${PYODIDE}', stdout: () => {}, stderr: () => {} }); put(a); py.runPython("import sys; sys.path.insert(0, '/repo/labs'); import preview"); pv = py.pyimport('preview'); }
+  else if (op === 'write') put(a);
+  else if (op === 'render') { pv.render(a[0], a[1], a[2]); r = { paths: pv.paths(), files: pv.files() }; }
+  else if (op === 'page') r = pv.page(a[0]);
+  postMessage({ id, r }); } catch (err) { postMessage({ id, err: String(err && err.message || err) }); } };`;
+function engine(say) {
+  if (PY) return PY;
+  PY = (async () => {
+    say('Starting the page builder. The first time takes about 10 seconds…');
+    const w = new Worker(URL.createObjectURL(new Blob([WORKER], { type: 'text/javascript' }))), wait = new Map(); let n = 0;
+    w.onmessage = e => { const x = wait.get(e.data.id); wait.delete(e.data.id); e.data.err ? x[1](new Error(e.data.err)) : x[0](e.data.r); };
+    w.onerror = e => { e.preventDefault(); wait.forEach(x => x[1](new Error('The page builder couldn’t start. Check the connection and reload.'))); wait.clear(); };
+    const call = (op, a) => new Promise((ok, no) => { const id = ++n; wait.set(id, [ok, no]); w.postMessage({ id, op, a }); });
+    const texts = await Promise.all(ENGINE_FILES.map(f => getText('labs/' + f)));
+    const bad = ENGINE_FILES.find((f, i) => texts[i] == null); if (bad) throw new Error(`labs/${bad} couldn’t be read. Reload and try again.`);
+    await call('init', ENGINE_FILES.map((f, i) => ['/repo/labs/' + f, texts[i]]));
+    PYE = { call }; return PYE;
+  })().catch(e => { PY = null; throw e; });
+  return PY;
+}
+const pathGet = (o, p) => p.reduce((v, k) => v == null ? v : v[k], o);
+function pathSet(o, p, val) { const last = p[p.length - 1]; pathGet(o, p.slice(0, -1))[last] = val; }
+const peRoot = p => p[0] === 'course' ? S.pe.data.course : S.pe.data.policy;
+const peGet = p => pathGet(peRoot(p), p.slice(1));
+const peDirty = () => !!S.pe && (JSON.stringify(S.pe.data.course) !== S.pe.base.course || JSON.stringify(S.pe.data.policy) !== S.pe.base.policy);
+function peState(msg) {
+  if (!$('peState')) return;
+  const d = peDirty();
+  $('peState').textContent = msg || (d ? 'Unsaved changes. Students see them only after you save.' : 'No changes yet.') + (d && !token ? ' Connect your GitHub key in Events › Settings to save.' : '');
+  $('peSave').disabled = !d || !token || S.pe.busy; $('peUndo').disabled = !S.pe.undo.length || S.pe.busy; $('peDiscard').disabled = !d || S.pe.busy;
+}
+function peSnap() { return JSON.stringify(S.pe.data); }
+function pePush(snap) { S.pe.undo.push(snap); if (S.pe.undo.length > 100) S.pe.undo.shift(); }
+
+function pageEditor(code) {
+  const m = S.man.courses[code], vkey = S.pick.v && m.variants.some(v => v.key === S.pick.v) ? S.pick.v : m.variants[0].key;
+  const camp = S.pick.c && m.campuses.some(c => c.code === S.pick.c) ? S.pick.c : m.campuses[0].code;
+  const its = items(code, vkey, camp), cur = its.find(x => x.id === S.pick.item && x.f) || its.find(x => x.f);
+  S.pick.v = vkey; S.pick.c = camp; S.pick.item = cur?.id;
+  const v = m.variants.find(x => x.key === vkey);
+  return `<div class="savebar" role="region" aria-label="Save"><span id="peState" role="status">Loading…</span><button class="btn" type="button" id="peUndo" disabled>Undo</button><button class="btn" type="button" id="peDiscard" disabled>Discard changes</button><button class="btn pri" type="button" id="peSave" disabled>Save</button></div>
+<p id="build" class="lede" role="status"></p>
+<p class="lede">Click any text on the page and type. Press Enter or click away to see it in place. Point at a box (a tip, a question, a rule) for <b>↑ ↓</b> to move it, <b>+</b> to add one like it and <b>✕</b> to remove it. Words between *asterisks* show in italics. Text on tabs and buttons: double-click.</p>
+${token ? '' : '<p class="alert"><b>Viewing only.</b> You can try edits here; to save them, connect your GitHub key once in Events › Settings.</p>'}
+<div class="ctl"><label>Section type<select id="selV">${m.variants.map(x => `<option value="${esc(x.key)}"${x.key === vkey ? ' selected' : ''}>${esc(x.label)}</option>`).join('')}</select></label>
+<label>Campus<select id="selC">${m.campuses.map(c => `<option value="${esc(c.code)}"${c.code === camp ? ' selected' : ''}>${esc(c.name)}</option>`).join('')}</select></label>
+<button class="btn" type="button" id="peForms">All settings (forms)</button></div>
+<div class="d2l"><nav class="toc" aria-label="Pages to edit"><header>Content › LAB<small>${esc(C(code).course)} · ${esc(v.label)}</small></header><ul>`
+    + its.map(x => x.grp ? `<li class="grp" aria-hidden="true">${esc(x.grp)}</li>` : `<li><button type="button" data-item="${x.id}"${x.id === cur?.id ? ' aria-current="true"' : ''}><span class="ic" style="background:${x.color}" aria-hidden="true">${esc(x.ic)}</span><span><span class="t">${esc(x.t)}</span><span class="s">${esc(x.s)}</span></span></button></li>`).join('')
+    + `</ul></nav><div class="pv"><div class="bar"><span class="where" id="peWhere">${esc(cur?.t || '')}</span><span class="hint" id="peBusy" role="status"></span></div>
+<iframe id="pef" title="${esc(cur?.t || 'Page')}: editable preview"></iframe></div></div>`;
+}
+
+async function peMount(code) {
+  const say = t => { if ($('peState')) $('peState').textContent = t; };
+  try {
+    await engine(say);
+    if (!S.pe || S.pe.code !== code) {
+      say('Loading the current text…');
+      const read = async path => { if (token) { try { const j = await ghGet(`/contents/${path}?ref=${BRANCH}`); return { o: JSON.parse(b64dec(j.content)), sha: j.sha }; } catch (e) {} } return { o: await getJSON(path), sha: null }; };
+      const [c, p] = await Promise.all([read(`labs/courses/${code}/course.json`), read('labs/shared/policy.json')]);
+      if (!c.o || !p.o) throw new Error('The course text couldn’t be read. Reload and try again.');
+      const extra = [];
+      for (const f of ['vocab.json', 'quiz-facts.json']) { const t = await getText(`labs/courses/${code}/${f}`); if (t != null) extra.push([`/repo/labs/courses/${code}/${f}`, t]); }
+      await PYE.call('write', extra);
+      S.pe = { code, data: { course: c.o, policy: p.o }, base: { course: JSON.stringify(c.o), policy: JSON.stringify(p.o) }, undo: [], busy: false, paths: [] };
+      await peBuild();
+    }
+    await peShow(); peState();
+  } catch (e) { say(e.message || String(e)); }
+}
+/* build the whole course from the copy being edited (about a second) */
+async function peBuild() {
+  await PY; S.pe.busy = true; if ($('peBusy')) $('peBusy').textContent = 'Updating…';
+  await new Promise(r => setTimeout(r, 20));
+  try {
+    const r = await PYE.call('render', [S.pe.code, JSON.stringify(S.pe.data.course), JSON.stringify(S.pe.data.policy)]);
+    S.pe.paths = JSON.parse(r.paths); S.pe.files = JSON.parse(r.files); S.pe.error = '';
+  } catch (e) { S.pe.error = String(e.message || e).split('\n').filter(Boolean).slice(-1)[0]; }
+  S.pe.busy = false; if ($('peBusy')) $('peBusy').textContent = '';
+}
+async function peShow() {
+  const f = $('pef'), m = S.man.courses[S.pe.code]; if (!f) return;
+  const cur = items(S.pe.code, S.pick.v, S.pick.c).find(x => x.id === S.pick.item);
+  if (S.pe.error) { peState(`That change stops the page from building (${S.pe.error}). Press Undo.`); return; }
+  if (!cur || !S.pe.files.includes(cur.f)) { f.srcdoc = '<p style="font:16px Arial;padding:16px">This page isn’t built for this section type.</p>'; return; }
+  const old = f.contentDocument, y = old?.defaultView?.scrollY || 0, tab = old?.querySelector('[role=tab][aria-selected=true]')?.id;
+  const html = await PYE.call('page', [cur.f]); if (!$('pef')) return;
+  f.onload = () => { peWire(f.contentDocument); if (tab) { const t = f.contentDocument.getElementById(tab); if (t && t.getAttribute('aria-selected') !== 'true') t.click(); } f.contentWindow.scrollTo(0, y); };
+  f.srcdoc = html;
+}
+
+/* the editing layer inside the preview */
+const PE_CSS = `:root{--pe-gold:#B08D3F;--pe-blue:#1a5fb4;--pe-ink:#1F2937;--pe-paper:#FFF8DC}
+span[data-k]{cursor:text;border-radius:3px}
+span[data-k]:hover{background:rgba(176,141,63,.18);box-shadow:0 0 0 1px var(--pe-gold)}
+span[data-k]:focus-visible{outline:3px solid var(--pe-gold);outline-offset:1px}
+span[data-k].pe-on{background:var(--pe-paper);color:var(--pe-ink);box-shadow:0 0 0 2px var(--pe-gold);outline:none;white-space:pre-wrap}
+.pe-hov{outline:2px dashed var(--pe-blue)!important;outline-offset:3px}
+.pe-tb{position:absolute;z-index:2147483647;display:flex;align-items:center;gap:3px;background:var(--pe-ink);color:#fff;border-radius:8px;padding:3px 4px;font:600 13px/1 Arial,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.pe-tb span{padding:0 6px;white-space:nowrap}
+.pe-tb button{font:700 14px/1 Arial,sans-serif;min-width:30px;height:30px;border:0;border-radius:6px;background:#374151;color:#fff;cursor:pointer;padding:0 8px}
+.pe-tb button:hover{background:#4B5563}.pe-tb button:disabled{opacity:.4;cursor:default}
+.pe-tb button:focus-visible{outline:2px solid #fff;outline-offset:1px}
+.pe-tb .pe-shared{background:#8A4B08;border-radius:5px;padding:5px 7px}`;
+function peWire(doc) {
+  const st = doc.createElement('style'); st.textContent = PE_CSS; doc.head.appendChild(st);
+  const P = S.pe.paths, inter = el => el.closest('a,button,[role=tab],label,summary,select');
+  doc.querySelectorAll('span[data-k]').forEach(sp => { if (!inter(sp)) sp.tabIndex = 0; sp.title = P[sp.dataset.k]?.[0] === 'policy' ? 'Shared Lab policy: changes every course' : ''; });
+  peBoxes(doc);
+  const tb = doc.createElement('div'); tb.className = 'pe-tb'; tb.hidden = true; doc.body.appendChild(tb);
+  const etb = doc.createElement('div'); etb.className = 'pe-tb'; etb.hidden = true; doc.body.appendChild(etb);
+  let hov = null;
+  const place = (bar, el, above = true) => { const r = el.getBoundingClientRect(), w = doc.defaultView; bar.hidden = false;
+    const top = r.top + w.scrollY - (above ? bar.offsetHeight + 4 : -r.height - 4); bar.style.top = Math.max(w.scrollY + 2, top) + 'px';
+    bar.style.left = Math.max(4, Math.min(r.right + w.scrollX - bar.offsetWidth, doc.documentElement.clientWidth - bar.offsetWidth - 4)) + 'px'; };
+  function showBox(el) {
+    if (hov === el) return; if (hov) hov.classList.remove('pe-hov'); hov = el; if (!el) { tb.hidden = true; return; }
+    el.classList.add('pe-hov');
+    const key = JSON.parse(el.dataset.pebox), arr = peGet(key.slice(0, -1)), i = key[key.length - 1], name = ITEM[key[key.length - 2]] || 'Item';
+    tb.innerHTML = `<span>${esc(name)} ${i + 1} of ${arr.length}</span><button type="button" data-a="up" aria-label="Move ${esc(name.toLowerCase())} up"${i ? '' : ' disabled'}>↑</button><button type="button" data-a="down" aria-label="Move ${esc(name.toLowerCase())} down"${i < arr.length - 1 ? '' : ' disabled'}>↓</button><button type="button" data-a="add" aria-label="Add a ${esc(name.toLowerCase())} after this one">+</button><button type="button" data-a="del" aria-label="Remove this ${esc(name.toLowerCase())}">✕</button>`;
+    tb.querySelectorAll('button').forEach(b => b.onclick = e => { e.preventDefault(); e.stopPropagation(); peBoxOp(key, b.dataset.a); });
+    place(tb, el);
+  }
+  doc.addEventListener('mouseover', e => { if (tb.contains(e.target) || etb.contains(e.target)) return; showBox(e.target.closest?.('[data-pebox]') || null); });
+  doc.addEventListener('focusin', e => { if (tb.contains(e.target)) return; const b = e.target.closest?.('[data-pebox]'); if (b) showBox(b); });
+  doc.addEventListener('click', e => {
+    if (tb.contains(e.target) || etb.contains(e.target)) return;
+    const a = e.target.closest('a[href]'); const sp = e.target.closest('span[data-k]');
+    if (sp && sp.isContentEditable) return;
+    if (sp && !inter(sp)) { e.preventDefault(); peEdit(sp, e, etb, place); return; }
+    if (a && !a.getAttribute('href').startsWith('#')) { e.preventDefault(); toast('Links are off while you edit. Use Open (new tab) in the D2L section to try them.'); return; }
+    if (!sp && !inter(e.target) && e.target.textContent.trim() && !e.target.querySelector('span[data-k]')) peNote();
+  }, true);
+  doc.addEventListener('dblclick', e => { const sp = e.target.closest('span[data-k]'); if (sp && inter(sp) && !sp.isContentEditable) { e.preventDefault(); peEdit(sp, e, etb, place); } }, true);
+  doc.addEventListener('keydown', e => {
+    const sp = e.target.closest?.('span[data-k]');
+    if (sp && !sp.isContentEditable && (e.key === 'Enter' || e.key === 'F2')) { e.preventDefault(); peEdit(sp, null, etb, place); return; }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !e.target.isContentEditable) { e.preventDefault(); peUndo(); }
+  });
+}
+let peNoteT = 0;
+function peNote() { if (Date.now() - peNoteT < 4000) return; peNoteT = Date.now(); toast('That text is part of the page design (or the due day and time, set by the faculty), so it can’t be typed over. Highlighted text can.', 5000); }
+
+/* a box is the smallest part of the page that holds one list item (a tip, a question…) and nothing else */
+function peBoxes(doc) {
+  const P = S.pe.paths, spans = [...doc.querySelectorAll('span[data-k]')], body = doc.body;
+  const keyOf = sp => P[sp.dataset.k] || [];
+  const under = (p, pre) => pre.every((k, i) => p[i] === k);
+  const own = (el, pre) => [...el.querySelectorAll('span[data-k]')].every(s => under(keyOf(s), pre)) && (() => { const c = el.cloneNode(true); c.querySelectorAll('span[data-k]').forEach(s => s.remove()); return c.textContent.replace(/\s+/g, '').length <= 3; })();
+  for (const sp of spans) {
+    const p = keyOf(sp);
+    for (let d = p.length - 1; d >= 2; d--) {
+      if (typeof p[d] !== 'number' || NOMOVE.has(p[d - 1]) || typeof p[d - 1] !== 'string') continue;
+      const pre = p.slice(0, d + 1); let el = sp;
+      while (el.parentElement && el.parentElement !== body && !/^(MAIN|SECTION|BODY|TABLE|TBODY|UL|OL)$/.test(el.parentElement.tagName) && own(el.parentElement, pre)) el = el.parentElement;
+      const prev = el.dataset.pebox ? JSON.parse(el.dataset.pebox) : null;
+      if (!prev || prev.length < pre.length) el.dataset.pebox = JSON.stringify(pre);
+      break;   // the innermost list item only
+    }
+  }
+}
+function peBoxOp(key, a) {
+  if (S.pe.busy) return;
+  const arr = peGet(key.slice(0, -1)), i = key[key.length - 1], snap = peSnap();
+  if (a === 'del' && arr.length === 1) return toast('It’s the only one left, so change its text instead (or remove it in All settings).', 5000);
+  if (a === 'up' && i > 0) [arr[i - 1], arr[i]] = [arr[i], arr[i - 1]];
+  else if (a === 'down' && i < arr.length - 1) [arr[i + 1], arr[i]] = [arr[i], arr[i + 1]];
+  else if (a === 'add') arr.splice(i + 1, 0, JSON.parse(JSON.stringify(arr[i])));
+  else if (a === 'del') arr.splice(i, 1);
+  else return;
+  pePush(snap); peRefresh(a === 'add' ? 'Added a copy below. Click its text to change it.' : a === 'del' ? 'Removed. Undo brings it back.' : '');
+}
+async function peRefresh(msg) { peState(); await peBuild(); await peShow(); peState(); if (msg) toast(msg); }
+function peUndo() { if (!S.pe?.undo.length || S.pe.busy) return; S.pe.data = JSON.parse(S.pe.undo.pop()); peRefresh('Undone.'); }
+
+/* typing over one piece of text */
+function peEdit(sp, ev, etb, place) {
+  const doc = sp.ownerDocument, k = sp.dataset.k, path = S.pe.paths[k], start = peGet(path), snap = peSnap(), shown = sp.innerHTML;
+  if (typeof start !== 'string' || S.pe.busy) return;
+  const raw = sp.textContent !== start; if (raw) sp.textContent = start;
+  sp.contentEditable = 'plaintext-only'; if (sp.contentEditable !== 'plaintext-only') sp.contentEditable = 'true';
+  sp.classList.add('pe-on'); sp.focus();
+  const sel = doc.getSelection(), r = doc.createRange();
+  const at = ev && !raw && (doc.caretRangeFromPoint ? doc.caretRangeFromPoint(ev.clientX, ev.clientY) : null);
+  if (at && sp.contains(at.startContainer)) { sel.removeAllRanges(); sel.addRange(at); } else { r.selectNodeContents(sp); r.collapse(false); sel.removeAllRanges(); sel.addRange(r); }
+  const shared = path[0] === 'policy', over = path[1] === 'variants' ? (S.pe.data.course.variants[path[2]]?.label || 'this section type') : '';
+  etb.innerHTML = `${shared ? '<span class="pe-shared">Shared Lab policy: every course changes</span>' : over ? `<span class="pe-shared">Only in ${esc(over)}</span>` : ''}<button type="button" data-a="i" title="Italics for target-language words (Ctrl+I)">*I*</button><button type="button" data-a="ok">Done</button>`;
+  etb.querySelectorAll('button').forEach(b => { b.onmousedown = e => e.preventDefault(); b.onclick = e => { e.preventDefault(); e.stopPropagation(); b.dataset.a === 'i' ? italic() : finish(true); }; });
+  place(etb, sp);
+  const same = [...doc.querySelectorAll(`span[data-k="${k}"]`)].filter(x => x !== sp);
+  const onInput = () => { const v = sp.textContent; pathSet(peRoot(path), path.slice(1), v); same.forEach(x => x.textContent = v); peState(); };
+  function italic() { const s = doc.getSelection(); if (!s.rangeCount || !sp.contains(s.anchorNode)) return; const t = s.toString(); doc.execCommand('insertText', false, `*${t || 'palabra'}*`); onInput(); }
+  let done = false;
+  async function finish(keep) {
+    if (done) return; done = true;
+    sp.removeEventListener('input', onInput); sp.removeEventListener('keydown', onKey); sp.removeEventListener('blur', onBlur);
+    sp.contentEditable = 'false'; sp.removeAttribute('contenteditable'); sp.classList.remove('pe-on'); etb.hidden = true;
+    let v = sp.textContent.replace(/\s*\n\s*/g, ' ');
+    if (keep && !v.trim()) { toast('Text can’t be empty. To take it out, point at its box and press ✕.', 5000); keep = false; }
+    if (!keep || v === start) { pathSet(peRoot(path), path.slice(1), start); if (v !== start || raw) { sp.innerHTML = shown; same.forEach(x => x.textContent = start); } if (v !== start) await peRefresh(); else peState(); return; }
+    pathSet(peRoot(path), path.slice(1), v); pePush(snap); await peRefresh(path[0] === 'policy' ? 'Changed in the shared Lab policy: every course will show it after you save.' : '');
+  }
+  const onKey = e => { if (e.key === 'Enter') { e.preventDefault(); finish(true); } else if (e.key === 'Escape') { e.preventDefault(); finish(false); } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'i') { e.preventDefault(); italic(); } };
+  const onBlur = () => setTimeout(() => { if (!done && doc.activeElement !== sp) finish(true); }, 0);
+  sp.addEventListener('input', onInput); sp.addEventListener('keydown', onKey); sp.addEventListener('blur', onBlur);
+}
+
+/* Save: each changed file in one commit; stops if someone else changed the same part since this was opened */
+async function peSave() {
+  const pe = S.pe, btn = $('peSave'); btn.disabled = true; btn.textContent = 'Saving…'; let sha = null;
+  try {
+    for (const [kind, path] of [['course', `labs/courses/${pe.code}/course.json`], ['policy', 'labs/shared/policy.json']]) {
+      if (JSON.stringify(pe.data[kind]) === pe.base[kind]) continue;
+      const cur = await ghGet(`/contents/${path}?ref=${BRANCH}`), remote = JSON.parse(b64dec(cur.content)), base = JSON.parse(pe.base[kind]), mine = pe.data[kind];
+      const keys = [...new Set(Object.keys(base).concat(Object.keys(mine)))].filter(k => JSON.stringify(base[k]) !== JSON.stringify(mine[k]));
+      if (keys.some(k => JSON.stringify(remote[k]) !== JSON.stringify(base[k]))) throw new Error('Someone else changed the same part since you opened this page. Your edits are still here: note them, press Discard changes, and make them again.');
+      keys.forEach(k => { if (k in mine) remote[k] = mine[k]; else delete remote[k]; });
+      const r = await fetch(`${API}/contents/${path}`, { method: 'PUT', headers: { Accept: 'application/vnd.github+json', Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: kind === 'policy' ? 'Shared Lab policy: edited on the page in the Lab console' : `${C(pe.code).course}: edited on the page in the Lab console`, branch: BRANCH, sha: cur.sha, content: btoa(unescape(encodeURIComponent(JSON.stringify(remote, null, 1) + '\n'))) }) });
+      if (!r.ok) { const j = await r.json().catch(() => ({})); throw new Error(r.status === 409 ? 'Someone else saved at the same moment. Try Save again.' : (j.message || r.statusText)); }
+      sha = (await r.json()).commit?.sha; pe.data[kind] = remote; pe.base[kind] = JSON.stringify(remote);
+    }
+    pe.undo = []; btn.textContent = 'Save'; peState(); toast('Saved to GitHub. The pages are rebuilding.'); watchBuild(sha);
+  } catch (err) { btn.textContent = 'Save'; peState(); toast(err.message, 9000); }
+}
+function peWireBar(code) {
+  if (!$('peSave')) return;
+  $('peSave').onclick = peSave; $('peUndo').onclick = peUndo;
+  $('peDiscard').onclick = () => { if (!confirm('Discard every change you made on this page editor?')) return; S.pe.data = { course: JSON.parse(S.pe.base.course), policy: JSON.parse(S.pe.base.policy) }; S.pe.undo = []; peRefresh('Changes discarded.'); };
+  $('peForms').onclick = () => { if (peDirty()) return toast('Save or discard the changes on the page first, so the two editors don’t overwrite each other.', 6000); S.pick.form = true; S.pe = null; show(code, false); };
+  peMount(code);
+}
+
 /* Theme: like the event Backgrounds, pick one and see it */
 function band(t, code) {
   const [subj, num] = (code ? C(code).course : 'Course 1001').split(' ');
@@ -556,11 +815,14 @@ function wire(v) {
   $('main').querySelectorAll('[data-go]').forEach(b => b.onclick = () => show(b.dataset.go));
   $('main').querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openEditor(v, b.dataset.edit));
   if (S.edit && S.edit.code === v && $('editor')) renderEditor();
+  $('main').querySelectorAll('[data-pe]').forEach(b => b.onclick = () => { S.pick.tab = 'edit'; S.pick.form = false; show(v, false); });
+  if ($('peBack')) $('peBack').onclick = () => { S.pick.form = false; show(v, false); };
+  if ($('peSave')) peWireBar(v);
   const lp = $('ldSave'); if (lp) lp.onclick = async () => { const val = $('ldPath').value.trim(); if (!/^[\w./-]+\.html$/.test(val)) return toast('Use a file path ending in .html.');
     const reg = JSON.parse(JSON.stringify(S.reg)); reg.d2l = { ...(reg.d2l || {}), loader: val };
     try { await saveFile('labs/registry.json', dump(reg), `D2L loader path: ${val}`); S.reg = reg; toast('Saved. New iframe codes use this path.'); show('d2l', false); } catch (e) { toast(e.message, 7000); } };
   const tabs = [...$('main').querySelectorAll('[role=tab]')];
-  tabs.forEach((b, i) => { b.onclick = () => { if (b.dataset.tab !== 'edit' && dirty() && !confirm('Leave without saving your changes?')) return; if (b.dataset.tab !== 'edit') S.edit = null; S.pick.tab = b.dataset.tab; show(v, false); $('tb-' + b.dataset.tab).focus(); };
+  tabs.forEach((b, i) => { b.onclick = () => { if (b.dataset.tab !== 'edit' && dirty() && !confirm('Leave without saving your changes?')) return; if (b.dataset.tab !== 'edit') { S.edit = null; S.pe = null; } S.pick.tab = b.dataset.tab; show(v, false); $('tb-' + b.dataset.tab).focus(); };
     b.onkeydown = e => { const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0; if (d) { e.preventDefault(); tabs[(i + d + tabs.length) % tabs.length].click(); } }; });
   const sv = $('selV'), sc = $('selC');
   if (sv) sv.onchange = () => { S.pick.v = sv.value; show(v, false); $('selV').focus(); };

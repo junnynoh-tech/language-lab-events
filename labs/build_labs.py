@@ -142,10 +142,12 @@ def theme_css(key, themes, warn):
     return css
 
 # ---------------- one course ----------------
-def build_course(code, R, themes, warn):
+def stage(code, R, themes, warn, course=None, policy=None):
+    """Lay out a temp folder the engine can build from. course: the course.json contents (the console's live preview
+    passes its unsaved copy; policy likewise for shared/policy.json); None reads the file. Returns (work, engine folder, env, decoded course)."""
     reg = R["courses"][code]
     src = LABS / "courses" / code
-    C = decode(load(src / "course.json"))
+    C = decode(course if course is not None else load(src / "course.json"))
     dd = load(LABS / "shared" / "lab-due-dates.json")
     # due day and time come from the registry (faculty-approved); dates from the Semester plan's export when it has them
     for v in C["variants"].values():
@@ -161,16 +163,22 @@ def build_course(code, R, themes, warn):
     C["due_day_known"] = True
     C["theme_css"] = theme_css(reg.get("theme", "ung"), themes, warn)
     work = Path(tempfile.mkdtemp(prefix=f"labs-{code}-"))
+    eng = work / "engine"; shutil.copytree(ENGINE, eng)
+    (eng / "policy.json").write_text(dump(policy if policy is not None else load(LABS / "shared" / "policy.json")), encoding="utf-8")
+    s = work / "course" / "source"; s.mkdir(parents=True)
+    (work / "dd.json").write_text(dump(dd), encoding="utf-8")
+    C["due_dates_json"] = str(work / "dd.json"); C["campuses_json"] = str((LABS / "shared" / "campuses.json").resolve())
+    (s / f"{code}-labs.json").write_text(dump(C), encoding="utf-8")
+    shutil.copy(src / "vocab.json", s / "vocab.json")
+    if (src / "quiz-facts.json").exists(): shutil.copy(src / "quiz-facts.json", s / "quizzes.json")
+    env = dict(os.environ, LABS_COURSE=str(s))
+    return work, eng, env, C
+
+def build_course(code, R, themes, warn):
+    work, eng, env, C = stage(code, R, themes, warn)
+    reg = R["courses"][code]
+    src = LABS / "courses" / code
     try:
-        eng = work / "engine"; shutil.copytree(ENGINE, eng)
-        (eng / "policy.json").write_text(dump(load(LABS / "shared" / "policy.json")), encoding="utf-8")
-        s = work / "course" / "source"; s.mkdir(parents=True)
-        (work / "dd.json").write_text(dump(dd), encoding="utf-8")
-        C["due_dates_json"] = str(work / "dd.json"); C["campuses_json"] = str((LABS / "shared" / "campuses.json").resolve())
-        (s / f"{code}-labs.json").write_text(dump(C), encoding="utf-8")
-        shutil.copy(src / "vocab.json", s / "vocab.json")
-        if (src / "quiz-facts.json").exists(): shutil.copy(src / "quiz-facts.json", s / "quizzes.json")
-        env = dict(os.environ, LABS_COURSE=str(s))
         for step in ("build.py", "make_site.py"):
             r = subprocess.run([sys.executable, step], cwd=eng, env=env, capture_output=True, text=True)
             if r.returncode: raise RuntimeError(f"{code} {step} failed:\n{r.stderr[-2000:]}")

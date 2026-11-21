@@ -26,3 +26,8 @@ jobs:
           git -c user.name="Lab instructions build" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -q -m "Build lab instructions"
           git pull -q --rebase
           git push -q
+      - name: Check the console's page editor still lines up with the engine
+        # A marked build with the markers removed must equal the normal build (labs/preview.py). A failure here leaves
+        # the student pages alone; it only means some text may not be clickable in the console until it's fixed.
+        continue-on-error: true
+        run: python labs/preview.py --test
