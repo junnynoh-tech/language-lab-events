@@ -1,0 +1,261 @@
+{
+ "compras": {
+  "blocks": [
+   {
+    "kind": "item",
+    "type": "Multi-Select",
+    "points": 5.0
+   },
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 5.0
+   },
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 5.0
+   },
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 5.0
+   },
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 5.0
+   }
+  ]
+ },
+ "rutina": {
+  "blocks": [
+   {
+    "kind": "item",
+    "type": "True/False",
+    "points": 2.0
+   },
+   {
+    "kind": "item",
+    "type": "True/False",
+    "points": 2.0
+   },
+   {
+    "kind": "item",
+    "type": "True/False",
+    "points": 2.0
+   },
+   {
+    "kind": "item",
+    "type": "True/False",
+    "points": 2.0
+   },
+   {
+    "kind": "item",
+    "type": "True/False",
+    "points": 2.0
+   },
+   {
+    "kind": "item",
+    "type": "True/False",
+    "points": 2.0
+   },
+   {
+    "kind": "item",
+    "type": "Fill in the Blanks",
+    "points": 10.0
+   },
+   {
+    "kind": "item",
+    "type": "Matching",
+    "points": 10.0
+   }
+  ]
+ },
+ "cocinar": {
+  "blocks": [
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 2.0
+   },
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 2.0
+   },
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 2.0
+   },
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 2.0
+   },
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 2.0
+   },
+   {
+    "kind": "item",
+    "type": "True/False",
+    "points": 2.0
+   },
+   {
+    "kind": "item",
+    "type": "True/False",
+    "points": 2.0
+   },
+   {
+    "kind": "item",
+    "type": "True/False",
+    "points": 2.0
+   },
+   {
+    "kind": "item",
+    "type": "True/False",
+    "points": 2.0
+   }
+  ]
+ },
+ "festivos": {
+  "blocks": [
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 1.0
+   },
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 1.0
+   },
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 1.0
+   },
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 1.0
+   },
+   {
+    "kind": "item",
+    "type": "Matching",
+    "points": 9.0
+   },
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 2.0
+   },
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 2.0
+   },
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 2.0
+   },
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 2.0
+   }
+  ]
+ },
+ "salud": {
+  "blocks": [
+   {
+    "kind": "item",
+    "type": "Matching",
+    "points": 5.0
+   },
+   {
+    "kind": "item",
+    "type": "Matching",
+    "points": 10.0
+   },
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 2.0
+   },
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 2.0
+   },
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 2.0
+   },
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 2.0
+   },
+   {
+    "kind": "item",
+    "type": "Multi-Select",
+    "points": 2.0
+   }
+  ]
+ },
+ "repaso": {
+  "blocks": [
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 2.0
+   },
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 2.0
+   },
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 2.0
+   },
+   {
+    "kind": "item",
+    "type": "Fill in the Blanks",
+    "points": 2.0
+   },
+   {
+    "kind": "item",
+    "type": "Fill in the Blanks",
+    "points": 2.0
+   },
+   {
+    "kind": "item",
+    "type": "Fill in the Blanks",
+    "points": 2.0
+   },
+   {
+    "kind": "item",
+    "type": "Fill in the Blanks",
+    "points": 2.0
+   },
+   {
+    "kind": "item",
+    "type": "Fill in the Blanks",
+    "points": 2.0
+   },
+   {
+    "kind": "item",
+    "type": "Fill in the Blanks",
+    "points": 2.0
+   }
+  ]
+ }
+}

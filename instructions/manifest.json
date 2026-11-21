@@ -1,0 +1,1015 @@
+{
+ "_about": "Written by labs/build_labs.py. The console's Student view reads it.",
+ "built": "2026-11-21T14:44:24Z",
+ "semester": "Spring 2027",
+ "courses": {
+  "span1001": {
+   "course": "SPAN 1001",
+   "variants": [
+    {
+     "key": "inperson",
+     "label": "In person",
+     "sub": "In-person sections",
+     "labs": [
+      {
+       "n": 1,
+       "id": "lab-1",
+       "title": "Mi presentación",
+       "mode": "Camera"
+      },
+      {
+       "n": 2,
+       "id": "lab-2",
+       "title": "La universidad",
+       "mode": "Camera + Screen"
+      },
+      {
+       "n": 3,
+       "id": "lab-3",
+       "title": "La familia",
+       "mode": "Camera + Screen"
+      },
+      {
+       "n": 4,
+       "id": "lab-4",
+       "title": "Los pasatiempos",
+       "mode": "Camera"
+      },
+      {
+       "n": 5,
+       "id": "lab-5",
+       "title": "Las vacaciones",
+       "mode": "Camera"
+      },
+      {
+       "n": 6,
+       "id": "lab-6",
+       "title": "El repaso",
+       "mode": "Camera"
+      }
+     ]
+    },
+    {
+     "key": "online",
+     "label": "Online",
+     "sub": "Online sections",
+     "labs": [
+      {
+       "n": 1,
+       "id": "lab-1",
+       "title": "Mi presentación",
+       "mode": "Camera"
+      },
+      {
+       "n": 2,
+       "id": "lab-2",
+       "title": "La universidad",
+       "mode": "Camera + Screen"
+      },
+      {
+       "n": 3,
+       "id": "lab-3",
+       "title": "La familia",
+       "mode": "Camera + Screen"
+      },
+      {
+       "n": 4,
+       "id": "lab-4",
+       "title": "Los pasatiempos",
+       "mode": "Camera"
+      },
+      {
+       "n": 5,
+       "id": "lab-5",
+       "title": "Las vacaciones",
+       "mode": "Camera"
+      },
+      {
+       "n": 6,
+       "id": "lab-6",
+       "title": "El repaso",
+       "mode": "Camera"
+      }
+     ]
+    }
+   ],
+   "campuses": [
+    {
+     "code": "gvl",
+     "name": "Gainesville"
+    },
+    {
+     "code": "dah",
+     "name": "Dahlonega"
+    },
+    {
+     "code": "ocn",
+     "name": "Oconee"
+    },
+    {
+     "code": "cmg",
+     "name": "Cumming"
+    }
+   ],
+   "labs": [
+    {
+     "id": "lab-1",
+     "title": "Mi presentación",
+     "mode": "Camera",
+     "ch": "Ch. 1"
+    },
+    {
+     "id": "lab-2",
+     "title": "La universidad",
+     "mode": "Camera + Screen",
+     "ch": "Ch. 1–2"
+    },
+    {
+     "id": "lab-3",
+     "title": "La familia",
+     "mode": "Camera + Screen",
+     "ch": "Ch. 1–3"
+    },
+    {
+     "id": "lab-4",
+     "title": "Los pasatiempos",
+     "mode": "Camera",
+     "ch": "Ch. 1–4"
+    },
+    {
+     "id": "lab-5",
+     "title": "Las vacaciones",
+     "mode": "Camera",
+     "ch": "Ch. 1–4"
+    },
+    {
+     "id": "lab-6",
+     "title": "El repaso",
+     "mode": "Camera",
+     "ch": "Ch. 1–5"
+    }
+   ],
+   "slug": "bongo",
+   "mini_quizzes": true,
+   "has_policy": false,
+   "files": [
+    "cmg/d2l/span1001-announcement-inperson.html",
+    "cmg/d2l/span1001-announcement-online.html",
+    "cmg/d2l/span1001-guidelines-quiz.html",
+    "cmg/d2l/span1001-lab-1-quiz.html",
+    "cmg/d2l/span1001-lab-2-quiz.html",
+    "cmg/d2l/span1001-lab-3-quiz.html",
+    "cmg/d2l/span1001-lab-4-quiz.html",
+    "cmg/d2l/span1001-lab-5-quiz.html",
+    "cmg/d2l/span1001-lab-6-quiz.html",
+    "cmg/d2l/span1001-lab-folder-inperson.html",
+    "cmg/d2l/span1001-lab-folder-online.html",
+    "cmg/d2l/span1001-spanish-keyboard.html",
+    "cmg/span1001-lab-0-bongo-inperson.html",
+    "cmg/span1001-lab-0-bongo-online.html",
+    "cmg/span1001-lab-1-bongo-inperson.html",
+    "cmg/span1001-lab-1-bongo-online.html",
+    "cmg/span1001-lab-2-bongo-inperson.html",
+    "cmg/span1001-lab-2-bongo-online.html",
+    "cmg/span1001-lab-3-bongo-inperson.html",
+    "cmg/span1001-lab-3-bongo-online.html",
+    "cmg/span1001-lab-4-bongo-inperson.html",
+    "cmg/span1001-lab-4-bongo-online.html",
+    "cmg/span1001-lab-5-bongo-inperson.html",
+    "cmg/span1001-lab-5-bongo-online.html",
+    "cmg/span1001-lab-6-bongo-inperson.html",
+    "cmg/span1001-lab-6-bongo-online.html",
+    "cmg/span1001-lab-folder-inperson.html",
+    "cmg/span1001-lab-folder-online.html",
+    "dah/d2l/span1001-announcement-inperson.html",
+    "dah/d2l/span1001-announcement-online.html",
+    "dah/d2l/span1001-guidelines-quiz.html",
+    "dah/d2l/span1001-lab-1-quiz.html",
+    "dah/d2l/span1001-lab-2-quiz.html",
+    "dah/d2l/span1001-lab-3-quiz.html",
+    "dah/d2l/span1001-lab-4-quiz.html",
+    "dah/d2l/span1001-lab-5-quiz.html",
+    "dah/d2l/span1001-lab-6-quiz.html",
+    "dah/d2l/span1001-lab-folder-inperson.html",
+    "dah/d2l/span1001-lab-folder-online.html",
+    "dah/d2l/span1001-spanish-keyboard.html",
+    "dah/span1001-lab-0-bongo-inperson.html",
+    "dah/span1001-lab-0-bongo-online.html",
+    "dah/span1001-lab-1-bongo-inperson.html",
+    "dah/span1001-lab-1-bongo-online.html",
+    "dah/span1001-lab-2-bongo-inperson.html",
+    "dah/span1001-lab-2-bongo-online.html",
+    "dah/span1001-lab-3-bongo-inperson.html",
+    "dah/span1001-lab-3-bongo-online.html",
+    "dah/span1001-lab-4-bongo-inperson.html",
+    "dah/span1001-lab-4-bongo-online.html",
+    "dah/span1001-lab-5-bongo-inperson.html",
+    "dah/span1001-lab-5-bongo-online.html",
+    "dah/span1001-lab-6-bongo-inperson.html",
+    "dah/span1001-lab-6-bongo-online.html",
+    "dah/span1001-lab-folder-inperson.html",
+    "dah/span1001-lab-folder-online.html",
+    "gvl/d2l/span1001-announcement-inperson.html",
+    "gvl/d2l/span1001-announcement-online.html",
+    "gvl/d2l/span1001-guidelines-quiz.html",
+    "gvl/d2l/span1001-lab-1-quiz.html",
+    "gvl/d2l/span1001-lab-2-quiz.html",
+    "gvl/d2l/span1001-lab-3-quiz.html",
+    "gvl/d2l/span1001-lab-4-quiz.html",
+    "gvl/d2l/span1001-lab-5-quiz.html",
+    "gvl/d2l/span1001-lab-6-quiz.html",
+    "gvl/d2l/span1001-lab-folder-inperson.html",
+    "gvl/d2l/span1001-lab-folder-online.html",
+    "gvl/d2l/span1001-spanish-keyboard.html",
+    "gvl/span1001-lab-0-bongo-inperson.html",
+    "gvl/span1001-lab-0-bongo-online.html",
+    "gvl/span1001-lab-1-bongo-inperson.html",
+    "gvl/span1001-lab-1-bongo-online.html",
+    "gvl/span1001-lab-2-bongo-inperson.html",
+    "gvl/span1001-lab-2-bongo-online.html",
+    "gvl/span1001-lab-3-bongo-inperson.html",
+    "gvl/span1001-lab-3-bongo-online.html",
+    "gvl/span1001-lab-4-bongo-inperson.html",
+    "gvl/span1001-lab-4-bongo-online.html",
+    "gvl/span1001-lab-5-bongo-inperson.html",
+    "gvl/span1001-lab-5-bongo-online.html",
+    "gvl/span1001-lab-6-bongo-inperson.html",
+    "gvl/span1001-lab-6-bongo-online.html",
+    "gvl/span1001-lab-folder-inperson.html",
+    "gvl/span1001-lab-folder-online.html",
+    "index.html",
+    "ocn/d2l/span1001-announcement-inperson.html",
+    "ocn/d2l/span1001-announcement-online.html",
+    "ocn/d2l/span1001-guidelines-quiz.html",
+    "ocn/d2l/span1001-lab-1-quiz.html",
+    "ocn/d2l/span1001-lab-2-quiz.html",
+    "ocn/d2l/span1001-lab-3-quiz.html",
+    "ocn/d2l/span1001-lab-4-quiz.html",
+    "ocn/d2l/span1001-lab-5-quiz.html",
+    "ocn/d2l/span1001-lab-6-quiz.html",
+    "ocn/d2l/span1001-lab-folder-inperson.html",
+    "ocn/d2l/span1001-lab-folder-online.html",
+    "ocn/d2l/span1001-spanish-keyboard.html",
+    "ocn/span1001-lab-0-bongo-inperson.html",
+    "ocn/span1001-lab-0-bongo-online.html",
+    "ocn/span1001-lab-1-bongo-inperson.html",
+    "ocn/span1001-lab-1-bongo-online.html",
+    "ocn/span1001-lab-2-bongo-inperson.html",
+    "ocn/span1001-lab-2-bongo-online.html",
+    "ocn/span1001-lab-3-bongo-inperson.html",
+    "ocn/span1001-lab-3-bongo-online.html",
+    "ocn/span1001-lab-4-bongo-inperson.html",
+    "ocn/span1001-lab-4-bongo-online.html",
+    "ocn/span1001-lab-5-bongo-inperson.html",
+    "ocn/span1001-lab-5-bongo-online.html",
+    "ocn/span1001-lab-6-bongo-inperson.html",
+    "ocn/span1001-lab-6-bongo-online.html",
+    "ocn/span1001-lab-folder-inperson.html",
+    "ocn/span1001-lab-folder-online.html"
+   ]
+  },
+  "span1002": {
+   "course": "SPAN 1002",
+   "variants": [
+    {
+     "key": "inperson",
+     "label": "In person",
+     "sub": "In-person sections",
+     "labs": [
+      {
+       "n": 1,
+       "id": "compras",
+       "title": "De compras",
+       "mode": "Camera"
+      },
+      {
+       "n": 2,
+       "id": "rutina",
+       "title": "Rutina para una vida sana",
+       "mode": "Camera + Screen"
+      },
+      {
+       "n": 3,
+       "id": "cocinar",
+       "title": "A cocinar",
+       "mode": "Upload"
+      },
+      {
+       "n": 4,
+       "id": "festivos",
+       "title": "Días festivos",
+       "mode": "Camera"
+      },
+      {
+       "n": 5,
+       "id": "salud",
+       "title": "La salud física y mental",
+       "mode": "Camera"
+      },
+      {
+       "n": 6,
+       "id": "repaso",
+       "title": "El repaso",
+       "mode": "Camera + Screen"
+      }
+     ]
+    },
+    {
+     "key": "stone",
+     "label": "Stone",
+     "sub": "Stone sections",
+     "labs": [
+      {
+       "n": 1,
+       "id": "rutina",
+       "title": "Rutina para una vida sana",
+       "mode": "Camera + Screen"
+      },
+      {
+       "n": 2,
+       "id": "repaso",
+       "title": "La niñez",
+       "mode": "Camera + Screen"
+      },
+      {
+       "n": 3,
+       "id": "festivos",
+       "title": "Días festivos",
+       "mode": "Camera"
+      },
+      {
+       "n": 4,
+       "id": "cocinar",
+       "title": "A cocinar",
+       "mode": "Upload"
+      },
+      {
+       "n": 5,
+       "id": "salud",
+       "title": "La salud física y mental",
+       "mode": "Camera"
+      },
+      {
+       "n": 6,
+       "id": "compras",
+       "title": "De compras",
+       "mode": "Camera"
+      }
+     ]
+    },
+    {
+     "key": "online",
+     "label": "Online",
+     "sub": "Online sections",
+     "labs": [
+      {
+       "n": 1,
+       "id": "compras",
+       "title": "De compras",
+       "mode": "Camera"
+      },
+      {
+       "n": 2,
+       "id": "rutina",
+       "title": "Rutina para una vida sana",
+       "mode": "Camera + Screen"
+      },
+      {
+       "n": 3,
+       "id": "cocinar",
+       "title": "A cocinar",
+       "mode": "Upload"
+      },
+      {
+       "n": 4,
+       "id": "festivos",
+       "title": "Días festivos",
+       "mode": "Camera"
+      },
+      {
+       "n": 5,
+       "id": "salud",
+       "title": "La salud física y mental",
+       "mode": "Camera"
+      },
+      {
+       "n": 6,
+       "id": "repaso",
+       "title": "El repaso",
+       "mode": "Camera + Screen"
+      }
+     ]
+    },
+    {
+     "key": "summer",
+     "label": "Summer",
+     "sub": "Summer sections",
+     "labs": [
+      {
+       "n": 1,
+       "id": "compras",
+       "title": "De compras",
+       "mode": "Camera"
+      },
+      {
+       "n": 2,
+       "id": "rutina",
+       "title": "Rutina para una vida sana",
+       "mode": "Camera + Screen"
+      },
+      {
+       "n": 3,
+       "id": "cocinar",
+       "title": "A cocinar",
+       "mode": "Upload"
+      },
+      {
+       "n": 4,
+       "id": "salud",
+       "title": "La salud física y mental",
+       "mode": "Camera"
+      }
+     ]
+    }
+   ],
+   "campuses": [
+    {
+     "code": "gvl",
+     "name": "Gainesville"
+    },
+    {
+     "code": "dah",
+     "name": "Dahlonega"
+    },
+    {
+     "code": "ocn",
+     "name": "Oconee"
+    },
+    {
+     "code": "cmg",
+     "name": "Cumming"
+    }
+   ],
+   "labs": [
+    {
+     "id": "compras",
+     "title": "De compras",
+     "mode": "Camera",
+     "ch": "Ch. 6"
+    },
+    {
+     "id": "rutina",
+     "title": "Rutina para una vida sana",
+     "mode": "Camera + Screen",
+     "ch": "Ch. 7"
+    },
+    {
+     "id": "cocinar",
+     "title": "A cocinar",
+     "mode": "Upload",
+     "ch": "Ch. 8"
+    },
+    {
+     "id": "festivos",
+     "title": "Días festivos",
+     "mode": "Camera",
+     "ch": "Ch. 9"
+    },
+    {
+     "id": "salud",
+     "title": "La salud física y mental",
+     "mode": "Camera",
+     "ch": "Ch. 10"
+    },
+    {
+     "id": "repaso",
+     "title": "El repaso",
+     "mode": "Camera + Screen",
+     "ch": "Ch. 6–10"
+    }
+   ],
+   "slug": "bongo",
+   "mini_quizzes": true,
+   "has_policy": false,
+   "files": [
+    "cmg/d2l/span1002-announcement-inperson.html",
+    "cmg/d2l/span1002-announcement-online.html",
+    "cmg/d2l/span1002-announcement-stone.html",
+    "cmg/d2l/span1002-announcement-summer.html",
+    "cmg/d2l/span1002-guidelines-quiz.html",
+    "cmg/d2l/span1002-lab-1-quiz-stone.html",
+    "cmg/d2l/span1002-lab-1-quiz-summer.html",
+    "cmg/d2l/span1002-lab-1-quiz.html",
+    "cmg/d2l/span1002-lab-2-quiz-stone.html",
+    "cmg/d2l/span1002-lab-2-quiz-summer.html",
+    "cmg/d2l/span1002-lab-2-quiz.html",
+    "cmg/d2l/span1002-lab-3-quiz-stone.html",
+    "cmg/d2l/span1002-lab-3-quiz-summer.html",
+    "cmg/d2l/span1002-lab-3-quiz.html",
+    "cmg/d2l/span1002-lab-4-quiz-stone.html",
+    "cmg/d2l/span1002-lab-4-quiz-summer.html",
+    "cmg/d2l/span1002-lab-4-quiz.html",
+    "cmg/d2l/span1002-lab-5-quiz-stone.html",
+    "cmg/d2l/span1002-lab-5-quiz.html",
+    "cmg/d2l/span1002-lab-6-quiz-stone.html",
+    "cmg/d2l/span1002-lab-6-quiz.html",
+    "cmg/d2l/span1002-lab-folder-inperson.html",
+    "cmg/d2l/span1002-lab-folder-online.html",
+    "cmg/d2l/span1002-lab-folder-stone.html",
+    "cmg/d2l/span1002-lab-folder-summer.html",
+    "cmg/d2l/span1002-spanish-keyboard.html",
+    "cmg/span1002-lab-0-bongo-inperson.html",
+    "cmg/span1002-lab-0-bongo-online.html",
+    "cmg/span1002-lab-0-bongo-stone.html",
+    "cmg/span1002-lab-0-bongo-summer.html",
+    "cmg/span1002-lab-1-bongo-inperson.html",
+    "cmg/span1002-lab-1-bongo-online.html",
+    "cmg/span1002-lab-1-bongo-stone.html",
+    "cmg/span1002-lab-1-bongo-summer.html",
+    "cmg/span1002-lab-2-bongo-inperson.html",
+    "cmg/span1002-lab-2-bongo-online.html",
+    "cmg/span1002-lab-2-bongo-stone.html",
+    "cmg/span1002-lab-2-bongo-summer.html",
+    "cmg/span1002-lab-3-bongo-inperson.html",
+    "cmg/span1002-lab-3-bongo-online.html",
+    "cmg/span1002-lab-3-bongo-stone.html",
+    "cmg/span1002-lab-3-bongo-summer.html",
+    "cmg/span1002-lab-4-bongo-inperson.html",
+    "cmg/span1002-lab-4-bongo-online.html",
+    "cmg/span1002-lab-4-bongo-stone.html",
+    "cmg/span1002-lab-4-bongo-summer.html",
+    "cmg/span1002-lab-5-bongo-inperson.html",
+    "cmg/span1002-lab-5-bongo-online.html",
+    "cmg/span1002-lab-5-bongo-stone.html",
+    "cmg/span1002-lab-6-bongo-inperson.html",
+    "cmg/span1002-lab-6-bongo-online.html",
+    "cmg/span1002-lab-6-bongo-stone.html",
+    "cmg/span1002-lab-folder-inperson.html",
+    "cmg/span1002-lab-folder-online.html",
+    "cmg/span1002-lab-folder-stone.html",
+    "cmg/span1002-lab-folder-summer.html",
+    "dah/d2l/span1002-announcement-inperson.html",
+    "dah/d2l/span1002-announcement-online.html",
+    "dah/d2l/span1002-announcement-stone.html",
+    "dah/d2l/span1002-announcement-summer.html",
+    "dah/d2l/span1002-guidelines-quiz.html",
+    "dah/d2l/span1002-lab-1-quiz-stone.html",
+    "dah/d2l/span1002-lab-1-quiz-summer.html",
+    "dah/d2l/span1002-lab-1-quiz.html",
+    "dah/d2l/span1002-lab-2-quiz-stone.html",
+    "dah/d2l/span1002-lab-2-quiz-summer.html",
+    "dah/d2l/span1002-lab-2-quiz.html",
+    "dah/d2l/span1002-lab-3-quiz-stone.html",
+    "dah/d2l/span1002-lab-3-quiz-summer.html",
+    "dah/d2l/span1002-lab-3-quiz.html",
+    "dah/d2l/span1002-lab-4-quiz-stone.html",
+    "dah/d2l/span1002-lab-4-quiz-summer.html",
+    "dah/d2l/span1002-lab-4-quiz.html",
+    "dah/d2l/span1002-lab-5-quiz-stone.html",
+    "dah/d2l/span1002-lab-5-quiz.html",
+    "dah/d2l/span1002-lab-6-quiz-stone.html",
+    "dah/d2l/span1002-lab-6-quiz.html",
+    "dah/d2l/span1002-lab-folder-inperson.html",
+    "dah/d2l/span1002-lab-folder-online.html",
+    "dah/d2l/span1002-lab-folder-stone.html",
+    "dah/d2l/span1002-lab-folder-summer.html",
+    "dah/d2l/span1002-spanish-keyboard.html",
+    "dah/span1002-lab-0-bongo-inperson.html",
+    "dah/span1002-lab-0-bongo-online.html",
+    "dah/span1002-lab-0-bongo-stone.html",
+    "dah/span1002-lab-0-bongo-summer.html",
+    "dah/span1002-lab-1-bongo-inperson.html",
+    "dah/span1002-lab-1-bongo-online.html",
+    "dah/span1002-lab-1-bongo-stone.html",
+    "dah/span1002-lab-1-bongo-summer.html",
+    "dah/span1002-lab-2-bongo-inperson.html",
+    "dah/span1002-lab-2-bongo-online.html",
+    "dah/span1002-lab-2-bongo-stone.html",
+    "dah/span1002-lab-2-bongo-summer.html",
+    "dah/span1002-lab-3-bongo-inperson.html",
+    "dah/span1002-lab-3-bongo-online.html",
+    "dah/span1002-lab-3-bongo-stone.html",
+    "dah/span1002-lab-3-bongo-summer.html",
+    "dah/span1002-lab-4-bongo-inperson.html",
+    "dah/span1002-lab-4-bongo-online.html",
+    "dah/span1002-lab-4-bongo-stone.html",
+    "dah/span1002-lab-4-bongo-summer.html",
+    "dah/span1002-lab-5-bongo-inperson.html",
+    "dah/span1002-lab-5-bongo-online.html",
+    "dah/span1002-lab-5-bongo-stone.html",
+    "dah/span1002-lab-6-bongo-inperson.html",
+    "dah/span1002-lab-6-bongo-online.html",
+    "dah/span1002-lab-6-bongo-stone.html",
+    "dah/span1002-lab-folder-inperson.html",
+    "dah/span1002-lab-folder-online.html",
+    "dah/span1002-lab-folder-stone.html",
+    "dah/span1002-lab-folder-summer.html",
+    "gvl/d2l/span1002-announcement-inperson.html",
+    "gvl/d2l/span1002-announcement-online.html",
+    "gvl/d2l/span1002-announcement-stone.html",
+    "gvl/d2l/span1002-announcement-summer.html",
+    "gvl/d2l/span1002-guidelines-quiz.html",
+    "gvl/d2l/span1002-lab-1-quiz-stone.html",
+    "gvl/d2l/span1002-lab-1-quiz-summer.html",
+    "gvl/d2l/span1002-lab-1-quiz.html",
+    "gvl/d2l/span1002-lab-2-quiz-stone.html",
+    "gvl/d2l/span1002-lab-2-quiz-summer.html",
+    "gvl/d2l/span1002-lab-2-quiz.html",
+    "gvl/d2l/span1002-lab-3-quiz-stone.html",
+    "gvl/d2l/span1002-lab-3-quiz-summer.html",
+    "gvl/d2l/span1002-lab-3-quiz.html",
+    "gvl/d2l/span1002-lab-4-quiz-stone.html",
+    "gvl/d2l/span1002-lab-4-quiz-summer.html",
+    "gvl/d2l/span1002-lab-4-quiz.html",
+    "gvl/d2l/span1002-lab-5-quiz-stone.html",
+    "gvl/d2l/span1002-lab-5-quiz.html",
+    "gvl/d2l/span1002-lab-6-quiz-stone.html",
+    "gvl/d2l/span1002-lab-6-quiz.html",
+    "gvl/d2l/span1002-lab-folder-inperson.html",
+    "gvl/d2l/span1002-lab-folder-online.html",
+    "gvl/d2l/span1002-lab-folder-stone.html",
+    "gvl/d2l/span1002-lab-folder-summer.html",
+    "gvl/d2l/span1002-spanish-keyboard.html",
+    "gvl/span1002-lab-0-bongo-inperson.html",
+    "gvl/span1002-lab-0-bongo-online.html",
+    "gvl/span1002-lab-0-bongo-stone.html",
+    "gvl/span1002-lab-0-bongo-summer.html",
+    "gvl/span1002-lab-1-bongo-inperson.html",
+    "gvl/span1002-lab-1-bongo-online.html",
+    "gvl/span1002-lab-1-bongo-stone.html",
+    "gvl/span1002-lab-1-bongo-summer.html",
+    "gvl/span1002-lab-2-bongo-inperson.html",
+    "gvl/span1002-lab-2-bongo-online.html",
+    "gvl/span1002-lab-2-bongo-stone.html",
+    "gvl/span1002-lab-2-bongo-summer.html",
+    "gvl/span1002-lab-3-bongo-inperson.html",
+    "gvl/span1002-lab-3-bongo-online.html",
+    "gvl/span1002-lab-3-bongo-stone.html",
+    "gvl/span1002-lab-3-bongo-summer.html",
+    "gvl/span1002-lab-4-bongo-inperson.html",
+    "gvl/span1002-lab-4-bongo-online.html",
+    "gvl/span1002-lab-4-bongo-stone.html",
+    "gvl/span1002-lab-4-bongo-summer.html",
+    "gvl/span1002-lab-5-bongo-inperson.html",
+    "gvl/span1002-lab-5-bongo-online.html",
+    "gvl/span1002-lab-5-bongo-stone.html",
+    "gvl/span1002-lab-6-bongo-inperson.html",
+    "gvl/span1002-lab-6-bongo-online.html",
+    "gvl/span1002-lab-6-bongo-stone.html",
+    "gvl/span1002-lab-folder-inperson.html",
+    "gvl/span1002-lab-folder-online.html",
+    "gvl/span1002-lab-folder-stone.html",
+    "gvl/span1002-lab-folder-summer.html",
+    "index.html",
+    "ocn/d2l/span1002-announcement-inperson.html",
+    "ocn/d2l/span1002-announcement-online.html",
+    "ocn/d2l/span1002-announcement-stone.html",
+    "ocn/d2l/span1002-announcement-summer.html",
+    "ocn/d2l/span1002-guidelines-quiz.html",
+    "ocn/d2l/span1002-lab-1-quiz-stone.html",
+    "ocn/d2l/span1002-lab-1-quiz-summer.html",
+    "ocn/d2l/span1002-lab-1-quiz.html",
+    "ocn/d2l/span1002-lab-2-quiz-stone.html",
+    "ocn/d2l/span1002-lab-2-quiz-summer.html",
+    "ocn/d2l/span1002-lab-2-quiz.html",
+    "ocn/d2l/span1002-lab-3-quiz-stone.html",
+    "ocn/d2l/span1002-lab-3-quiz-summer.html",
+    "ocn/d2l/span1002-lab-3-quiz.html",
+    "ocn/d2l/span1002-lab-4-quiz-stone.html",
+    "ocn/d2l/span1002-lab-4-quiz-summer.html",
+    "ocn/d2l/span1002-lab-4-quiz.html",
+    "ocn/d2l/span1002-lab-5-quiz-stone.html",
+    "ocn/d2l/span1002-lab-5-quiz.html",
+    "ocn/d2l/span1002-lab-6-quiz-stone.html",
+    "ocn/d2l/span1002-lab-6-quiz.html",
+    "ocn/d2l/span1002-lab-folder-inperson.html",
+    "ocn/d2l/span1002-lab-folder-online.html",
+    "ocn/d2l/span1002-lab-folder-stone.html",
+    "ocn/d2l/span1002-lab-folder-summer.html",
+    "ocn/d2l/span1002-spanish-keyboard.html",
+    "ocn/span1002-lab-0-bongo-inperson.html",
+    "ocn/span1002-lab-0-bongo-online.html",
+    "ocn/span1002-lab-0-bongo-stone.html",
+    "ocn/span1002-lab-0-bongo-summer.html",
+    "ocn/span1002-lab-1-bongo-inperson.html",
+    "ocn/span1002-lab-1-bongo-online.html",
+    "ocn/span1002-lab-1-bongo-stone.html",
+    "ocn/span1002-lab-1-bongo-summer.html",
+    "ocn/span1002-lab-2-bongo-inperson.html",
+    "ocn/span1002-lab-2-bongo-online.html",
+    "ocn/span1002-lab-2-bongo-stone.html",
+    "ocn/span1002-lab-2-bongo-summer.html",
+    "ocn/span1002-lab-3-bongo-inperson.html",
+    "ocn/span1002-lab-3-bongo-online.html",
+    "ocn/span1002-lab-3-bongo-stone.html",
+    "ocn/span1002-lab-3-bongo-summer.html",
+    "ocn/span1002-lab-4-bongo-inperson.html",
+    "ocn/span1002-lab-4-bongo-online.html",
+    "ocn/span1002-lab-4-bongo-stone.html",
+    "ocn/span1002-lab-4-bongo-summer.html",
+    "ocn/span1002-lab-5-bongo-inperson.html",
+    "ocn/span1002-lab-5-bongo-online.html",
+    "ocn/span1002-lab-5-bongo-stone.html",
+    "ocn/span1002-lab-6-bongo-inperson.html",
+    "ocn/span1002-lab-6-bongo-online.html",
+    "ocn/span1002-lab-6-bongo-stone.html",
+    "ocn/span1002-lab-folder-inperson.html",
+    "ocn/span1002-lab-folder-online.html",
+    "ocn/span1002-lab-folder-stone.html",
+    "ocn/span1002-lab-folder-summer.html"
+   ]
+  },
+  "fren1001": {
+   "course": "FREN 1001",
+   "variants": [
+    {
+     "key": "inperson",
+     "label": "In person",
+     "sub": "In-person sections",
+     "labs": [
+      {
+       "n": 1,
+       "id": "lab-1",
+       "title": "Tout sur moi",
+       "mode": "Camera"
+      },
+      {
+       "n": 2,
+       "id": "lab-2",
+       "title": "Ma Famille",
+       "mode": "Camera"
+      },
+      {
+       "n": 3,
+       "id": "lab-3",
+       "title": "La Maison",
+       "mode": "Camera"
+      },
+      {
+       "n": 4,
+       "id": "lab-4",
+       "title": "La Vie à l'Université",
+       "mode": "Camera + Screen"
+      },
+      {
+       "n": 5,
+       "id": "lab-5",
+       "title": "Un week-end chez moi",
+       "mode": "Camera + Screen"
+      },
+      {
+       "n": 6,
+       "id": "lab-6",
+       "title": "Révision Complète",
+       "mode": "Question & Answer"
+      }
+     ]
+    },
+    {
+     "key": "online",
+     "label": "Online",
+     "sub": "Online sections",
+     "labs": [
+      {
+       "n": 1,
+       "id": "lab-1",
+       "title": "Tout sur moi",
+       "mode": "Camera"
+      },
+      {
+       "n": 2,
+       "id": "lab-2",
+       "title": "Ma Famille",
+       "mode": "Camera"
+      },
+      {
+       "n": 3,
+       "id": "lab-3",
+       "title": "La Maison",
+       "mode": "Camera"
+      },
+      {
+       "n": 4,
+       "id": "lab-4",
+       "title": "La Vie à l'Université",
+       "mode": "Camera + Screen"
+      },
+      {
+       "n": 5,
+       "id": "lab-5",
+       "title": "Un week-end chez moi",
+       "mode": "Camera + Screen"
+      },
+      {
+       "n": 6,
+       "id": "lab-6",
+       "title": "Révision Complète",
+       "mode": "Question & Answer"
+      }
+     ]
+    },
+    {
+     "key": "summer",
+     "label": "Summer",
+     "sub": "Summer sections",
+     "labs": [
+      {
+       "n": 1,
+       "id": "lab-1",
+       "title": "Tout sur moi",
+       "mode": "Camera"
+      },
+      {
+       "n": 2,
+       "id": "lab-2",
+       "title": "Ma Famille",
+       "mode": "Camera"
+      },
+      {
+       "n": 3,
+       "id": "lab-3",
+       "title": "La Maison",
+       "mode": "Camera"
+      },
+      {
+       "n": 4,
+       "id": "lab-4",
+       "title": "La Vie à l'Université",
+       "mode": "Camera + Screen"
+      }
+     ]
+    },
+    {
+     "key": "full",
+     "label": "Summer full",
+     "sub": "Full summer session",
+     "labs": [
+      {
+       "n": 1,
+       "id": "lab-1",
+       "title": "Tout sur moi",
+       "mode": "Camera"
+      },
+      {
+       "n": 2,
+       "id": "lab-2",
+       "title": "Ma Famille",
+       "mode": "Camera"
+      },
+      {
+       "n": 3,
+       "id": "lab-3",
+       "title": "La Maison",
+       "mode": "Camera"
+      },
+      {
+       "n": 4,
+       "id": "lab-4",
+       "title": "La Vie à l'Université",
+       "mode": "Camera + Screen"
+      },
+      {
+       "n": 5,
+       "id": "lab-6",
+       "title": "Révision Complète",
+       "mode": "Question & Answer"
+      }
+     ]
+    }
+   ],
+   "campuses": [
+    {
+     "code": "gvl",
+     "name": "Gainesville"
+    },
+    {
+     "code": "dah",
+     "name": "Dahlonega"
+    }
+   ],
+   "labs": [
+    {
+     "id": "lab-1",
+     "title": "Tout sur moi",
+     "mode": "Camera",
+     "ch": "Ch. 1"
+    },
+    {
+     "id": "lab-2",
+     "title": "Ma Famille",
+     "mode": "Camera",
+     "ch": "Ch. 2"
+    },
+    {
+     "id": "lab-3",
+     "title": "La Maison",
+     "mode": "Camera",
+     "ch": "Ch. 3"
+    },
+    {
+     "id": "lab-4",
+     "title": "La Vie à l'Université",
+     "mode": "Camera + Screen",
+     "ch": "Ch. 4"
+    },
+    {
+     "id": "lab-5",
+     "title": "Un week-end chez moi",
+     "mode": "Camera + Screen",
+     "ch": "Ch. 5"
+    },
+    {
+     "id": "lab-6",
+     "title": "Révision Complète",
+     "mode": "Question & Answer",
+     "ch": "Ch. 1–6"
+    }
+   ],
+   "slug": "bongo",
+   "mini_quizzes": false,
+   "has_policy": true,
+   "files": [
+    "dah/d2l/fren1001-announcement-full.html",
+    "dah/d2l/fren1001-announcement-inperson.html",
+    "dah/d2l/fren1001-announcement-online.html",
+    "dah/d2l/fren1001-announcement-summer.html",
+    "dah/d2l/fren1001-guidelines-quiz.html",
+    "dah/d2l/fren1001-lab-folder-full.html",
+    "dah/d2l/fren1001-lab-folder-inperson.html",
+    "dah/d2l/fren1001-lab-folder-online.html",
+    "dah/d2l/fren1001-lab-folder-summer.html",
+    "dah/d2l/fren1001-spanish-keyboard.html",
+    "dah/fren1001-lab-0-bongo-full.html",
+    "dah/fren1001-lab-0-bongo-inperson.html",
+    "dah/fren1001-lab-0-bongo-online.html",
+    "dah/fren1001-lab-0-bongo-summer.html",
+    "dah/fren1001-lab-1-bongo-full.html",
+    "dah/fren1001-lab-1-bongo-inperson.html",
+    "dah/fren1001-lab-1-bongo-online.html",
+    "dah/fren1001-lab-1-bongo-summer.html",
+    "dah/fren1001-lab-2-bongo-full.html",
+    "dah/fren1001-lab-2-bongo-inperson.html",
+    "dah/fren1001-lab-2-bongo-online.html",
+    "dah/fren1001-lab-2-bongo-summer.html",
+    "dah/fren1001-lab-3-bongo-full.html",
+    "dah/fren1001-lab-3-bongo-inperson.html",
+    "dah/fren1001-lab-3-bongo-online.html",
+    "dah/fren1001-lab-3-bongo-summer.html",
+    "dah/fren1001-lab-4-bongo-full.html",
+    "dah/fren1001-lab-4-bongo-inperson.html",
+    "dah/fren1001-lab-4-bongo-online.html",
+    "dah/fren1001-lab-4-bongo-summer.html",
+    "dah/fren1001-lab-5-bongo-full.html",
+    "dah/fren1001-lab-5-bongo-inperson.html",
+    "dah/fren1001-lab-5-bongo-online.html",
+    "dah/fren1001-lab-6-bongo-inperson.html",
+    "dah/fren1001-lab-6-bongo-online.html",
+    "dah/fren1001-lab-folder-full.html",
+    "dah/fren1001-lab-folder-inperson.html",
+    "dah/fren1001-lab-folder-online.html",
+    "dah/fren1001-lab-folder-summer.html",
+    "gvl/d2l/fren1001-announcement-full.html",
+    "gvl/d2l/fren1001-announcement-inperson.html",
+    "gvl/d2l/fren1001-announcement-online.html",
+    "gvl/d2l/fren1001-announcement-summer.html",
+    "gvl/d2l/fren1001-guidelines-quiz.html",
+    "gvl/d2l/fren1001-lab-folder-full.html",
+    "gvl/d2l/fren1001-lab-folder-inperson.html",
+    "gvl/d2l/fren1001-lab-folder-online.html",
+    "gvl/d2l/fren1001-lab-folder-summer.html",
+    "gvl/d2l/fren1001-spanish-keyboard.html",
+    "gvl/fren1001-lab-0-bongo-full.html",
+    "gvl/fren1001-lab-0-bongo-inperson.html",
+    "gvl/fren1001-lab-0-bongo-online.html",
+    "gvl/fren1001-lab-0-bongo-summer.html",
+    "gvl/fren1001-lab-1-bongo-full.html",
+    "gvl/fren1001-lab-1-bongo-inperson.html",
+    "gvl/fren1001-lab-1-bongo-online.html",
+    "gvl/fren1001-lab-1-bongo-summer.html",
+    "gvl/fren1001-lab-2-bongo-full.html",
+    "gvl/fren1001-lab-2-bongo-inperson.html",
+    "gvl/fren1001-lab-2-bongo-online.html",
+    "gvl/fren1001-lab-2-bongo-summer.html",
+    "gvl/fren1001-lab-3-bongo-full.html",
+    "gvl/fren1001-lab-3-bongo-inperson.html",
+    "gvl/fren1001-lab-3-bongo-online.html",
+    "gvl/fren1001-lab-3-bongo-summer.html",
+    "gvl/fren1001-lab-4-bongo-full.html",
+    "gvl/fren1001-lab-4-bongo-inperson.html",
+    "gvl/fren1001-lab-4-bongo-online.html",
+    "gvl/fren1001-lab-4-bongo-summer.html",
+    "gvl/fren1001-lab-5-bongo-full.html",
+    "gvl/fren1001-lab-5-bongo-inperson.html",
+    "gvl/fren1001-lab-5-bongo-online.html",
+    "gvl/fren1001-lab-6-bongo-inperson.html",
+    "gvl/fren1001-lab-6-bongo-online.html",
+    "gvl/fren1001-lab-folder-full.html",
+    "gvl/fren1001-lab-folder-inperson.html",
+    "gvl/fren1001-lab-folder-online.html",
+    "gvl/fren1001-lab-folder-summer.html",
+    "index.html"
+   ]
+  }
+ },
+ "warnings": []
+}

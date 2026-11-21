@@ -1,0 +1,28 @@
+# After every save to the lab instructions (website editor or the console's Student view): rebuild the student pages
+# in instructions/ from labs/ (labs/build_labs.py, the same engine as TeachingOS). Live in about two minutes.
+# A course that fails to build keeps its old pages; the console shows the message from instructions/manifest.json.
+name: Build lab instructions
+on:
+  push:
+    branches: [main]
+    paths: ["labs/**"]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: { group: labs, cancel-in-progress: false }
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.14" }
+      - run: python labs/build_labs.py --check
+      - run: python labs/build_labs.py
+      - name: Save
+        run: |
+          git add -A instructions
+          git diff --cached --quiet && exit 0
+          git -c user.name="Lab instructions build" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -q -m "Build lab instructions"
+          git pull -q --rebase
+          git push -q

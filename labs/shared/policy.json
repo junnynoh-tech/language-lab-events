@@ -1,0 +1,117 @@
+{
+ "_about": "Language Lab policy every course shares (shown on the LAB folder description and Lab 0). A course can override any of these in its own Course settings. Edited in the website editor › Lab policy. Copied from TeachingOS lab-builder/policy.json on 2026-11-21, with the faculty-approved Excused Absence line.",
+ "due_time": "5:00 PM",
+ "incomplete_rule": "No face or no audio for most of the video: 0 points, and you can't resubmit. Watch your recording before you submit.",
+ "responsibility": "Making your lab work is your responsibility: your computer, camera, microphone and Bongo, and a video in the required format (face visible, voice clear, and slides shown in slide labs). Complete Lab 0 in the first week, start each lab early, and watch your recording before you submit. A technology problem never extends the deadline, even if you report it before the due time.",
+ "lab0": {
+  "title": "Bongo setup check",
+  "mode": "Camera + Screen",
+  "length": "about 1 min",
+  "summary": "A one-minute test recording with your camera and your PowerPoint slides. It unlocks the labs.",
+  "context": "Lab 0 checks that your computer can record your camera and your screen at the same time. That is the hardest kind of lab to record, so if Lab 0 works, every lab will. Do it in the first week, so there's time to fix a problem.",
+  "slides": [
+   "Your name",
+   "Your course and your professor's name",
+   "One thing you like (a picture is fine)"
+  ],
+  "say": "Start with *Hola, me llamo…* and your name. The rest can be in English.",
+  "checks": [
+   "Your face is visible the whole time",
+   "Your voice is clear",
+   "Your slides are readable",
+   "You shared the window with your slides, not the Bongo tab"
+  ],
+  "marking": "A Lab assistant marks it <b>Complete</b> or <b>Not yet</b> (with a comment) within one business day. Not yet? Fix the problem and submit again. Lab 0 stays open all semester, so you can test a new computer any time."
+ },
+ "rubric": {
+  "name": "Speaking rubric",
+  "total": 25,
+  "levels": [
+   "Exceeds",
+   "Meets",
+   "Approaches",
+   "Does not meet",
+   "Nothing to rate"
+  ],
+  "rows": [
+   {
+    "name": "Fluency & Discourse",
+    "points": [
+     10,
+     8,
+     6,
+     4,
+     0
+    ],
+    "d": [
+     "Connected sentences joined with linking words; talks to the camera; pauses only to think.",
+     "Mostly complete sentences with some linking words; pauses or restarts don't break the message.",
+     "A mix of sentences and fragments with long pauses, or flat, list-like delivery with eyes off the camera.",
+     "Mostly single words or fragments with long silences, or recited for most of the video.",
+     "The whole video can't be scored (see below)."
+    ]
+   },
+   {
+    "name": "Comprehensibility & Accuracy",
+    "points": [
+     5,
+     4,
+     3,
+     2,
+     0
+    ],
+    "d": [
+     "Easy to understand throughout; this lab's grammar used correctly.",
+     "Understood without effort; this lab's grammar used with a few errors.",
+     "Needs a patient listener, or this lab's grammar is missing or often wrong.",
+     "Hard to understand even after replaying.",
+     "The whole video can't be scored (see below)."
+    ]
+   },
+   {
+    "name": "Vocabulary Range",
+    "points": [
+     5,
+     4,
+     3,
+     2,
+     0
+    ],
+    "d": [
+     "Varied: chapter words plus descriptive words and different verbs; rarely repeats; no English.",
+     "Chapter vocabulary used correctly, with some variety and description.",
+     "A small set of words repeated; little description; some English.",
+     "Very few words; frequent English or invented words.",
+     "The whole video can't be scored (see below)."
+    ]
+   },
+   {
+    "name": "Task Completion",
+    "points": [
+     5,
+     4,
+     3,
+     2,
+     0
+    ],
+    "d": [
+     "Every part answered with specific details; meets the length.",
+     "Every part answered; some answers brief; meets the length.",
+     "One part missing, or under the length.",
+     "Two or more parts missing, or under half the length.",
+     "The whole video can't be scored (see below)."
+    ]
+   }
+  ],
+  "zero": "Nothing to rate (0 in every row): no face or no audio for most of the video, mostly not Spanish, a different lab's task, an edited upload, or a video sent outside Bongo. Bongo needs this column to record a 0.",
+  "notes": [
+   "<b>Notecard:</b> students hold it up to the camera for about 5 seconds at the start. Sentences on the card or the slides: Fluency &amp; Discourse is scored no higher than Does not meet. Rehearsed speech is fine; reading is scored as delivery, not as a separate penalty.",
+   "<b>Slides not visible</b> in a slide lab for most of the video (Bongo tab or wrong window shared): Task Completion is scored no higher than Does not meet (2). The speaking rows are scored as usual.",
+   "<b>Labs with a video comment:</b> a missing comment counts as one missing part in Task Completion.",
+   "<b>Lab 0's Bongo setup check</b> has no rubric: Complete or Not yet, worth 0% of the grade."
+  ]
+ },
+ "system_wide": "If the Language Lab or UNG confirms that Bongo or D2L is down for everyone, or a campus closes, the Lab extends the lab for all sections and posts an announcement.",
+ "accommodations": "Approved accommodations through Student Accessibility Services (SAS)? Contact your professor and your campus Language Lab coordinator at the start of the semester. The coordinator works with SAS directly.",
+ "excused": "Missed a lab because of an Excused Absence? Contact your professor."
+}

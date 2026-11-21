@@ -1,0 +1,1770 @@
+{
+ "_source": "labs/feedback generator/chapter6-10-study-guide.md (Vistas Lecciones 6-10), vocabulary sections",
+ "titles": {
+  "6": "¡De compras!",
+  "7": "La rutina diaria",
+  "8": "La comida",
+  "9": "Las fiestas",
+  "10": "En el consultorio / La salud"
+ },
+ "chapters": {
+  "6": {
+   "Clothing": [
+    [
+     "el abrigo",
+     "coat"
+    ],
+    [
+     "los (blue)jeans",
+     "jeans / blue jeans"
+    ],
+    [
+     "la blusa",
+     "blouse"
+    ],
+    [
+     "la bolsa / la cartera",
+     "bag / purse"
+    ],
+    [
+     "la bota",
+     "boot (pl. las botas)"
+    ],
+    [
+     "los calcetines (el calcetín)",
+     "socks"
+    ],
+    [
+     "la camisa",
+     "shirt"
+    ],
+    [
+     "la camiseta",
+     "t-shirt"
+    ],
+    [
+     "la chaqueta",
+     "jacket"
+    ],
+    [
+     "el cinturón",
+     "belt"
+    ],
+    [
+     "la corbata",
+     "tie"
+    ],
+    [
+     "la falda",
+     "skirt"
+    ],
+    [
+     "las gafas (de sol)",
+     "glasses (sunglasses)"
+    ],
+    [
+     "los guantes",
+     "gloves"
+    ],
+    [
+     "el impermeable",
+     "raincoat"
+    ],
+    [
+     "las medias",
+     "stockings / tights"
+    ],
+    [
+     "los pantalones",
+     "pants / trousers"
+    ],
+    [
+     "los pantalones cortos",
+     "shorts"
+    ],
+    [
+     "la ropa",
+     "clothing"
+    ],
+    [
+     "la ropa interior",
+     "underwear"
+    ],
+    [
+     "las sandalias",
+     "sandals"
+    ],
+    [
+     "el sombrero",
+     "hat"
+    ],
+    [
+     "el suéter",
+     "sweater"
+    ],
+    [
+     "el traje",
+     "suit"
+    ],
+    [
+     "el traje de baño",
+     "swimsuit"
+    ],
+    [
+     "el vestido",
+     "dress"
+    ],
+    [
+     "los zapatos (de tenis)",
+     "shoes (tennis shoes)"
+    ]
+   ],
+   "Shopping Contexts": [
+    [
+     "el almacén",
+     "department store"
+    ],
+    [
+     "la caja",
+     "cash register / checkout"
+    ],
+    [
+     "el centro comercial",
+     "shopping mall"
+    ],
+    [
+     "el/la cliente/a",
+     "client / customer"
+    ],
+    [
+     "el/la dependiente/a",
+     "salesclerk"
+    ],
+    [
+     "el dinero",
+     "money"
+    ],
+    [
+     "(en) efectivo",
+     "(in) cash"
+    ],
+    [
+     "el mercado (al aire libre)",
+     "(open-air) market"
+    ],
+    [
+     "un par (de zapatos)",
+     "a pair (of shoes)"
+    ],
+    [
+     "el precio (fijo)",
+     "(fixed) price"
+    ],
+    [
+     "la rebaja",
+     "sale / markdown"
+    ],
+    [
+     "el regalo",
+     "gift / present"
+    ],
+    [
+     "la tarjeta de crédito",
+     "credit card"
+    ],
+    [
+     "la tarjeta de débito",
+     "debit card"
+    ],
+    [
+     "la tienda",
+     "store / shop"
+    ],
+    [
+     "el/la vendedor/a",
+     "salesperson"
+    ]
+   ],
+   "Verbs": [
+    [
+     "comprar en línea",
+     "to shop online"
+    ],
+    [
+     "costar (o:ue)",
+     "to cost"
+    ],
+    [
+     "gastar",
+     "to spend (money)"
+    ],
+    [
+     "hacer juego (con)",
+     "to match / go with"
+    ],
+    [
+     "llevar",
+     "to wear / to carry"
+    ],
+    [
+     "pagar",
+     "to pay"
+    ],
+    [
+     "regatear",
+     "to bargain / haggle"
+    ],
+    [
+     "usar",
+     "to use / to wear"
+    ],
+    [
+     "vender",
+     "to sell"
+    ],
+    [
+     "conducir",
+     "to drive"
+    ],
+    [
+     "conocer",
+     "to know (be familiar with people/places)"
+    ],
+    [
+     "dar",
+     "to give"
+    ],
+    [
+     "ofrecer",
+     "to offer"
+    ],
+    [
+     "parecer",
+     "to seem"
+    ],
+    [
+     "saber",
+     "to know (facts / how to do something)"
+    ],
+    [
+     "traducir",
+     "to translate"
+    ]
+   ],
+   "Colors": [
+    [
+     "el color",
+     "color"
+    ],
+    [
+     "amarillo/a",
+     "yellow"
+    ],
+    [
+     "anaranjado/a",
+     "orange"
+    ],
+    [
+     "azul",
+     "blue"
+    ],
+    [
+     "blanco/a",
+     "white"
+    ],
+    [
+     "gris",
+     "gray"
+    ],
+    [
+     "marrón / café",
+     "brown"
+    ],
+    [
+     "morado/a",
+     "purple"
+    ],
+    [
+     "negro/a",
+     "black"
+    ],
+    [
+     "rojo/a",
+     "red"
+    ],
+    [
+     "rosado/a",
+     "pink"
+    ],
+    [
+     "verde",
+     "green"
+    ]
+   ],
+   "Descriptive Adjectives": [
+    [
+     "barato/a",
+     "cheap / inexpensive"
+    ],
+    [
+     "bueno/a",
+     "good"
+    ],
+    [
+     "cada",
+     "each"
+    ],
+    [
+     "caro/a",
+     "expensive"
+    ],
+    [
+     "corto/a (en longitud)",
+     "short (in length)"
+    ],
+    [
+     "elegante",
+     "elegant"
+    ],
+    [
+     "hermoso/a",
+     "beautiful / gorgeous"
+    ],
+    [
+     "largo/a",
+     "long"
+    ],
+    [
+     "loco/a",
+     "crazy"
+    ],
+    [
+     "nuevo/a",
+     "new"
+    ],
+    [
+     "otro/a",
+     "other / another"
+    ],
+    [
+     "pobre",
+     "poor"
+    ],
+    [
+     "rico/a",
+     "rich"
+    ]
+   ],
+   "Time Markers and Other Words": [
+    [
+     "acabar de (+ inf.)",
+     "to have just (done something)"
+    ],
+    [
+     "anoche",
+     "last night"
+    ],
+    [
+     "anteayer",
+     "the day before yesterday"
+    ],
+    [
+     "ayer",
+     "yesterday"
+    ],
+    [
+     "de repente",
+     "suddenly"
+    ],
+    [
+     "desde",
+     "from / since"
+    ],
+    [
+     "dos veces",
+     "twice / two times"
+    ],
+    [
+     "hasta",
+     "until"
+    ],
+    [
+     "pasado/a (adj.)",
+     "last / past"
+    ],
+    [
+     "el año pasado",
+     "last year"
+    ],
+    [
+     "la semana pasada",
+     "last week"
+    ],
+    [
+     "prestar",
+     "to lend / borrow"
+    ],
+    [
+     "una vez",
+     "once / one time"
+    ],
+    [
+     "ya",
+     "already"
+    ]
+   ]
+  },
+  "7": {
+   "Reflexive Verbs": [
+    [
+     "acordarse (de) (o:ue)",
+     "to remember (about)"
+    ],
+    [
+     "acostarse (o:ue)",
+     "to go to bed / lie down"
+    ],
+    [
+     "afeitarse",
+     "to shave"
+    ],
+    [
+     "bañarse",
+     "to bathe / take a bath"
+    ],
+    [
+     "cepillarse el pelo",
+     "to brush one's hair"
+    ],
+    [
+     "cepillarse los dientes",
+     "to brush one's teeth"
+    ],
+    [
+     "despertarse (e:ie)",
+     "to wake up"
+    ],
+    [
+     "dormirse (o:ue)",
+     "to fall asleep"
+    ],
+    [
+     "ducharse",
+     "to shower / take a shower"
+    ],
+    [
+     "enojarse (con)",
+     "to get angry (with)"
+    ],
+    [
+     "irse",
+     "to go away / leave"
+    ],
+    [
+     "lavarse la cara",
+     "to wash one's face"
+    ],
+    [
+     "lavarse las manos",
+     "to wash one's hands"
+    ],
+    [
+     "levantarse",
+     "to get up"
+    ],
+    [
+     "llamarse",
+     "to be named / called"
+    ],
+    [
+     "maquillarse",
+     "to put on makeup"
+    ],
+    [
+     "peinarse",
+     "to comb one's hair"
+    ],
+    [
+     "ponerse",
+     "to put on (clothing, shoes, etc.)"
+    ],
+    [
+     "ponerse (+ adj.)",
+     "to become (+ adjective; e.g., ponerse feliz = to become happy)"
+    ],
+    [
+     "preocuparse (por)",
+     "to worry (about)"
+    ],
+    [
+     "probarse (o:ue)",
+     "to try on (clothing)"
+    ],
+    [
+     "quedarse",
+     "to stay / remain"
+    ],
+    [
+     "quitarse",
+     "to take off (clothing, shoes, etc.)"
+    ],
+    [
+     "secarse",
+     "to dry oneself"
+    ],
+    [
+     "sentarse (e:ie)",
+     "to sit down"
+    ],
+    [
+     "sentirse (e:ie)",
+     "to feel (emotionally / physically)"
+    ],
+    [
+     "vestirse (e:i)",
+     "to get dressed"
+    ]
+   ],
+   "In the Bathroom": [
+    [
+     "el baño / el cuarto de baño",
+     "bathroom"
+    ],
+    [
+     "el champú",
+     "shampoo"
+    ],
+    [
+     "la crema de afeitar",
+     "shaving cream"
+    ],
+    [
+     "la ducha",
+     "shower"
+    ],
+    [
+     "el espejo",
+     "mirror"
+    ],
+    [
+     "el inodoro",
+     "toilet"
+    ],
+    [
+     "el jabón",
+     "soap"
+    ],
+    [
+     "el lavabo",
+     "sink"
+    ],
+    [
+     "el maquillaje",
+     "makeup"
+    ],
+    [
+     "la pasta de dientes",
+     "toothpaste"
+    ],
+    [
+     "la toalla",
+     "towel"
+    ]
+   ],
+   "Sequencing Words": [
+    [
+     "antes (de)",
+     "before"
+    ],
+    [
+     "después (de)",
+     "after"
+    ],
+    [
+     "durante",
+     "during"
+    ],
+    [
+     "entonces",
+     "then"
+    ],
+    [
+     "luego",
+     "then / next"
+    ],
+    [
+     "más tarde",
+     "later (on)"
+    ],
+    [
+     "por último",
+     "finally"
+    ],
+    [
+     "primero",
+     "first"
+    ]
+   ],
+   "Additional Words": [
+    [
+     "el despertador",
+     "alarm clock"
+    ],
+    [
+     "las pantuflas",
+     "slippers"
+    ],
+    [
+     "la rutina diaria",
+     "daily routine"
+    ],
+    [
+     "por la mañana",
+     "in the morning"
+    ],
+    [
+     "por la tarde",
+     "in the afternoon"
+    ],
+    [
+     "por la noche",
+     "in the evening / at night"
+    ],
+    [
+     "temprano",
+     "early"
+    ]
+   ],
+   "Indefinite and Negative Words": [
+    [
+     "algo",
+     "something"
+    ],
+    [
+     "nada",
+     "nothing"
+    ],
+    [
+     "alguien",
+     "someone / somebody"
+    ],
+    [
+     "nadie",
+     "no one / nobody"
+    ],
+    [
+     "alguno/a(s) / algún",
+     "some / any"
+    ],
+    [
+     "ninguno/a / ningún",
+     "no / none / not any"
+    ],
+    [
+     "o... o",
+     "either... or"
+    ],
+    [
+     "ni... ni",
+     "neither... nor"
+    ],
+    [
+     "siempre",
+     "always"
+    ],
+    [
+     "nunca / jamás",
+     "never"
+    ],
+    [
+     "también",
+     "also / too"
+    ],
+    [
+     "tampoco",
+     "neither / not either"
+    ]
+   ]
+  },
+  "8": {
+   "Meals and Dining Out": [
+    [
+     "el/la camarero/a",
+     "server / waiter / waitress"
+    ],
+    [
+     "la comida",
+     "food / meal"
+    ],
+    [
+     "la cuenta",
+     "check / bill"
+    ],
+    [
+     "el/la dueño/a",
+     "owner"
+    ],
+    [
+     "el menú",
+     "menu"
+    ],
+    [
+     "la propina",
+     "tip"
+    ],
+    [
+     "la sección de (no) fumar",
+     "(non-)smoking section"
+    ],
+    [
+     "el desayuno",
+     "breakfast"
+    ],
+    [
+     "el almuerzo",
+     "lunch"
+    ],
+    [
+     "la cena",
+     "dinner"
+    ],
+    [
+     "los entremeses",
+     "appetizers"
+    ],
+    [
+     "el plato (principal)",
+     "(main) dish / course"
+    ],
+    [
+     "delicioso/a",
+     "delicious"
+    ],
+    [
+     "rico/a",
+     "rich / delicious"
+    ],
+    [
+     "sabroso/a",
+     "tasty / delicious"
+    ]
+   ],
+   "Meats and Seafood": [
+    [
+     "el atún",
+     "tuna"
+    ],
+    [
+     "el bistec",
+     "steak"
+    ],
+    [
+     "los camarones",
+     "shrimp"
+    ],
+    [
+     "la carne",
+     "meat"
+    ],
+    [
+     "la carne de res",
+     "beef"
+    ],
+    [
+     "la chuleta (de cerdo)",
+     "(pork) chop"
+    ],
+    [
+     "la hamburguesa",
+     "hamburger"
+    ],
+    [
+     "el jamón",
+     "ham"
+    ],
+    [
+     "la langosta",
+     "lobster"
+    ],
+    [
+     "los mariscos",
+     "shellfish / seafood"
+    ],
+    [
+     "el pavo",
+     "turkey"
+    ],
+    [
+     "el pescado",
+     "fish (caught/prepared)"
+    ],
+    [
+     "el pollo (asado)",
+     "(roasted) chicken"
+    ],
+    [
+     "la salchicha",
+     "sausage"
+    ],
+    [
+     "el salmón",
+     "salmon"
+    ]
+   ],
+   "Fruits and Vegetables": [
+    [
+     "la banana",
+     "banana"
+    ],
+    [
+     "las frutas",
+     "fruits"
+    ],
+    [
+     "el limón",
+     "lemon"
+    ],
+    [
+     "la manzana",
+     "apple"
+    ],
+    [
+     "el melocotón",
+     "peach"
+    ],
+    [
+     "la naranja",
+     "orange"
+    ],
+    [
+     "la pera",
+     "pear"
+    ],
+    [
+     "la uva",
+     "grape"
+    ],
+    [
+     "las arvejas",
+     "peas"
+    ],
+    [
+     "la cebolla",
+     "onion"
+    ],
+    [
+     "el champiñón",
+     "mushroom"
+    ],
+    [
+     "la ensalada",
+     "salad"
+    ],
+    [
+     "los espárragos",
+     "asparagus"
+    ],
+    [
+     "los frijoles",
+     "beans"
+    ],
+    [
+     "la lechuga",
+     "lettuce"
+    ],
+    [
+     "el maíz",
+     "corn"
+    ],
+    [
+     "las papas / patatas (fritas)",
+     "potatoes (french fries)"
+    ],
+    [
+     "el tomate",
+     "tomato"
+    ],
+    [
+     "las verduras",
+     "vegetables"
+    ],
+    [
+     "la zanahoria",
+     "carrot"
+    ]
+   ],
+   "Other Foods": [
+    [
+     "el aceite",
+     "oil"
+    ],
+    [
+     "el ajo",
+     "garlic"
+    ],
+    [
+     "el arroz",
+     "rice"
+    ],
+    [
+     "el azúcar",
+     "sugar"
+    ],
+    [
+     "los cereales",
+     "cereals / grains"
+    ],
+    [
+     "el huevo",
+     "egg"
+    ],
+    [
+     "la mantequilla",
+     "butter"
+    ],
+    [
+     "la margarina",
+     "margarine"
+    ],
+    [
+     "la mayonesa",
+     "mayonnaise"
+    ],
+    [
+     "el pan (tostado)",
+     "bread (toast)"
+    ],
+    [
+     "la pimienta",
+     "black pepper"
+    ],
+    [
+     "el queso",
+     "cheese"
+    ],
+    [
+     "la sal",
+     "salt"
+    ],
+    [
+     "el sándwich",
+     "sandwich"
+    ],
+    [
+     "la sopa",
+     "soup"
+    ],
+    [
+     "el vinagre",
+     "vinegar"
+    ],
+    [
+     "el yogur",
+     "yogurt"
+    ]
+   ],
+   "Drinks": [
+    [
+     "el agua (f.) (mineral)",
+     "(mineral) water (Note: \"agua\" takes masculine \"el\" in singular but is grammatically feminine)"
+    ],
+    [
+     "la bebida",
+     "drink / beverage"
+    ],
+    [
+     "el café",
+     "coffee"
+    ],
+    [
+     "la cerveza",
+     "beer"
+    ],
+    [
+     "el jugo (de fruta)",
+     "(fruit) juice"
+    ],
+    [
+     "la leche",
+     "milk"
+    ],
+    [
+     "el refresco",
+     "soda / soft drink"
+    ],
+    [
+     "el té (helado)",
+     "(iced) tea"
+    ],
+    [
+     "el vino (blanco/tinto)",
+     "wine (white/red)"
+    ]
+   ],
+   "Verbs": [
+    [
+     "escoger",
+     "to choose / select"
+    ],
+    [
+     "merendar (e:ie)",
+     "to snack / have an afternoon snack"
+    ],
+    [
+     "morir (o:ue)",
+     "to die"
+    ],
+    [
+     "pedir (e:i)",
+     "to order (food) / to ask for"
+    ],
+    [
+     "probar (o:ue)",
+     "to taste / try / sample"
+    ],
+    [
+     "recomendar (e:ie)",
+     "to recommend"
+    ],
+    [
+     "saber (a)",
+     "to taste (like)"
+    ],
+    [
+     "servir (e:i)",
+     "to serve"
+    ]
+   ],
+   "Comparison Words": [
+    [
+     "como",
+     "like / as"
+    ],
+    [
+     "más de (+ número)",
+     "more than (+ number)"
+    ],
+    [
+     "más... que",
+     "more... than"
+    ],
+    [
+     "menos de (+ número)",
+     "less than (+ number)"
+    ],
+    [
+     "menos... que",
+     "less... than"
+    ],
+    [
+     "tan... como",
+     "as... as"
+    ],
+    [
+     "tantos/as... como",
+     "as many... as"
+    ],
+    [
+     "tanto... como",
+     "as much... as"
+    ],
+    [
+     "el/la mayor",
+     "the oldest / oldest"
+    ],
+    [
+     "el/la mejor",
+     "the best / best"
+    ],
+    [
+     "el/la menor",
+     "the youngest / youngest"
+    ],
+    [
+     "el/la peor",
+     "the worst / worst"
+    ],
+    [
+     "mejor",
+     "better"
+    ],
+    [
+     "peor",
+     "worse"
+    ]
+   ]
+  },
+  "9": {
+   "Celebrations and Holidays": [
+    [
+     "el aniversario (de bodas)",
+     "(wedding) anniversary"
+    ],
+    [
+     "la boda",
+     "wedding"
+    ],
+    [
+     "el cumpleaños",
+     "birthday"
+    ],
+    [
+     "el día de fiesta",
+     "holiday / festive day"
+    ],
+    [
+     "la fiesta",
+     "party / celebration"
+    ],
+    [
+     "el/la invitado/a",
+     "guest"
+    ],
+    [
+     "la Navidad",
+     "Christmas"
+    ],
+    [
+     "la quinceañera",
+     "quinceañera (15th birthday celebration)"
+    ],
+    [
+     "la sorpresa",
+     "surprise"
+    ],
+    [
+     "brindar",
+     "to toast / drink a toast"
+    ],
+    [
+     "celebrar",
+     "to celebrate"
+    ],
+    [
+     "divertirse (e:ie)",
+     "to have fun / enjoy oneself"
+    ],
+    [
+     "invitar",
+     "to invite"
+    ],
+    [
+     "pasarlo bien/mal",
+     "to have a good/bad time"
+    ],
+    [
+     "regalar",
+     "to give a gift"
+    ],
+    [
+     "reírse (e:i)",
+     "to laugh"
+    ],
+    [
+     "relajarse",
+     "to relax"
+    ],
+    [
+     "sonreír (e:i)",
+     "to smile"
+    ],
+    [
+     "sorprender",
+     "to surprise"
+    ]
+   ],
+   "Desserts and Sweet Drinks": [
+    [
+     "la botella (de vino)",
+     "bottle (of wine)"
+    ],
+    [
+     "el champán",
+     "champagne"
+    ],
+    [
+     "los dulces",
+     "sweets / candy"
+    ],
+    [
+     "el flan (de caramelo)",
+     "(caramel) flan / custard"
+    ],
+    [
+     "la galleta",
+     "cookie"
+    ],
+    [
+     "el helado",
+     "ice cream"
+    ],
+    [
+     "el pastel (de chocolate)",
+     "(chocolate) cake"
+    ],
+    [
+     "el postre",
+     "dessert"
+    ]
+   ],
+   "Personal Relationships": [
+    [
+     "la amistad",
+     "friendship"
+    ],
+    [
+     "el amor",
+     "love"
+    ],
+    [
+     "el divorcio",
+     "divorce"
+    ],
+    [
+     "el estado civil",
+     "marital status"
+    ],
+    [
+     "el matrimonio",
+     "marriage / matrimony"
+    ],
+    [
+     "la pareja",
+     "partner / couple"
+    ],
+    [
+     "el/la recién casado/a",
+     "newlywed"
+    ],
+    [
+     "casarse (con)",
+     "to marry / get married (to)"
+    ],
+    [
+     "comprometerse (con)",
+     "to get engaged (to)"
+    ],
+    [
+     "divorciarse (de)",
+     "to get divorced (from)"
+    ],
+    [
+     "enamorarse (de)",
+     "to fall in love (with)"
+    ],
+    [
+     "llevarse bien/mal (con)",
+     "to get along well/badly (with)"
+    ],
+    [
+     "odiar",
+     "to hate"
+    ],
+    [
+     "romper (con)",
+     "to break up (with)"
+    ],
+    [
+     "salir (con)",
+     "to go out (with) / date"
+    ],
+    [
+     "separarse (de)",
+     "to separate (from)"
+    ],
+    [
+     "tener una cita",
+     "to have a date / appointment"
+    ],
+    [
+     "casado/a",
+     "married"
+    ],
+    [
+     "divorciado/a",
+     "divorced"
+    ],
+    [
+     "juntos/as",
+     "together"
+    ],
+    [
+     "separado/a",
+     "separated"
+    ],
+    [
+     "soltero/a",
+     "single"
+    ],
+    [
+     "viudo/a",
+     "widowed"
+    ]
+   ],
+   "Stages of Life": [
+    [
+     "la adolescencia",
+     "adolescence"
+    ],
+    [
+     "la edad",
+     "age"
+    ],
+    [
+     "las etapas de la vida",
+     "stages of life"
+    ],
+    [
+     "la juventud",
+     "youth"
+    ],
+    [
+     "la madurez",
+     "maturity / adulthood"
+    ],
+    [
+     "la muerte",
+     "death"
+    ],
+    [
+     "el nacimiento",
+     "birth"
+    ],
+    [
+     "la niñez",
+     "childhood"
+    ],
+    [
+     "la vejez",
+     "old age"
+    ],
+    [
+     "cambiar (de)",
+     "to change (of/from)"
+    ],
+    [
+     "graduarse (de/en)",
+     "to graduate (from / in)"
+    ],
+    [
+     "jubilarse",
+     "to retire (from work)"
+    ],
+    [
+     "nacer",
+     "to be born"
+    ]
+   ],
+   "Useful Expressions": [
+    [
+     "la alegría",
+     "joy / happiness"
+    ],
+    [
+     "el beso",
+     "kiss"
+    ],
+    [
+     "conmigo",
+     "with me"
+    ],
+    [
+     "contigo",
+     "with you"
+    ],
+    [
+     "¡Felicidades! / ¡Felicitaciones!",
+     "Congratulations!"
+    ],
+    [
+     "¡Feliz cumpleaños!",
+     "Happy birthday!"
+    ]
+   ]
+  },
+  "10": {
+   "The Human Body": [
+    [
+     "la boca",
+     "mouth"
+    ],
+    [
+     "el brazo",
+     "arm"
+    ],
+    [
+     "la cabeza",
+     "head"
+    ],
+    [
+     "el corazón",
+     "heart"
+    ],
+    [
+     "el cuello",
+     "neck"
+    ],
+    [
+     "el cuerpo",
+     "body"
+    ],
+    [
+     "el dedo",
+     "finger"
+    ],
+    [
+     "el dedo del pie",
+     "toe"
+    ],
+    [
+     "el estómago",
+     "stomach"
+    ],
+    [
+     "la garganta",
+     "throat"
+    ],
+    [
+     "el hueso",
+     "bone"
+    ],
+    [
+     "la nariz",
+     "nose"
+    ],
+    [
+     "el oído",
+     "inner ear / hearing"
+    ],
+    [
+     "el ojo",
+     "eye"
+    ],
+    [
+     "la oreja",
+     "outer ear"
+    ],
+    [
+     "el pie",
+     "foot"
+    ],
+    [
+     "la pierna",
+     "leg"
+    ],
+    [
+     "la rodilla",
+     "knee"
+    ],
+    [
+     "el tobillo",
+     "ankle"
+    ]
+   ],
+   "Health and Medical Office": [
+    [
+     "el accidente",
+     "accident"
+    ],
+    [
+     "el antibiótico",
+     "antibiotic"
+    ],
+    [
+     "la aspirina",
+     "aspirin"
+    ],
+    [
+     "la clínica",
+     "clinic"
+    ],
+    [
+     "el consultorio",
+     "doctor's office"
+    ],
+    [
+     "el/la dentista",
+     "dentist"
+    ],
+    [
+     "el/la doctor/a / el/la médico/a",
+     "doctor / physician"
+    ],
+    [
+     "el dolor (de cabeza)",
+     "(head)ache / pain"
+    ],
+    [
+     "el/la enfermero/a",
+     "nurse"
+    ],
+    [
+     "el examen médico",
+     "physical exam / checkup"
+    ],
+    [
+     "la farmacia",
+     "pharmacy"
+    ],
+    [
+     "la gripe",
+     "flu"
+    ],
+    [
+     "el hospital",
+     "hospital"
+    ],
+    [
+     "la infección",
+     "infection"
+    ],
+    [
+     "la máscara",
+     "mask"
+    ],
+    [
+     "el medicamento / la medicina",
+     "medicine / medication"
+    ],
+    [
+     "la operación",
+     "operation"
+    ],
+    [
+     "el/la paciente",
+     "patient"
+    ],
+    [
+     "la pastilla",
+     "pill / tablet"
+    ],
+    [
+     "la radiografía",
+     "X-ray"
+    ],
+    [
+     "la receta",
+     "prescription"
+    ],
+    [
+     "el resfriado",
+     "cold"
+    ],
+    [
+     "la sala de emergencia(s)",
+     "emergency room"
+    ],
+    [
+     "la salud",
+     "health"
+    ],
+    [
+     "el síntoma",
+     "symptom"
+    ],
+    [
+     "la tos",
+     "cough"
+    ]
+   ],
+   "Verbs": [
+    [
+     "caerse",
+     "to fall (down)"
+    ],
+    [
+     "dañar",
+     "to damage / harm"
+    ],
+    [
+     "darse con",
+     "to bump into / hit"
+    ],
+    [
+     "doler (o:ue)",
+     "to hurt / ache"
+    ],
+    [
+     "enfermarse",
+     "to get sick"
+    ],
+    [
+     "estar enfermo/a",
+     "to be sick"
+    ],
+    [
+     "estornudar",
+     "to sneeze"
+    ],
+    [
+     "lastimarse (el pie)",
+     "to hurt / injure (one's foot)"
+    ],
+    [
+     "olvidar",
+     "to forget"
+    ],
+    [
+     "poner una inyección",
+     "to give an injection / shot"
+    ],
+    [
+     "prohibir",
+     "to prohibit / forbid"
+    ],
+    [
+     "recetar",
+     "to prescribe"
+    ],
+    [
+     "romper",
+     "to break"
+    ],
+    [
+     "romperser (la pierna)",
+     "to break (one's leg)"
+    ],
+    [
+     "sacar(se) un diente",
+     "to have a tooth extracted / pulled"
+    ],
+    [
+     "ser alérgico/a (a)",
+     "to be allergic (to)"
+    ],
+    [
+     "sufrir una enfermedad",
+     "to suffer from an illness"
+    ],
+    [
+     "tener dolor (m.)",
+     "to have pain / be in pain"
+    ],
+    [
+     "tener fiebre (f.)",
+     "to have a fever"
+    ],
+    [
+     "tomar la temperatura",
+     "to take someone's temperature"
+    ],
+    [
+     "torcerse (o:ue) (el tobillo)",
+     "to sprain / twist (one's ankle)"
+    ],
+    [
+     "toser",
+     "to cough"
+    ]
+   ],
+   "Adjectives": [
+    [
+     "congestionado/a",
+     "congested"
+    ],
+    [
+     "embarazada",
+     "pregnant (Note: False cognate - does NOT mean embarrassed!)"
+    ],
+    [
+     "grave",
+     "grave / serious"
+    ],
+    [
+     "mareado/a",
+     "dizzy / nauseous"
+    ],
+    [
+     "médico/a",
+     "medical"
+    ],
+    [
+     "saludable",
+     "healthy (describes things/activities; e.g., comida saludable)"
+    ],
+    [
+     "sano/a",
+     "healthy (describes state of health of a person)"
+    ]
+   ],
+   "Adverbs and Conjunctions": [
+    [
+     "a menudo",
+     "often"
+    ],
+    [
+     "a tiempo",
+     "on time"
+    ],
+    [
+     "a veces",
+     "sometimes"
+    ],
+    [
+     "además (de)",
+     "furthermore / in addition (to)"
+    ],
+    [
+     "apenas",
+     "barely / hardly"
+    ],
+    [
+     "así",
+     "like this / so"
+    ],
+    [
+     "bastante",
+     "quite / enough"
+    ],
+    [
+     "casi",
+     "almost"
+    ],
+    [
+     "con frecuencia",
+     "frequently"
+    ],
+    [
+     "de niño/a",
+     "as a child"
+    ],
+    [
+     "de vez en cuando",
+     "from time to time / once in a while"
+    ],
+    [
+     "despacio",
+     "slowly"
+    ],
+    [
+     "menos",
+     "less"
+    ],
+    [
+     "muchas veces",
+     "many times"
+    ],
+    [
+     "poco",
+     "little / a bit"
+    ],
+    [
+     "por lo menos",
+     "at least"
+    ],
+    [
+     "pronto",
+     "soon"
+    ],
+    [
+     "rápido",
+     "quickly"
+    ],
+    [
+     "todos los días",
+     "every day"
+    ]
+   ]
+  }
+ }
+}

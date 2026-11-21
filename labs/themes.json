@@ -1,0 +1,42 @@
+{
+ "_about": "Page themes for the lab instructions, like the event Backgrounds. A course picks one in labs/registry.json (console › Student view › Theme). colors: header = the band at the top (white text on it), header_accent = the colored words in the header, link = links, button = buttons and the first flag stripe (white text on it), highlight = the second flag stripe and focus outline. pattern = optional SVG shapes drawn faintly on the header (a 120 × 120 tile, white lines). The build checks every color's contrast and falls back to the default if one is hard to read. The 'ung' theme has no colors: pages keep the colors they were approved with.",
+ "themes": {
+  "ung": {
+   "label": "UNG (as approved)",
+   "colors": {}
+  },
+  "terracotta": {
+   "label": "Terracotta (warm)",
+   "colors": {
+    "header": "#6B2410",
+    "header_accent": "#F6C177",
+    "link": "#9A3412",
+    "button": "#A3311A",
+    "highlight": "#B7791F"
+   },
+   "pattern": "<path d='M0 60h120M60 0v120'/><circle cx='60' cy='60' r='18'/>"
+  },
+  "bleu": {
+   "label": "Bleu (cool)",
+   "colors": {
+    "header": "#0B2A5B",
+    "header_accent": "#A7C7FF",
+    "link": "#1D4ED8",
+    "button": "#C8102E",
+    "highlight": "#B8952A"
+   },
+   "pattern": "<path d='M0 30q30-20 60 0t60 0M0 90q30-20 60 0t60 0'/>"
+  },
+  "passport": {
+   "label": "Global Passport (stamps)",
+   "colors": {
+    "header": "#123B36",
+    "header_accent": "#9EE3D2",
+    "link": "#0F6B5E",
+    "button": "#B3261E",
+    "highlight": "#B8860B"
+   },
+   "pattern": "<circle cx='30' cy='30' r='20' stroke-dasharray='4 4'/><rect x='70' y='70' width='36' height='24' rx='4'/><path d='M74 82h28'/>"
+  }
+ }
+}

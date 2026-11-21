@@ -1,0 +1,1769 @@
+{
+ "_source": "labs/fren1001/french-class/fren1001/french_grammar_vocabulary_guide.tex (Bonjour à Tous, Chapitres 1–6)",
+ "chapters": {
+  "1": {
+   "Salutations et expressions": [
+    [
+     "Bonjour",
+     "Hello / Good morning"
+    ],
+    [
+     "Bonsoir",
+     "Good evening"
+    ],
+    [
+     "Bonne nuit",
+     "Good night"
+    ],
+    [
+     "Salut",
+     "Hi / Bye (informal)"
+    ],
+    [
+     "Au revoir",
+     "Goodbye"
+    ],
+    [
+     "À bientôt",
+     "See you soon"
+    ],
+    [
+     "À tout à l'heure",
+     "See you later"
+    ],
+    [
+     "Enchanté(e)",
+     "Pleased to meet you"
+    ],
+    [
+     "Merci",
+     "Thank you"
+    ],
+    [
+     "De rien",
+     "You're welcome"
+    ],
+    [
+     "S'il vous plaît",
+     "Please (formal)"
+    ],
+    [
+     "S'il te plaît",
+     "Please (informal)"
+    ],
+    [
+     "Ça va ?",
+     "How's it going?"
+    ],
+    [
+     "Très bien",
+     "Very well"
+    ],
+    [
+     "Bien",
+     "Fine / Well"
+    ],
+    [
+     "Pas mal",
+     "Not bad"
+    ],
+    [
+     "Comment allez-vous ?",
+     "How are you? (formal)"
+    ],
+    [
+     "Comment vas-tu ?",
+     "How are you? (inf.)"
+    ],
+    [
+     "Je m'appelle…",
+     "My name is…"
+    ],
+    [
+     "Comment t'appelles-tu ?",
+     "What's your name? (inf.)"
+    ]
+   ],
+   "La salle de classe": [
+    [
+     "le livre",
+     "book"
+    ],
+    [
+     "la chaise",
+     "chair"
+    ],
+    [
+     "la fenêtre",
+     "window"
+    ],
+    [
+     "l'ordinateur",
+     "computer"
+    ],
+    [
+     "l'horloge",
+     "clock"
+    ],
+    [
+     "le papier",
+     "paper"
+    ],
+    [
+     "la note",
+     "grade / note"
+    ],
+    [
+     "les devoirs",
+     "homework"
+    ],
+    [
+     "le stylo",
+     "pen"
+    ],
+    [
+     "le crayon",
+     "pencil"
+    ],
+    [
+     "la porte",
+     "door"
+    ],
+    [
+     "le tableau",
+     "board"
+    ],
+    [
+     "le bureau",
+     "desk / office"
+    ],
+    [
+     "le téléphone",
+     "phone"
+    ],
+    [
+     "le professeur",
+     "teacher"
+    ],
+    [
+     "l'étudiant(e)",
+     "student"
+    ]
+   ],
+   "Commandes de classe": [
+    [
+     "Ouvrez !",
+     "Open!"
+    ],
+    [
+     "Fermez !",
+     "Close!"
+    ],
+    [
+     "Écoutez !",
+     "Listen!"
+    ],
+    [
+     "Répétez !",
+     "Repeat!"
+    ],
+    [
+     "Écrivez !",
+     "Write!"
+    ],
+    [
+     "Lisez !",
+     "Read!"
+    ],
+    [
+     "Allez au tableau !",
+     "Go to the board!"
+    ]
+   ],
+   "Adjectifs de description": [
+    [
+     "grand(e)",
+     "tall / big"
+    ],
+    [
+     "petit(e)",
+     "short / small"
+    ],
+    [
+     "intelligent(e)",
+     "intelligent"
+    ],
+    [
+     "sérieux/sérieuse",
+     "serious"
+    ],
+    [
+     "gentil/gentille",
+     "kind"
+    ],
+    [
+     "méchant(e)",
+     "mean"
+    ],
+    [
+     "timide",
+     "shy"
+    ],
+    [
+     "sympa(thique)",
+     "nice / friendly"
+    ],
+    [
+     "heureux/heureuse",
+     "happy"
+    ],
+    [
+     "généreux/généreuse",
+     "generous"
+    ],
+    [
+     "actif/active",
+     "active"
+    ],
+    [
+     "populaire",
+     "popular"
+    ],
+    [
+     "fort(e)",
+     "strong"
+    ],
+    [
+     "paresseux/paresseuse",
+     "lazy"
+    ],
+    [
+     "chanceux/chanceuse",
+     "lucky"
+    ],
+    [
+     "intéressant(e)",
+     "interesting"
+    ]
+   ],
+   "Expressions clés": [
+    [
+     "il y a",
+     "there is/are"
+    ],
+    [
+     "il n'y a pas de",
+     "there is/are no…"
+    ],
+    [
+     "ne … pas",
+     "not (negation)"
+    ],
+    [
+     "aussi",
+     "also"
+    ],
+    [
+     "très",
+     "very"
+    ],
+    [
+     "un peu",
+     "a little"
+    ]
+   ]
+  },
+  "2": {
+   "Les membres de la famille": [
+    [
+     "le père",
+     "father"
+    ],
+    [
+     "la mère",
+     "mother"
+    ],
+    [
+     "les parents",
+     "parents"
+    ],
+    [
+     "le frère",
+     "brother"
+    ],
+    [
+     "la sœur",
+     "sister"
+    ],
+    [
+     "le fils",
+     "son"
+    ],
+    [
+     "la fille",
+     "daughter"
+    ],
+    [
+     "les enfants",
+     "children"
+    ],
+    [
+     "le grand-père",
+     "grandfather"
+    ],
+    [
+     "la grand-mère",
+     "grandmother"
+    ],
+    [
+     "les grands-parents",
+     "grandparents"
+    ],
+    [
+     "le petit-fils",
+     "grandson"
+    ],
+    [
+     "la petite-fille",
+     "granddaughter"
+    ],
+    [
+     "l'oncle",
+     "uncle"
+    ],
+    [
+     "la tante",
+     "aunt"
+    ],
+    [
+     "le cousin",
+     "cousin (m.)"
+    ],
+    [
+     "la cousine",
+     "cousin (f.)"
+    ],
+    [
+     "le neveu",
+     "nephew"
+    ],
+    [
+     "la nièce",
+     "niece"
+    ],
+    [
+     "le mari",
+     "husband"
+    ],
+    [
+     "la femme",
+     "wife / woman"
+    ],
+    [
+     "le beau-père",
+     "stepfather / father-in-law"
+    ],
+    [
+     "la belle-mère",
+     "stepmother / mother-in-law"
+    ],
+    [
+     "le beau-frère",
+     "brother-in-law"
+    ],
+    [
+     "la belle-sœur",
+     "sister-in-law"
+    ],
+    [
+     "le bébé",
+     "baby"
+    ]
+   ],
+   "État civil": [
+    [
+     "marié(e)",
+     "married"
+    ],
+    [
+     "divorcé(e)",
+     "divorced"
+    ],
+    [
+     "célibataire",
+     "single"
+    ],
+    [
+     "fiancé(e)",
+     "engaged"
+    ],
+    [
+     "veuf / veuve",
+     "widower / widow"
+    ]
+   ],
+   "Les couleurs": [
+    [
+     "bleu(e)",
+     "blue"
+    ],
+    [
+     "rouge",
+     "red"
+    ],
+    [
+     "vert(e)",
+     "green"
+    ],
+    [
+     "jaune",
+     "yellow"
+    ],
+    [
+     "orange",
+     "orange"
+    ],
+    [
+     "blanc / blanche",
+     "white"
+    ],
+    [
+     "noir(e)",
+     "black"
+    ],
+    [
+     "gris(e)",
+     "gray"
+    ],
+    [
+     "rose",
+     "pink"
+    ],
+    [
+     "violet(te)",
+     "purple"
+    ],
+    [
+     "brun(e) / marron",
+     "brown"
+    ],
+    [
+     "roux / rousse",
+     "red (hair)"
+    ]
+   ],
+   "Description physique": [
+    [
+     "mince",
+     "thin / slim"
+    ],
+    [
+     "fort(e)",
+     "strong / heavyset"
+    ],
+    [
+     "jeune",
+     "young"
+    ],
+    [
+     "vieux / vieille",
+     "old"
+    ],
+    [
+     "beau / belle",
+     "handsome / beautiful"
+    ],
+    [
+     "blond(e)",
+     "blonde"
+    ],
+    [
+     "les cheveux raides",
+     "straight hair"
+    ],
+    [
+     "les cheveux bouclés",
+     "curly hair"
+    ],
+    [
+     "les yeux bleus/verts",
+     "blue / green eyes"
+    ],
+    [
+     "les yeux noirs/bruns",
+     "dark / brown eyes"
+    ]
+   ],
+   "Nationalités (exemples)": [
+    [
+     "français(e)",
+     "French"
+    ],
+    [
+     "américain(e)",
+     "American"
+    ],
+    [
+     "canadien(ne)",
+     "Canadian"
+    ],
+    [
+     "québécois(e)",
+     "Québécois"
+    ],
+    [
+     "espagnol(e)",
+     "Spanish"
+    ],
+    [
+     "mexicain(e)",
+     "Mexican"
+    ],
+    [
+     "chinois(e)",
+     "Chinese"
+    ],
+    [
+     "anglais(e)",
+     "English"
+    ],
+    [
+     "italien(ne)",
+     "Italian"
+    ],
+    [
+     "africain(e)",
+     "African"
+    ]
+   ],
+   "Verbes en -ER courants": [
+    [
+     "habiter",
+     "to live"
+    ],
+    [
+     "étudier",
+     "to study"
+    ],
+    [
+     "parler",
+     "to speak"
+    ],
+    [
+     "danser",
+     "to dance"
+    ],
+    [
+     "manger",
+     "to eat"
+    ],
+    [
+     "travailler",
+     "to work"
+    ],
+    [
+     "écouter",
+     "to listen"
+    ],
+    [
+     "regarder",
+     "to watch"
+    ],
+    [
+     "aimer",
+     "to like/love"
+    ],
+    [
+     "préférer",
+     "to prefer"
+    ],
+    [
+     "chanter",
+     "to sing"
+    ],
+    [
+     "nager",
+     "to swim"
+    ],
+    [
+     "jouer",
+     "to play"
+    ],
+    [
+     "téléphoner",
+     "to call"
+    ],
+    [
+     "voyager",
+     "to travel"
+    ],
+    [
+     "aider",
+     "to help"
+    ],
+    [
+     "réviser",
+     "to review"
+    ],
+    [
+     "poser",
+     "to ask (a q.)"
+    ]
+   ],
+   "Adverbes de fréquence": [
+    [
+     "toujours (always)",
+     ""
+    ],
+    [
+     "souvent (often)",
+     ""
+    ],
+    [
+     "quelquefois (sometimes)",
+     ""
+    ],
+    [
+     "rarement (rarely)",
+     ""
+    ],
+    [
+     "jamais (never)",
+     ""
+    ]
+   ]
+  },
+  "3": {
+   "Pièces de la maison": [
+    [
+     "le salon",
+     "living room"
+    ],
+    [
+     "la cuisine",
+     "kitchen"
+    ],
+    [
+     "la salle à manger",
+     "dining room"
+    ],
+    [
+     "la chambre (à coucher)",
+     "bedroom"
+    ],
+    [
+     "la salle de bain",
+     "bathroom"
+    ],
+    [
+     "les toilettes / W.C.",
+     "restroom / toilet"
+    ],
+    [
+     "le bureau",
+     "office / study"
+    ],
+    [
+     "le garage",
+     "garage"
+    ],
+    [
+     "le jardin",
+     "garden / yard"
+    ],
+    [
+     "la piscine",
+     "swimming pool"
+    ],
+    [
+     "le grenier",
+     "attic"
+    ],
+    [
+     "le sous-sol",
+     "basement"
+    ],
+    [
+     "le rez-de-chaussée",
+     "ground floor"
+    ],
+    [
+     "le premier étage",
+     "first floor (upstairs)"
+    ],
+    [
+     "l'escalier",
+     "staircase"
+    ]
+   ],
+   "Meubles et appareils": [
+    [
+     "le sofa / canapé",
+     "sofa"
+    ],
+    [
+     "le fauteuil",
+     "armchair"
+    ],
+    [
+     "la table",
+     "table"
+    ],
+    [
+     "le lit",
+     "bed"
+    ],
+    [
+     "le lit double",
+     "double bed"
+    ],
+    [
+     "les lits superposés",
+     "bunk beds"
+    ],
+    [
+     "la commode",
+     "dresser"
+    ],
+    [
+     "l'étagère",
+     "shelf"
+    ],
+    [
+     "le miroir",
+     "mirror"
+    ],
+    [
+     "la lampe",
+     "lamp"
+    ],
+    [
+     "le frigo / réfrigérateur",
+     "refrigerator"
+    ],
+    [
+     "le four",
+     "oven"
+    ],
+    [
+     "la cuisinière",
+     "stove"
+    ],
+    [
+     "l'évier",
+     "kitchen sink"
+    ],
+    [
+     "le lavabo",
+     "bathroom sink"
+    ],
+    [
+     "la baignoire",
+     "bathtub"
+    ],
+    [
+     "la douche",
+     "shower"
+    ],
+    [
+     "les placards",
+     "cupboards"
+    ],
+    [
+     "la table de nuit",
+     "nightstand"
+    ]
+   ],
+   "Tâches ménagères": [
+    [
+     "faire la vaisselle",
+     "to do the dishes"
+    ],
+    [
+     "faire la lessive",
+     "to do laundry"
+    ],
+    [
+     "faire le ménage",
+     "to do housework"
+    ],
+    [
+     "faire la cuisine",
+     "to cook"
+    ],
+    [
+     "ranger",
+     "to tidy / put away"
+    ],
+    [
+     "nettoyer",
+     "to clean"
+    ],
+    [
+     "balayer",
+     "to sweep"
+    ],
+    [
+     "essuyer",
+     "to wipe"
+    ],
+    [
+     "passer l'aspirateur",
+     "to vacuum"
+    ],
+    [
+     "trier les déchets",
+     "to sort the trash"
+    ],
+    [
+     "arroser les fleurs",
+     "to water the flowers"
+    ],
+    [
+     "repasser",
+     "to iron"
+    ],
+    [
+     "faire la poussière",
+     "to dust"
+    ]
+   ],
+   "Verbes en -IR réguliers": [
+    [
+     "finir",
+     "to finish"
+    ],
+    [
+     "choisir",
+     "to choose"
+    ],
+    [
+     "réussir",
+     "to succeed"
+    ],
+    [
+     "obéir (à)",
+     "to obey"
+    ],
+    [
+     "punir",
+     "to punish"
+    ],
+    [
+     "rougir",
+     "to blush"
+    ],
+    [
+     "réfléchir",
+     "to think / reflect"
+    ],
+    [
+     "grandir",
+     "to grow (up)"
+    ],
+    [
+     "nourrir",
+     "to feed"
+    ]
+   ]
+  },
+  "4": {
+   "Sports": [
+    [
+     "le football / le foot",
+     "soccer"
+    ],
+    [
+     "le basket(-ball)",
+     "basketball"
+    ],
+    [
+     "le tennis",
+     "tennis"
+    ],
+    [
+     "le golf",
+     "golf"
+    ],
+    [
+     "la natation",
+     "swimming"
+    ],
+    [
+     "le patinage",
+     "ice skating"
+    ],
+    [
+     "le ski",
+     "skiing"
+    ],
+    [
+     "la course",
+     "running / racing"
+    ],
+    [
+     "la gymnastique",
+     "gymnastics"
+    ],
+    [
+     "le volley-ball",
+     "volleyball"
+    ],
+    [
+     "le vélo",
+     "cycling"
+    ],
+    [
+     "le roller",
+     "rollerblading"
+    ],
+    [
+     "le jogging",
+     "jogging"
+    ]
+   ],
+   "Loisirs": [
+    [
+     "chanter (dans une chorale)",
+     "to sing (in a choir)"
+    ],
+    [
+     "surfer sur internet",
+     "to surf the internet"
+    ],
+    [
+     "bricoler",
+     "to do DIY / tinker"
+    ],
+    [
+     "cuisiner",
+     "to cook"
+    ],
+    [
+     "envoyer des textos",
+     "to send texts"
+    ],
+    [
+     "écouter de la musique",
+     "to listen to music"
+    ],
+    [
+     "faire du shopping",
+     "to go shopping"
+    ],
+    [
+     "aller au cinéma",
+     "to go to the movies"
+    ],
+    [
+     "aller à la plage",
+     "to go to the beach"
+    ],
+    [
+     "lire un livre",
+     "to read a book"
+    ],
+    [
+     "faire une promenade",
+     "to take a walk"
+    ],
+    [
+     "jouer aux jeux vidéo",
+     "to play video games"
+    ]
+   ],
+   "Matières scolaires": [
+    [
+     "le français",
+     "French"
+    ],
+    [
+     "l'espagnol",
+     "Spanish"
+    ],
+    [
+     "les maths / le calcul",
+     "math / calculus"
+    ],
+    [
+     "l'histoire",
+     "history"
+    ],
+    [
+     "la géographie",
+     "geography"
+    ],
+    [
+     "la communication",
+     "communication"
+    ],
+    [
+     "la musique",
+     "music"
+    ],
+    [
+     "l'informatique",
+     "computer science"
+    ],
+    [
+     "la comptabilité",
+     "accounting"
+    ],
+    [
+     "la littérature",
+     "literature"
+    ],
+    [
+     "l'éducation physique",
+     "PE"
+    ],
+    [
+     "la psychologie",
+     "psychology"
+    ],
+    [
+     "la biologie",
+     "biology"
+    ],
+    [
+     "les sciences politiques",
+     "political science"
+    ]
+   ],
+   "Métiers": [
+    [
+     "un(e) architecte",
+     "architect"
+    ],
+    [
+     "un(e) avocat(e)",
+     "lawyer"
+    ],
+    [
+     "un(e) commercial(e)",
+     "salesperson"
+    ],
+    [
+     "un(e) comptable",
+     "accountant"
+    ],
+    [
+     "un(e) chef d'entreprise",
+     "CEO / owner"
+    ],
+    [
+     "un(e) écrivain",
+     "writer"
+    ],
+    [
+     "un(e) infirmier(-ère)",
+     "nurse"
+    ],
+    [
+     "un(e) informaticien(ne)",
+     "IT specialist"
+    ],
+    [
+     "un ingénieur",
+     "engineer"
+    ],
+    [
+     "un médecin",
+     "doctor"
+    ],
+    [
+     "un professeur",
+     "professor"
+    ],
+    [
+     "un policier",
+     "police officer"
+    ],
+    [
+     "un(e) scientifique",
+     "scientist"
+    ],
+    [
+     "un(e) secrétaire",
+     "secretary"
+    ],
+    [
+     "un(e) vétérinaire",
+     "veterinarian"
+    ],
+    [
+     "un(e) politicien(ne)",
+     "politician"
+    ],
+    [
+     "un(e) assistant(e) social(e)",
+     "social worker"
+    ]
+   ]
+  },
+  "5": {
+   "Lieux en ville": [
+    [
+     "la pharmacie",
+     "pharmacy"
+    ],
+    [
+     "le cinéma",
+     "movie theater"
+    ],
+    [
+     "l'église",
+     "church"
+    ],
+    [
+     "la gare",
+     "train station"
+    ],
+    [
+     "la librairie",
+     "bookstore"
+    ],
+    [
+     "le parc",
+     "park"
+    ],
+    [
+     "le restaurant",
+     "restaurant"
+    ],
+    [
+     "la banque",
+     "bank"
+    ],
+    [
+     "l'hôpital",
+     "hospital"
+    ],
+    [
+     "la bibliothèque",
+     "library"
+    ],
+    [
+     "le musée",
+     "museum"
+    ],
+    [
+     "l'hôtel",
+     "hotel"
+    ],
+    [
+     "la mairie",
+     "city hall"
+    ],
+    [
+     "la poste",
+     "post office"
+    ],
+    [
+     "le café",
+     "café"
+    ],
+    [
+     "la boulangerie",
+     "bakery"
+    ],
+    [
+     "le supermarché",
+     "supermarket"
+    ]
+   ],
+   "Transports": [
+    [
+     "la voiture",
+     "car"
+    ],
+    [
+     "le train",
+     "train"
+    ],
+    [
+     "l'avion",
+     "airplane"
+    ],
+    [
+     "le bus",
+     "bus"
+    ],
+    [
+     "le métro",
+     "subway"
+    ],
+    [
+     "le taxi",
+     "taxi"
+    ],
+    [
+     "le bateau",
+     "boat"
+    ],
+    [
+     "le vélo / le vélib",
+     "bicycle / bike share"
+    ],
+    [
+     "la gare SNCF",
+     "train station"
+    ],
+    [
+     "l'aéroport",
+     "airport"
+    ],
+    [
+     "la gare routière",
+     "bus station"
+    ],
+    [
+     "la station de métro",
+     "metro station"
+    ],
+    [
+     "l'arrêt de taxi",
+     "taxi stand"
+    ]
+   ],
+   "Vocabulaire du voyage": [
+    [
+     "le billet",
+     "ticket"
+    ],
+    [
+     "un aller simple",
+     "one-way ticket"
+    ],
+    [
+     "un aller-retour",
+     "round-trip ticket"
+    ],
+    [
+     "le départ / l'arrivée",
+     "departure / arrival"
+    ],
+    [
+     "le passeport",
+     "passport"
+    ],
+    [
+     "la douane",
+     "customs"
+    ],
+    [
+     "la réservation",
+     "reservation"
+    ],
+    [
+     "une chambre simple",
+     "single room"
+    ],
+    [
+     "une chambre double",
+     "double room"
+    ],
+    [
+     "le séjour",
+     "stay"
+    ]
+   ],
+   "Les directions": [
+    [
+     "Tournez à gauche",
+     "Turn left"
+    ],
+    [
+     "Tournez à droite",
+     "Turn right"
+    ],
+    [
+     "Continuez tout droit",
+     "Go straight ahead"
+    ],
+    [
+     "près / proche",
+     "near"
+    ],
+    [
+     "loin",
+     "far"
+    ],
+    [
+     "au bout de la rue",
+     "at the end of the street"
+    ]
+   ],
+   "Les mois": [
+    [
+     "janvier / février",
+     "January / February"
+    ],
+    [
+     "mars / avril",
+     "March / April"
+    ],
+    [
+     "mai / juin",
+     "May / June"
+    ],
+    [
+     "juillet / août",
+     "July / August"
+    ],
+    [
+     "septembre / octobre",
+     "September / October"
+    ],
+    [
+     "novembre / décembre",
+     "November / December"
+    ]
+   ],
+   "Les saisons": [
+    [
+     "l'hiver (m.)",
+     "winter"
+    ],
+    [
+     "le printemps",
+     "spring"
+    ],
+    [
+     "l'été (m.)",
+     "summer"
+    ],
+    [
+     "l'automne (m.)",
+     "fall / autumn"
+    ]
+   ]
+  },
+  "6": {
+   "Légumes": [
+    [
+     "la carotte",
+     "carrot"
+    ],
+    [
+     "le céleri",
+     "celery"
+    ],
+    [
+     "la pomme de terre",
+     "potato"
+    ],
+    [
+     "la tomate",
+     "tomato"
+    ],
+    [
+     "la salade / laitue",
+     "salad / lettuce"
+    ],
+    [
+     "les épinards",
+     "spinach"
+    ],
+    [
+     "le poivron",
+     "bell pepper"
+    ],
+    [
+     "les champignons",
+     "mushrooms"
+    ],
+    [
+     "l'oignon",
+     "onion"
+    ],
+    [
+     "le brocoli",
+     "broccoli"
+    ],
+    [
+     "les haricots verts",
+     "green beans"
+    ],
+    [
+     "le chou",
+     "cabbage"
+    ],
+    [
+     "les petits pois",
+     "peas"
+    ]
+   ],
+   "Fruits": [
+    [
+     "la pomme",
+     "apple"
+    ],
+    [
+     "la poire",
+     "pear"
+    ],
+    [
+     "la banane",
+     "banana"
+    ],
+    [
+     "la fraise",
+     "strawberry"
+    ],
+    [
+     "l'orange (f.)",
+     "orange"
+    ],
+    [
+     "le citron",
+     "lemon"
+    ],
+    [
+     "le raisin",
+     "grapes"
+    ],
+    [
+     "la pêche",
+     "peach"
+    ],
+    [
+     "la cerise",
+     "cherry"
+    ],
+    [
+     "la mangue",
+     "mango"
+    ]
+   ],
+   "Boissons": [
+    [
+     "l'eau (minérale)",
+     "(mineral) water"
+    ],
+    [
+     "le café",
+     "coffee"
+    ],
+    [
+     "le thé",
+     "tea"
+    ],
+    [
+     "le jus d'orange",
+     "orange juice"
+    ],
+    [
+     "le lait",
+     "milk"
+    ],
+    [
+     "le vin rouge / blanc",
+     "red / white wine"
+    ],
+    [
+     "la bière",
+     "beer"
+    ],
+    [
+     "la limonade",
+     "lemonade / soda"
+    ],
+    [
+     "le chocolat chaud",
+     "hot chocolate"
+    ]
+   ],
+   "Viandes et fruits de mer": [
+    [
+     "le bœuf",
+     "beef"
+    ],
+    [
+     "le poulet",
+     "chicken"
+    ],
+    [
+     "le porc",
+     "pork"
+    ],
+    [
+     "l'agneau",
+     "lamb"
+    ],
+    [
+     "le veau",
+     "veal"
+    ],
+    [
+     "le jambon",
+     "ham"
+    ],
+    [
+     "le saucisson",
+     "dry sausage / salami"
+    ],
+    [
+     "le poisson",
+     "fish"
+    ],
+    [
+     "les moules",
+     "mussels"
+    ],
+    [
+     "les crevettes",
+     "shrimp"
+    ]
+   ],
+   "Boulangerie et épicerie": [
+    [
+     "le pain / la baguette",
+     "bread / baguette"
+    ],
+    [
+     "le croissant",
+     "croissant"
+    ],
+    [
+     "le pain au chocolat",
+     "chocolate croissant"
+    ],
+    [
+     "le gâteau",
+     "cake"
+    ],
+    [
+     "la tarte",
+     "tart / pie"
+    ],
+    [
+     "le fromage",
+     "cheese"
+    ],
+    [
+     "le beurre",
+     "butter"
+    ],
+    [
+     "les œufs",
+     "eggs"
+    ],
+    [
+     "la farine",
+     "flour"
+    ],
+    [
+     "le sucre",
+     "sugar"
+    ],
+    [
+     "le sel",
+     "salt"
+    ],
+    [
+     "le riz",
+     "rice"
+    ],
+    [
+     "les pâtes",
+     "pasta"
+    ],
+    [
+     "la soupe",
+     "soup"
+    ],
+    [
+     "la crêpe",
+     "crêpe"
+    ]
+   ],
+   "Les magasins spécialisés": [
+    [
+     "la boulangerie",
+     ""
+    ],
+    [
+     "bakery",
+     ""
+    ],
+    [
+     "bread, baguettes, croissants",
+     ""
+    ],
+    [
+     "la boucherie",
+     ""
+    ],
+    [
+     "butcher",
+     ""
+    ],
+    [
+     "beef, chicken, pork",
+     ""
+    ],
+    [
+     "la charcuterie",
+     ""
+    ],
+    [
+     "deli",
+     ""
+    ],
+    [
+     "cold meats, ham, saucisson",
+     ""
+    ],
+    [
+     "la pâtisserie",
+     ""
+    ],
+    [
+     "pastry shop",
+     ""
+    ],
+    [
+     "cakes, tarts, pastries",
+     ""
+    ],
+    [
+     "la fromagerie",
+     ""
+    ],
+    [
+     "cheese shop",
+     ""
+    ],
+    [
+     "all types of cheese",
+     ""
+    ],
+    [
+     "l'épicerie",
+     ""
+    ],
+    [
+     "grocery store",
+     ""
+    ],
+    [
+     "general food items",
+     ""
+    ],
+    [
+     "le supermarché",
+     ""
+    ],
+    [
+     "supermarket",
+     ""
+    ],
+    [
+     "everything",
+     ""
+    ],
+    [
+     "le marché",
+     ""
+    ],
+    [
+     "open-air market",
+     ""
+    ],
+    [
+     "fresh produce",
+     ""
+    ]
+   ],
+   "Au restaurant": [
+    [
+     "Bonjour, une table s.v.p.",
+     "A table, please."
+    ],
+    [
+     "Vous désirez ?",
+     "What would you like?"
+    ],
+    [
+     "Je voudrais…",
+     "I would like…"
+    ],
+    [
+     "Je vais prendre…",
+     "I'll have…"
+    ],
+    [
+     "En entrée…",
+     "For the appetizer…"
+    ],
+    [
+     "Comme plat principal…",
+     "For the main course…"
+    ],
+    [
+     "L'addition, s.v.p.!",
+     "The check, please!"
+    ],
+    [
+     "l'entrée (f.)",
+     "appetizer"
+    ],
+    [
+     "le plat principal",
+     "main course"
+    ]
+   ],
+   "Les quantités": [
+    [
+     "un kilo de",
+     "a kilogram of"
+    ],
+    [
+     "un gramme de",
+     "a gram of"
+    ],
+    [
+     "un litre de",
+     "a liter of"
+    ],
+    [
+     "un verre de",
+     "a glass of"
+    ],
+    [
+     "une bouteille de",
+     "a bottle of"
+    ],
+    [
+     "une tasse de",
+     "a cup of"
+    ],
+    [
+     "une cuillère à soupe",
+     "a tablespoon"
+    ],
+    [
+     "une cuillère à café",
+     "a teaspoon"
+    ],
+    [
+     "un morceau de",
+     "a piece of"
+    ],
+    [
+     "une tranche de",
+     "a slice of"
+    ],
+    [
+     "un paquet de",
+     "a package of"
+    ],
+    [
+     "une boîte de",
+     "a can/box of"
+    ]
+   ]
+  }
+ }
+}

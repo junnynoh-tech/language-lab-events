@@ -1,0 +1,2269 @@
+{
+ "_source": "Lecciones 1-5 of curriculum/current/vocab/spanish_vocab_grammar_by_leccion.txt, accents restored. Chapters 1-4 are the same list as curriculum/current/study-tools/vocab-flashcards.html.",
+ "chapters": {
+  "1": {
+   "Greetings and goodbyes": [
+    [
+     "Hola.",
+     "Hi."
+    ],
+    [
+     "Buenos días.",
+     "Good morning."
+    ],
+    [
+     "Buenas tardes.",
+     "Good afternoon."
+    ],
+    [
+     "Buenas noches.",
+     "Good evening; good night."
+    ],
+    [
+     "Adiós.",
+     "Goodbye."
+    ],
+    [
+     "Nos vemos.",
+     "See you."
+    ],
+    [
+     "Hasta luego.",
+     "See you later."
+    ],
+    [
+     "Hasta la vista.",
+     "See you later."
+    ],
+    [
+     "Hasta pronto.",
+     "See you soon."
+    ],
+    [
+     "Hasta mañana.",
+     "See you tomorrow."
+    ],
+    [
+     "Saludos a...",
+     "Greetings to..."
+    ],
+    [
+     "Chau.",
+     "Bye."
+    ]
+   ],
+   "How are you?": [
+    [
+     "¿Cómo está usted?",
+     "How are you? (formal)"
+    ],
+    [
+     "¿Cómo estás?",
+     "How are you? (familiar)"
+    ],
+    [
+     "¿Qué hay de nuevo?",
+     "What's new?"
+    ],
+    [
+     "¿Qué pasa?",
+     "What's happening?"
+    ],
+    [
+     "¿Qué tal?",
+     "How are you? / How's it going?"
+    ],
+    [
+     "(Muy) bien, gracias.",
+     "(Very) well, thanks."
+    ],
+    [
+     "Nada.",
+     "Nothing."
+    ],
+    [
+     "No muy bien.",
+     "Not very well."
+    ],
+    [
+     "Regular.",
+     "So-so; OK."
+    ]
+   ],
+   "Courtesy and titles": [
+    [
+     "De nada.",
+     "You're welcome."
+    ],
+    [
+     "No hay de qué.",
+     "You're welcome."
+    ],
+    [
+     "Lo siento.",
+     "I'm sorry."
+    ],
+    [
+     "(Muchas) gracias.",
+     "Thank you (very much)."
+    ],
+    [
+     "por favor",
+     "please"
+    ],
+    [
+     "señor (Sr.)",
+     "Mr.; sir"
+    ],
+    [
+     "señora (Sra.)",
+     "Mrs.; ma'am"
+    ],
+    [
+     "señorita (Srta.)",
+     "Miss"
+    ]
+   ],
+   "Introductions": [
+    [
+     "¿Cómo se llama usted?",
+     "What's your name? (formal)"
+    ],
+    [
+     "¿Cómo te llamas?",
+     "What's your name? (familiar)"
+    ],
+    [
+     "Me llamo...",
+     "My name is..."
+    ],
+    [
+     "¿Y usted? / ¿Y tú?",
+     "And you? (formal / familiar)"
+    ],
+    [
+     "Mucho gusto.",
+     "Pleased to meet you."
+    ],
+    [
+     "El gusto es mío.",
+     "The pleasure is mine."
+    ],
+    [
+     "Encantado/a.",
+     "Delighted; pleased to meet you."
+    ],
+    [
+     "Igualmente.",
+     "Likewise."
+    ],
+    [
+     "Le presento a...",
+     "I'd like to introduce you to... (formal)"
+    ],
+    [
+     "Te presento a...",
+     "I'd like to introduce you to... (familiar)"
+    ],
+    [
+     "el nombre",
+     "name"
+    ],
+    [
+     "¿De dónde es usted?",
+     "Where are you from? (formal)"
+    ],
+    [
+     "¿De dónde eres?",
+     "Where are you from? (familiar)"
+    ],
+    [
+     "Soy de...",
+     "I'm from..."
+    ],
+    [
+     "¿cuánto/a? ¿cuántos/as?",
+     "how much? how many?"
+    ],
+    [
+     "¿de quién...?",
+     "whose...? (singular)"
+    ],
+    [
+     "¿de quiénes...?",
+     "whose...? (plural)"
+    ],
+    [
+     "(no) hay",
+     "there is / there are (not)"
+    ]
+   ],
+   "Numbers 0–30": [
+    [
+     "cero",
+     "0"
+    ],
+    [
+     "uno",
+     "1"
+    ],
+    [
+     "dos",
+     "2"
+    ],
+    [
+     "tres",
+     "3"
+    ],
+    [
+     "cuatro",
+     "4"
+    ],
+    [
+     "cinco",
+     "5"
+    ],
+    [
+     "seis",
+     "6"
+    ],
+    [
+     "siete",
+     "7"
+    ],
+    [
+     "ocho",
+     "8"
+    ],
+    [
+     "nueve",
+     "9"
+    ],
+    [
+     "diez",
+     "10"
+    ],
+    [
+     "once",
+     "11"
+    ],
+    [
+     "doce",
+     "12"
+    ],
+    [
+     "trece",
+     "13"
+    ],
+    [
+     "catorce",
+     "14"
+    ],
+    [
+     "quince",
+     "15"
+    ],
+    [
+     "dieciséis",
+     "16"
+    ],
+    [
+     "diecisiete",
+     "17"
+    ],
+    [
+     "dieciocho",
+     "18"
+    ],
+    [
+     "diecinueve",
+     "19"
+    ],
+    [
+     "veinte",
+     "20"
+    ],
+    [
+     "veintiuno",
+     "21"
+    ],
+    [
+     "veintidós",
+     "22"
+    ],
+    [
+     "veintitrés",
+     "23"
+    ],
+    [
+     "veinticuatro",
+     "24"
+    ],
+    [
+     "veinticinco",
+     "25"
+    ],
+    [
+     "veintiséis",
+     "26"
+    ],
+    [
+     "veintisiete",
+     "27"
+    ],
+    [
+     "veintiocho",
+     "28"
+    ],
+    [
+     "veintinueve",
+     "29"
+    ],
+    [
+     "treinta",
+     "30"
+    ]
+   ],
+   "Telling time": [
+    [
+     "¿Qué hora es?",
+     "What time is it?"
+    ],
+    [
+     "Es la una.",
+     "It's one o'clock."
+    ],
+    [
+     "Son las dos.",
+     "It's two o'clock."
+    ],
+    [
+     "y cuarto / y quince",
+     "quarter past"
+    ],
+    [
+     "y media / y treinta",
+     "half past"
+    ],
+    [
+     "menos cuarto / menos quince",
+     "quarter to"
+    ],
+    [
+     "en punto",
+     "on the dot; sharp"
+    ],
+    [
+     "de la mañana",
+     "in the morning (a.m.)"
+    ],
+    [
+     "de la tarde",
+     "in the afternoon (p.m.)"
+    ],
+    [
+     "de la noche",
+     "at night (p.m.)"
+    ],
+    [
+     "Es el mediodía.",
+     "It's noon."
+    ],
+    [
+     "Es la medianoche.",
+     "It's midnight."
+    ],
+    [
+     "¿A qué hora...?",
+     "At what time...?"
+    ],
+    [
+     "a la una / a las dos",
+     "at one / at two"
+    ]
+   ],
+   "Nouns": [
+    [
+     "el autobús",
+     "bus"
+    ],
+    [
+     "el chico",
+     "boy"
+    ],
+    [
+     "la chica",
+     "girl"
+    ],
+    [
+     "la computadora",
+     "computer"
+    ],
+    [
+     "la comunidad",
+     "community"
+    ],
+    [
+     "el/la conductor(a)",
+     "driver"
+    ],
+    [
+     "la conversación",
+     "conversation"
+    ],
+    [
+     "la cosa",
+     "thing"
+    ],
+    [
+     "el cuaderno",
+     "notebook"
+    ],
+    [
+     "el día",
+     "day"
+    ],
+    [
+     "el diario",
+     "diary"
+    ],
+    [
+     "el diccionario",
+     "dictionary"
+    ],
+    [
+     "la escuela",
+     "school"
+    ],
+    [
+     "el/la estudiante",
+     "student"
+    ],
+    [
+     "la foto(grafía)",
+     "photo(graph)"
+    ],
+    [
+     "el hombre",
+     "man"
+    ],
+    [
+     "el/la joven",
+     "young person"
+    ],
+    [
+     "el lápiz",
+     "pencil"
+    ],
+    [
+     "la lección",
+     "lesson"
+    ],
+    [
+     "la maleta",
+     "suitcase"
+    ],
+    [
+     "la mano",
+     "hand"
+    ],
+    [
+     "el mapa",
+     "map"
+    ],
+    [
+     "la mujer",
+     "woman"
+    ],
+    [
+     "la nacionalidad",
+     "nationality"
+    ],
+    [
+     "el número",
+     "number"
+    ],
+    [
+     "el país",
+     "country"
+    ],
+    [
+     "la palabra",
+     "word"
+    ],
+    [
+     "el/la pasajero/a",
+     "passenger"
+    ],
+    [
+     "el problema",
+     "problem"
+    ],
+    [
+     "el/la profesor(a)",
+     "teacher; professor"
+    ],
+    [
+     "el programa",
+     "program"
+    ],
+    [
+     "el/la turista",
+     "tourist"
+    ],
+    [
+     "el video",
+     "video"
+    ],
+    [
+     "ser",
+     "to be"
+    ]
+   ]
+  },
+  "2": {
+   "Classroom and campus": [
+    [
+     "el/la compañero/a de clase",
+     "classmate"
+    ],
+    [
+     "el/la compañero/a de cuarto",
+     "roommate"
+    ],
+    [
+     "el borrador",
+     "eraser"
+    ],
+    [
+     "la calculadora",
+     "calculator"
+    ],
+    [
+     "el escritorio",
+     "desk"
+    ],
+    [
+     "el libro",
+     "book"
+    ],
+    [
+     "el marcador",
+     "marker"
+    ],
+    [
+     "la mesa",
+     "table"
+    ],
+    [
+     "la mochila",
+     "backpack"
+    ],
+    [
+     "el papel",
+     "paper"
+    ],
+    [
+     "la papelera",
+     "wastebasket"
+    ],
+    [
+     "la pizarra",
+     "whiteboard; blackboard"
+    ],
+    [
+     "la pluma",
+     "pen"
+    ],
+    [
+     "la puerta",
+     "door"
+    ],
+    [
+     "el reloj",
+     "clock; watch"
+    ],
+    [
+     "la silla",
+     "chair; seat"
+    ],
+    [
+     "la ventana",
+     "window"
+    ],
+    [
+     "la biblioteca",
+     "library"
+    ],
+    [
+     "la cafetería",
+     "cafeteria"
+    ],
+    [
+     "la casa",
+     "house; home"
+    ],
+    [
+     "el estadio",
+     "stadium"
+    ],
+    [
+     "el laboratorio",
+     "laboratory"
+    ],
+    [
+     "la librería",
+     "bookstore"
+    ],
+    [
+     "la residencia estudiantil",
+     "dormitory"
+    ],
+    [
+     "la universidad",
+     "university; college"
+    ],
+    [
+     "la clase",
+     "class"
+    ],
+    [
+     "el curso",
+     "course"
+    ],
+    [
+     "la especialización",
+     "major"
+    ],
+    [
+     "el examen",
+     "test; exam"
+    ],
+    [
+     "el horario",
+     "schedule"
+    ],
+    [
+     "la materia",
+     "subject (course)"
+    ],
+    [
+     "la prueba",
+     "test; quiz"
+    ],
+    [
+     "el semestre",
+     "semester"
+    ],
+    [
+     "la tarea",
+     "homework"
+    ],
+    [
+     "el trimestre",
+     "trimester; quarter"
+    ]
+   ],
+   "Subjects": [
+    [
+     "la administración de empresas",
+     "business administration"
+    ],
+    [
+     "la arqueología",
+     "archaeology"
+    ],
+    [
+     "el arte",
+     "art"
+    ],
+    [
+     "la biología",
+     "biology"
+    ],
+    [
+     "las ciencias",
+     "sciences"
+    ],
+    [
+     "la computación",
+     "computer science"
+    ],
+    [
+     "la contabilidad",
+     "accounting"
+    ],
+    [
+     "la economía",
+     "economics"
+    ],
+    [
+     "el español",
+     "Spanish (language)"
+    ],
+    [
+     "la física",
+     "physics"
+    ],
+    [
+     "la geografía",
+     "geography"
+    ],
+    [
+     "la historia",
+     "history"
+    ],
+    [
+     "las humanidades",
+     "humanities"
+    ],
+    [
+     "el inglés",
+     "English (language)"
+    ],
+    [
+     "las lenguas extranjeras",
+     "foreign languages"
+    ],
+    [
+     "la literatura",
+     "literature"
+    ],
+    [
+     "las matemáticas",
+     "mathematics"
+    ],
+    [
+     "la música",
+     "music"
+    ],
+    [
+     "el periodismo",
+     "journalism"
+    ],
+    [
+     "la psicología",
+     "psychology"
+    ],
+    [
+     "la química",
+     "chemistry"
+    ],
+    [
+     "la sociología",
+     "sociology"
+    ]
+   ],
+   "Prepositions and place words": [
+    [
+     "al lado de",
+     "next to; beside"
+    ],
+    [
+     "a la derecha de",
+     "to the right of"
+    ],
+    [
+     "a la izquierda de",
+     "to the left of"
+    ],
+    [
+     "allá",
+     "over there"
+    ],
+    [
+     "allí",
+     "there"
+    ],
+    [
+     "aquí",
+     "here"
+    ],
+    [
+     "cerca de",
+     "near"
+    ],
+    [
+     "con",
+     "with"
+    ],
+    [
+     "debajo de",
+     "below; under"
+    ],
+    [
+     "delante de",
+     "in front of"
+    ],
+    [
+     "detrás de",
+     "behind"
+    ],
+    [
+     "en",
+     "in; on"
+    ],
+    [
+     "encima de",
+     "on top of"
+    ],
+    [
+     "entre",
+     "between; among"
+    ],
+    [
+     "lejos de",
+     "far from"
+    ],
+    [
+     "sin",
+     "without"
+    ],
+    [
+     "sobre",
+     "on; over"
+    ]
+   ],
+   "-AR verbs": [
+    [
+     "bailar",
+     "to dance"
+    ],
+    [
+     "buscar",
+     "to look for"
+    ],
+    [
+     "caminar",
+     "to walk"
+    ],
+    [
+     "cantar",
+     "to sing"
+    ],
+    [
+     "cenar",
+     "to have dinner"
+    ],
+    [
+     "comprar",
+     "to buy"
+    ],
+    [
+     "contestar",
+     "to answer"
+    ],
+    [
+     "conversar",
+     "to converse; to chat"
+    ],
+    [
+     "desayunar",
+     "to have breakfast"
+    ],
+    [
+     "descansar",
+     "to rest"
+    ],
+    [
+     "desear",
+     "to wish; to desire"
+    ],
+    [
+     "dibujar",
+     "to draw"
+    ],
+    [
+     "enseñar",
+     "to teach"
+    ],
+    [
+     "escuchar la radio/música",
+     "to listen to the radio/music"
+    ],
+    [
+     "esperar (+ inf.)",
+     "to wait for; to hope"
+    ],
+    [
+     "estar",
+     "to be"
+    ],
+    [
+     "estudiar",
+     "to study"
+    ],
+    [
+     "explicar",
+     "to explain"
+    ],
+    [
+     "gustar",
+     "to like"
+    ],
+    [
+     "hablar",
+     "to talk; to speak"
+    ],
+    [
+     "llegar",
+     "to arrive"
+    ],
+    [
+     "llevar",
+     "to carry"
+    ],
+    [
+     "mirar",
+     "to look at; to watch"
+    ],
+    [
+     "necesitar (+ inf.)",
+     "to need"
+    ],
+    [
+     "practicar",
+     "to practice"
+    ],
+    [
+     "preguntar",
+     "to ask (a question)"
+    ],
+    [
+     "preparar",
+     "to prepare"
+    ],
+    [
+     "regresar",
+     "to return"
+    ],
+    [
+     "terminar",
+     "to end; to finish"
+    ],
+    [
+     "tomar",
+     "to take; to drink"
+    ],
+    [
+     "trabajar",
+     "to work"
+    ],
+    [
+     "viajar",
+     "to travel"
+    ]
+   ],
+   "Days of the week": [
+    [
+     "lunes",
+     "Monday"
+    ],
+    [
+     "martes",
+     "Tuesday"
+    ],
+    [
+     "miércoles",
+     "Wednesday"
+    ],
+    [
+     "jueves",
+     "Thursday"
+    ],
+    [
+     "viernes",
+     "Friday"
+    ],
+    [
+     "sábado",
+     "Saturday"
+    ],
+    [
+     "domingo",
+     "Sunday"
+    ],
+    [
+     "la semana",
+     "week"
+    ],
+    [
+     "¿Qué día es hoy?",
+     "What day is it today?"
+    ],
+    [
+     "Hoy es...",
+     "Today is..."
+    ],
+    [
+     "ahora",
+     "now"
+    ],
+    [
+     "sí",
+     "yes"
+    ]
+   ],
+   "Question words": [
+    [
+     "¿Qué?",
+     "What?"
+    ],
+    [
+     "¿Quién? / ¿Quiénes?",
+     "Who?"
+    ],
+    [
+     "¿Dónde?",
+     "Where?"
+    ],
+    [
+     "¿De dónde?",
+     "From where?"
+    ],
+    [
+     "¿Adónde?",
+     "Where (to)?"
+    ],
+    [
+     "¿Cómo?",
+     "How?"
+    ],
+    [
+     "¿Cuándo?",
+     "When?"
+    ],
+    [
+     "¿Cuál? / ¿Cuáles?",
+     "Which? / Which ones?"
+    ],
+    [
+     "¿Por qué?",
+     "Why?"
+    ],
+    [
+     "porque",
+     "because"
+    ]
+   ],
+   "Numbers 31 and up": [
+    [
+     "treinta y uno",
+     "31"
+    ],
+    [
+     "cuarenta",
+     "40"
+    ],
+    [
+     "cincuenta",
+     "50"
+    ],
+    [
+     "sesenta",
+     "60"
+    ],
+    [
+     "setenta",
+     "70"
+    ],
+    [
+     "ochenta",
+     "80"
+    ],
+    [
+     "noventa",
+     "90"
+    ],
+    [
+     "cien",
+     "100"
+    ],
+    [
+     "ciento uno",
+     "101"
+    ],
+    [
+     "doscientos/as",
+     "200"
+    ],
+    [
+     "trescientos/as",
+     "300"
+    ],
+    [
+     "cuatrocientos/as",
+     "400"
+    ],
+    [
+     "quinientos/as",
+     "500"
+    ],
+    [
+     "seiscientos/as",
+     "600"
+    ],
+    [
+     "setecientos/as",
+     "700"
+    ],
+    [
+     "ochocientos/as",
+     "800"
+    ],
+    [
+     "novecientos/as",
+     "900"
+    ],
+    [
+     "mil",
+     "1.000 (1,000)"
+    ],
+    [
+     "dos mil",
+     "2.000 (2,000)"
+    ],
+    [
+     "un millón (de)",
+     "1.000.000 (1,000,000)"
+    ],
+    [
+     "dos millones (de)",
+     "2.000.000 (2,000,000)"
+    ]
+   ]
+  },
+  "3": {
+   "Family": [
+    [
+     "el/la abuelo/a",
+     "grandfather / grandmother"
+    ],
+    [
+     "los abuelos",
+     "grandparents"
+    ],
+    [
+     "el apellido",
+     "last name"
+    ],
+    [
+     "el/la bisabuelo/a",
+     "great-grandfather / great-grandmother"
+    ],
+    [
+     "el/la cuñado/a",
+     "brother-in-law / sister-in-law"
+    ],
+    [
+     "el/la esposo/a",
+     "husband / wife; spouse"
+    ],
+    [
+     "la familia",
+     "family"
+    ],
+    [
+     "el/la gemelo/a",
+     "twin"
+    ],
+    [
+     "el/la hermanastro/a",
+     "stepbrother / stepsister"
+    ],
+    [
+     "el/la hermano/a",
+     "brother / sister"
+    ],
+    [
+     "el/la hijastro/a",
+     "stepson / stepdaughter"
+    ],
+    [
+     "el/la hijo/a",
+     "son / daughter"
+    ],
+    [
+     "los hijos",
+     "children"
+    ],
+    [
+     "la madrastra",
+     "stepmother"
+    ],
+    [
+     "la madre",
+     "mother"
+    ],
+    [
+     "el/la medio/a hermano/a",
+     "half-brother / half-sister"
+    ],
+    [
+     "el/la nieto/a",
+     "grandson / granddaughter"
+    ],
+    [
+     "la nuera",
+     "daughter-in-law"
+    ],
+    [
+     "el padrastro",
+     "stepfather"
+    ],
+    [
+     "el padre",
+     "father"
+    ],
+    [
+     "los padres",
+     "parents"
+    ],
+    [
+     "los parientes",
+     "relatives"
+    ],
+    [
+     "el/la primo/a",
+     "cousin"
+    ],
+    [
+     "el/la sobrino/a",
+     "nephew / niece"
+    ],
+    [
+     "el/la suegro/a",
+     "father-in-law / mother-in-law"
+    ],
+    [
+     "el/la tío/a",
+     "uncle / aunt"
+    ],
+    [
+     "el yerno",
+     "son-in-law"
+    ]
+   ],
+   "People and professions": [
+    [
+     "el/la amigo/a",
+     "friend"
+    ],
+    [
+     "la gente",
+     "people"
+    ],
+    [
+     "el/la muchacho/a",
+     "boy / girl"
+    ],
+    [
+     "el/la niño/a",
+     "child"
+    ],
+    [
+     "el/la novio/a",
+     "boyfriend / girlfriend"
+    ],
+    [
+     "la persona",
+     "person"
+    ],
+    [
+     "el/la artista",
+     "artist"
+    ],
+    [
+     "el/la doctor(a); el/la médico/a",
+     "doctor; physician"
+    ],
+    [
+     "el/la ingeniero/a",
+     "engineer"
+    ],
+    [
+     "el/la periodista",
+     "journalist"
+    ],
+    [
+     "el/la programador(a)",
+     "computer programmer"
+    ]
+   ],
+   "Adjectives": [
+    [
+     "alto/a",
+     "tall"
+    ],
+    [
+     "antipático/a",
+     "unpleasant"
+    ],
+    [
+     "bajo/a",
+     "short (height)"
+    ],
+    [
+     "bonito/a",
+     "pretty"
+    ],
+    [
+     "buen, bueno/a",
+     "good"
+    ],
+    [
+     "delgado/a",
+     "thin; slender"
+    ],
+    [
+     "difícil",
+     "difficult; hard"
+    ],
+    [
+     "fácil",
+     "easy"
+    ],
+    [
+     "feo/a",
+     "ugly"
+    ],
+    [
+     "gordo/a",
+     "fat"
+    ],
+    [
+     "gran, grande",
+     "big; great"
+    ],
+    [
+     "guapo/a",
+     "good-looking"
+    ],
+    [
+     "importante",
+     "important"
+    ],
+    [
+     "inteligente",
+     "intelligent"
+    ],
+    [
+     "interesante",
+     "interesting"
+    ],
+    [
+     "joven (jóvenes)",
+     "young"
+    ],
+    [
+     "mal, malo/a",
+     "bad"
+    ],
+    [
+     "mismo/a",
+     "same"
+    ],
+    [
+     "moreno/a",
+     "brunet(te); dark-haired"
+    ],
+    [
+     "mucho/a",
+     "much; many; a lot of"
+    ],
+    [
+     "pelirrojo/a",
+     "red-haired"
+    ],
+    [
+     "pequeño/a",
+     "small"
+    ],
+    [
+     "rubio/a",
+     "blond(e)"
+    ],
+    [
+     "simpático/a",
+     "nice; likeable"
+    ],
+    [
+     "tonto/a",
+     "foolish; silly"
+    ],
+    [
+     "trabajador(a)",
+     "hard-working"
+    ],
+    [
+     "viejo/a",
+     "old"
+    ]
+   ],
+   "Nationalities": [
+    [
+     "alemán, alemana",
+     "German"
+    ],
+    [
+     "argentino/a",
+     "Argentine"
+    ],
+    [
+     "canadiense",
+     "Canadian"
+    ],
+    [
+     "chino/a",
+     "Chinese"
+    ],
+    [
+     "costarricense",
+     "Costa Rican"
+    ],
+    [
+     "cubano/a",
+     "Cuban"
+    ],
+    [
+     "dominicano/a",
+     "Dominican"
+    ],
+    [
+     "ecuatoriano/a",
+     "Ecuadorian"
+    ],
+    [
+     "español(a)",
+     "Spanish"
+    ],
+    [
+     "estadounidense",
+     "from the U.S."
+    ],
+    [
+     "francés, francesa",
+     "French"
+    ],
+    [
+     "inglés, inglesa",
+     "English"
+    ],
+    [
+     "italiano/a",
+     "Italian"
+    ],
+    [
+     "japonés, japonesa",
+     "Japanese"
+    ],
+    [
+     "mexicano/a",
+     "Mexican"
+    ],
+    [
+     "norteamericano/a",
+     "(North) American"
+    ],
+    [
+     "puertorriqueño/a",
+     "Puerto Rican"
+    ],
+    [
+     "ruso/a",
+     "Russian"
+    ],
+    [
+     "venezolano/a",
+     "Venezuelan"
+    ]
+   ],
+   "-ER / -IR verbs, tener and venir": [
+    [
+     "abrir",
+     "to open"
+    ],
+    [
+     "aprender (a + inf.)",
+     "to learn (to)"
+    ],
+    [
+     "asistir (a)",
+     "to attend"
+    ],
+    [
+     "beber",
+     "to drink"
+    ],
+    [
+     "comer",
+     "to eat"
+    ],
+    [
+     "compartir",
+     "to share"
+    ],
+    [
+     "comprender",
+     "to understand"
+    ],
+    [
+     "correr",
+     "to run"
+    ],
+    [
+     "creer (en)",
+     "to believe (in)"
+    ],
+    [
+     "deber (+ inf.)",
+     "should; ought to"
+    ],
+    [
+     "decidir (+ inf.)",
+     "to decide"
+    ],
+    [
+     "describir",
+     "to describe"
+    ],
+    [
+     "escribir",
+     "to write"
+    ],
+    [
+     "leer",
+     "to read"
+    ],
+    [
+     "recibir",
+     "to receive"
+    ],
+    [
+     "vivir",
+     "to live"
+    ],
+    [
+     "tener",
+     "to have"
+    ],
+    [
+     "venir",
+     "to come"
+    ]
+   ],
+   "Expressions with tener": [
+    [
+     "tener ... años",
+     "to be ... years old"
+    ],
+    [
+     "tener calor",
+     "to be hot"
+    ],
+    [
+     "tener frío",
+     "to be cold"
+    ],
+    [
+     "tener cuidado",
+     "to be careful"
+    ],
+    [
+     "tener ganas de (+ inf.)",
+     "to feel like (doing something)"
+    ],
+    [
+     "tener hambre",
+     "to be hungry"
+    ],
+    [
+     "tener sed",
+     "to be thirsty"
+    ],
+    [
+     "tener miedo (de)",
+     "to be afraid (of)"
+    ],
+    [
+     "tener prisa",
+     "to be in a hurry"
+    ],
+    [
+     "tener que (+ inf.)",
+     "to have to (do something)"
+    ],
+    [
+     "tener razón",
+     "to be right"
+    ],
+    [
+     "no tener razón",
+     "to be wrong"
+    ],
+    [
+     "tener sueño",
+     "to be sleepy"
+    ],
+    [
+     "tener suerte",
+     "to be lucky"
+    ]
+   ]
+  },
+  "4": {
+   "Pastimes": [
+    [
+     "andar en patineta",
+     "to skateboard"
+    ],
+    [
+     "bucear",
+     "to scuba dive"
+    ],
+    [
+     "escalar montañas",
+     "to climb mountains"
+    ],
+    [
+     "escribir una carta",
+     "to write a letter"
+    ],
+    [
+     "escribir un mensaje electrónico",
+     "to write an e-mail"
+    ],
+    [
+     "esquiar",
+     "to ski"
+    ],
+    [
+     "ganar",
+     "to win"
+    ],
+    [
+     "ir de excursión",
+     "to go on a hike"
+    ],
+    [
+     "leer el correo electrónico",
+     "to read e-mail"
+    ],
+    [
+     "leer un periódico",
+     "to read a newspaper"
+    ],
+    [
+     "leer una revista",
+     "to read a magazine"
+    ],
+    [
+     "nadar",
+     "to swim"
+    ],
+    [
+     "pasear",
+     "to take a walk"
+    ],
+    [
+     "pasear en bicicleta",
+     "to ride a bicycle"
+    ],
+    [
+     "patinar",
+     "to skate"
+    ],
+    [
+     "practicar deportes",
+     "to play sports"
+    ],
+    [
+     "tomar el sol",
+     "to sunbathe"
+    ],
+    [
+     "ver películas",
+     "to watch movies"
+    ],
+    [
+     "visitar monumentos",
+     "to visit monuments"
+    ],
+    [
+     "la diversión",
+     "fun activity; entertainment"
+    ],
+    [
+     "el fin de semana",
+     "weekend"
+    ],
+    [
+     "el pasatiempo",
+     "pastime; hobby"
+    ],
+    [
+     "los ratos libres",
+     "free time"
+    ],
+    [
+     "el videojuego",
+     "video game"
+    ]
+   ],
+   "Sports": [
+    [
+     "el baloncesto",
+     "basketball"
+    ],
+    [
+     "el béisbol",
+     "baseball"
+    ],
+    [
+     "el ciclismo",
+     "cycling"
+    ],
+    [
+     "el equipo",
+     "team"
+    ],
+    [
+     "el esquí (acuático)",
+     "(water) skiing"
+    ],
+    [
+     "el fútbol",
+     "soccer"
+    ],
+    [
+     "el fútbol americano",
+     "football"
+    ],
+    [
+     "el golf",
+     "golf"
+    ],
+    [
+     "el hockey",
+     "hockey"
+    ],
+    [
+     "el/la jugador(a)",
+     "player"
+    ],
+    [
+     "la natación",
+     "swimming"
+    ],
+    [
+     "el partido",
+     "game; match"
+    ],
+    [
+     "la pelota",
+     "ball"
+    ],
+    [
+     "el tenis",
+     "tennis"
+    ],
+    [
+     "el vóleibol",
+     "volleyball"
+    ],
+    [
+     "deportivo/a",
+     "sports-related"
+    ],
+    [
+     "favorito/a",
+     "favorite"
+    ]
+   ],
+   "Places": [
+    [
+     "el café",
+     "café"
+    ],
+    [
+     "el centro",
+     "downtown"
+    ],
+    [
+     "el cine",
+     "movie theater"
+    ],
+    [
+     "el gimnasio",
+     "gym"
+    ],
+    [
+     "la iglesia",
+     "church"
+    ],
+    [
+     "el lugar",
+     "place"
+    ],
+    [
+     "el museo",
+     "museum"
+    ],
+    [
+     "el parque",
+     "park"
+    ],
+    [
+     "la piscina",
+     "swimming pool"
+    ],
+    [
+     "la plaza",
+     "town square"
+    ],
+    [
+     "el restaurante",
+     "restaurant"
+    ]
+   ],
+   "Chapter 4 verbs": [
+    [
+     "almorzar (o:ue)",
+     "to have lunch"
+    ],
+    [
+     "cerrar (e:ie)",
+     "to close"
+    ],
+    [
+     "comenzar (e:ie)",
+     "to begin"
+    ],
+    [
+     "conseguir (e:i)",
+     "to get; to obtain"
+    ],
+    [
+     "contar (o:ue)",
+     "to count; to tell"
+    ],
+    [
+     "decir (e:i)",
+     "to say; to tell"
+    ],
+    [
+     "dormir (o:ue)",
+     "to sleep"
+    ],
+    [
+     "empezar (e:ie)",
+     "to begin"
+    ],
+    [
+     "encontrar (o:ue)",
+     "to find"
+    ],
+    [
+     "entender (e:ie)",
+     "to understand"
+    ],
+    [
+     "hacer",
+     "to do; to make"
+    ],
+    [
+     "ir",
+     "to go"
+    ],
+    [
+     "jugar (u:ue)",
+     "to play (a sport or game)"
+    ],
+    [
+     "mostrar (o:ue)",
+     "to show"
+    ],
+    [
+     "oír",
+     "to hear"
+    ],
+    [
+     "pedir (e:i)",
+     "to ask for; to request"
+    ],
+    [
+     "pensar (e:ie) (+ inf.)",
+     "to intend; to plan"
+    ],
+    [
+     "pensar en",
+     "to think about"
+    ],
+    [
+     "perder (e:ie)",
+     "to lose; to miss"
+    ],
+    [
+     "poder (o:ue)",
+     "to be able to; can"
+    ],
+    [
+     "poner",
+     "to put; to place"
+    ],
+    [
+     "preferir (e:ie)",
+     "to prefer"
+    ],
+    [
+     "querer (e:ie)",
+     "to want; to love"
+    ],
+    [
+     "recordar (o:ue)",
+     "to remember"
+    ],
+    [
+     "repetir (e:i)",
+     "to repeat"
+    ],
+    [
+     "salir",
+     "to leave; to go out"
+    ],
+    [
+     "seguir (e:i)",
+     "to follow; to continue"
+    ],
+    [
+     "suponer",
+     "to suppose"
+    ],
+    [
+     "traer",
+     "to bring"
+    ],
+    [
+     "ver",
+     "to see"
+    ],
+    [
+     "volver (o:ue)",
+     "to return"
+    ]
+   ]
+  },
+  "5": {
+   "Travel and vacations": [
+    [
+     "acampar",
+     "to camp"
+    ],
+    [
+     "confirmar una reservación",
+     "to confirm a reservation"
+    ],
+    [
+     "estar de vacaciones",
+     "to be on vacation"
+    ],
+    [
+     "hacer las maletas",
+     "to pack (one's suitcases)"
+    ],
+    [
+     "hacer un viaje",
+     "to take a trip"
+    ],
+    [
+     "hacer (wind)surf",
+     "to (wind)surf"
+    ],
+    [
+     "ir de compras",
+     "to go shopping"
+    ],
+    [
+     "ir de vacaciones",
+     "to go on vacation"
+    ],
+    [
+     "ir en autobús / auto / avión / barco / moto / taxi",
+     "to go by bus / car / plane / boat / motorcycle / taxi"
+    ],
+    [
+     "jugar a las cartas",
+     "to play cards"
+    ],
+    [
+     "montar a caballo",
+     "to ride a horse"
+    ],
+    [
+     "pescar",
+     "to fish"
+    ],
+    [
+     "sacar / tomar fotos",
+     "to take photos"
+    ],
+    [
+     "el/la inspector(a) de aduanas",
+     "customs inspector"
+    ],
+    [
+     "el/la viajero/a",
+     "traveler"
+    ],
+    [
+     "el aeropuerto",
+     "airport"
+    ],
+    [
+     "el campo",
+     "countryside"
+    ],
+    [
+     "el equipaje",
+     "luggage"
+    ],
+    [
+     "la estación de autobuses / del metro / de tren",
+     "bus / subway / train station"
+    ],
+    [
+     "la llegada",
+     "arrival"
+    ],
+    [
+     "el mar",
+     "sea"
+    ],
+    [
+     "el paisaje",
+     "landscape"
+    ],
+    [
+     "el pasaje (de ida y vuelta)",
+     "(round-trip) ticket"
+    ],
+    [
+     "el pasaporte",
+     "passport"
+    ],
+    [
+     "la playa",
+     "beach"
+    ],
+    [
+     "la salida",
+     "departure; exit"
+    ],
+    [
+     "la tabla de (wind)surf",
+     "surfboard / sailboard"
+    ]
+   ],
+   "The hotel": [
+    [
+     "el ascensor",
+     "elevator"
+    ],
+    [
+     "la cama",
+     "bed"
+    ],
+    [
+     "el/la empleado/a",
+     "employee"
+    ],
+    [
+     "la habitación individual / doble",
+     "single / double room"
+    ],
+    [
+     "el hotel",
+     "hotel"
+    ],
+    [
+     "el/la huésped",
+     "guest"
+    ],
+    [
+     "la llave",
+     "key"
+    ],
+    [
+     "la planta baja",
+     "ground floor"
+    ]
+   ],
+   "Ordinal numbers": [
+    [
+     "primer, primero/a",
+     "first"
+    ],
+    [
+     "segundo/a",
+     "second"
+    ],
+    [
+     "tercer, tercero/a",
+     "third"
+    ],
+    [
+     "cuarto/a",
+     "fourth"
+    ],
+    [
+     "quinto/a",
+     "fifth"
+    ],
+    [
+     "sexto/a",
+     "sixth"
+    ],
+    [
+     "séptimo/a",
+     "seventh"
+    ],
+    [
+     "octavo/a",
+     "eighth"
+    ],
+    [
+     "noveno/a",
+     "ninth"
+    ],
+    [
+     "décimo/a",
+     "tenth"
+    ]
+   ],
+   "Adjectives (with estar)": [
+    [
+     "abierto/a",
+     "open"
+    ],
+    [
+     "aburrido/a",
+     "bored; boring"
+    ],
+    [
+     "alegre",
+     "happy"
+    ],
+    [
+     "avergonzado/a",
+     "embarrassed"
+    ],
+    [
+     "cansado/a",
+     "tired"
+    ],
+    [
+     "cerrado/a",
+     "closed"
+    ],
+    [
+     "cómodo/a",
+     "comfortable"
+    ],
+    [
+     "confundido/a",
+     "confused"
+    ],
+    [
+     "contento/a",
+     "content"
+    ],
+    [
+     "desordenado/a",
+     "disorderly"
+    ],
+    [
+     "enamorado/a (de)",
+     "in love (with)"
+    ],
+    [
+     "enojado/a",
+     "angry"
+    ],
+    [
+     "equivocado/a",
+     "wrong"
+    ],
+    [
+     "feliz",
+     "happy"
+    ],
+    [
+     "limpio/a",
+     "clean"
+    ],
+    [
+     "listo/a",
+     "ready; smart"
+    ],
+    [
+     "nervioso/a",
+     "nervous"
+    ],
+    [
+     "ocupado/a",
+     "busy"
+    ],
+    [
+     "ordenado/a",
+     "orderly"
+    ],
+    [
+     "preocupado/a (por)",
+     "worried (about)"
+    ],
+    [
+     "seguro/a",
+     "sure; safe; confident"
+    ],
+    [
+     "sucio/a",
+     "dirty"
+    ],
+    [
+     "triste",
+     "sad"
+    ]
+   ],
+   "Other words": [
+    [
+     "ahora mismo",
+     "right now"
+    ],
+    [
+     "el año",
+     "year"
+    ],
+    [
+     "¿Cuál es la fecha (de hoy)?",
+     "What is the date (today)?"
+    ],
+    [
+     "de buen / mal humor",
+     "in a good / bad mood"
+    ],
+    [
+     "la estación",
+     "season"
+    ],
+    [
+     "el mes",
+     "month"
+    ],
+    [
+     "todavía",
+     "yet; still"
+    ]
+   ]
+  }
+ }
+}

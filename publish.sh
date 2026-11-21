@@ -9,6 +9,10 @@ set -e
 HERE="$(cd "$(dirname "$0")" && pwd)"; LABS="$(dirname "$HERE")"; HUB="$LABS/lab-assistant-training-d2l/lab-hub/events"
 [ -d "$HERE/.git" ] && { git -C "$HERE" pull -q --ff-only || { echo "GitHub has changes that conflict with this folder. Sort that out first."; exit 1; }; }
 python3 "$HERE/sync_sources.py"
+# Lab instructions (2026-11-21): GitHub's labs/ is the source for approved courses. Bring website edits into the TeachingOS
+# folders the other tools read, copy the engine from lab-builder, and rebuild instructions/ (GitHub also rebuilds on every save).
+python3 "$HERE/labs/build_labs.py" --to-local
+python3 "$HERE/labs/build_labs.py" --sync-engine
 cp "$HUB/visual/event-carousel.html" "$HUB/visual/event-details.html" "$HERE/visual/"
 cp "$HUB/current/events.json" "$HERE/current/"
 mkdir -p "$HERE/current/rubrics"; cp "$HUB/current/rubrics/"*.json "$HERE/current/rubrics/" 2>/dev/null || true

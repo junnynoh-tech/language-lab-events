@@ -1,0 +1,1272 @@
+{
+ "_about": "Single source for every SPAN 1001 lab page (regular semester, in-person and online). Edit this file, then run build.py. Text in *asterisks* is Spanish (rendered in italics with lang=es). Due dates are NOT stored here: build.py reads them from the lab hub's lab-due-dates.json (key SPAN1001_regular).",
+ "course": "SPAN 1001",
+ "course_name": "Elementary Spanish I",
+ "due_key": "SPAN1001_regular",
+ "wconline": "https://unglanglab.mywconline.com/schedule/calendar?scheduleid=sc6655efb977156",
+ "bongo_help": "https://bongolearn.zendesk.com/hc/en-us/articles/360009373374",
+ "github_images": "https://junnynoh-tech.github.io/span1001-instructions/span1001-images/",
+ "video_rules": [
+  "1.5–2 minutes of Spanish.",
+  "Your face is visible and your voice is clear the whole time.",
+  "Spanish only, in complete sentences.",
+  "One notecard with up to 15 words. Don't read a script.",
+  "At the start, hold your notecard still in front of the camera for about 5 seconds, close enough to read. Don't just flash it.",
+  "No translators, AI tools, or outside help."
+ ],
+ "allowed": "Class notes, your Vistas textbook, and a dictionary.",
+ "email_include": [
+  "Your full name as it appears in D2L",
+  "Your course (Spanish 1001) and your professor's name",
+  "Your class days and start time, and your CRN if you know it"
+ ],
+ "labs": [
+  {
+   "n": 1,
+   "title": "Mi presentación",
+   "chapters": "1",
+   "max_ch": 1,
+   "mode": "Camera",
+   "peer": false,
+   "summary": "Introduce yourself: who you are, where you're from, your classes and schedule, and one person in your life.",
+   "context": "This is your first conversation in Spanish with your class. Answer the questions below to introduce yourself. Answer all of them, in any order, in your own words.",
+   "questions": [
+    {
+     "question": "*¡Hola! ¿Cómo te llamas?*",
+     "guide": "Greet everyone. What's your name?"
+    },
+    {
+     "question": "*¿De dónde eres?*",
+     "guide": "Where are you from?"
+    },
+    {
+     "question": "*¿Qué estudias? ¿Qué eres?*",
+     "guide": "What do you study? What do you do (student, athlete, employee)?"
+    },
+    {
+     "question": "*¿Cuáles son tus clases este semestre?*",
+     "guide": "What are your classes this semester? Name two or three."
+    },
+    {
+     "question": "*¿A qué hora es tu primera clase? ¿Y tu última clase?*",
+     "guide": "What time is your first class? Your last class? (Online classes: give the day and time of two events this week.)"
+    },
+    {
+     "question": "*¿Qué es algo interesante de ti?*",
+     "guide": "What's something interesting about you?"
+    },
+    {
+     "question": "*¿Quién es una persona importante para ti?*",
+     "guide": "Who is an important person in your life? Introduce them."
+    },
+    {
+     "question": "*¿De dónde es? ¿Qué estudia o qué es?*",
+     "guide": "Where is that person from? What do they study or do?"
+    }
+   ],
+   "tips": [
+    "*Soy* for yourself, *es* for the other person.",
+    "Keep *de* before a subject: *estudiante de biología*, *clase de español*.",
+    "Times: *a las ocho*, *a la una*."
+   ],
+   "quiz_topics": [
+    "Class and schedule vocabulary",
+    "Questions with *¿A qué hora…?* and *¿Cuántas…?*",
+    "*es* / *son* with times and classes",
+    "Times of day"
+   ],
+   "quiz_words": {
+    "intro": "Ana uses these words in the video. They aren't taught until Chapter 2 or later, so you won't be tested on them. Tap a word to see what it means.",
+    "groups": [
+     {
+      "title": "Verbs",
+      "words": [
+       {
+        "word": "tengo",
+        "meaning": "I have"
+       },
+       {
+        "word": "tomo",
+        "meaning": "I take"
+       },
+       {
+        "word": "hablo",
+        "meaning": "I speak"
+       },
+       {
+        "word": "leo",
+        "meaning": "I read"
+       },
+       {
+        "word": "bebo",
+        "meaning": "I drink"
+       },
+       {
+        "word": "como",
+        "meaning": "I eat"
+       },
+       {
+        "word": "estudio",
+        "meaning": "I study"
+       },
+       {
+        "word": "regreso",
+        "meaning": "I return; I go back"
+       }
+      ]
+     },
+     {
+      "title": "Nouns",
+      "words": [
+       {
+        "word": "el descanso",
+        "meaning": "break; rest"
+       },
+       {
+        "word": "los mensajes",
+        "meaning": "messages"
+       },
+       {
+        "word": "la biblioteca",
+        "meaning": "library"
+       },
+       {
+        "word": "el laboratorio",
+        "meaning": "laboratory"
+       },
+       {
+        "word": "la cafetería",
+        "meaning": "cafeteria"
+       }
+      ]
+     },
+     {
+      "title": "Other words",
+      "words": [
+       {
+        "word": "después",
+        "meaning": "after; afterward"
+       },
+       {
+        "word": "simpática",
+        "meaning": "nice; friendly"
+       },
+       {
+        "word": "pocas",
+        "meaning": "few"
+       }
+      ]
+     }
+    ]
+   },
+   "lab_vocab": [
+    {
+     "title": "Occupations (*Soy…*)",
+     "words": [
+      {
+       "word": "estudiante",
+       "meaning": "student"
+      },
+      {
+       "word": "mesero / mesera",
+       "meaning": "waiter / waitress"
+      },
+      {
+       "word": "atleta",
+       "meaning": "athlete"
+      },
+      {
+       "word": "voluntario / voluntaria",
+       "meaning": "volunteer"
+      },
+      {
+       "word": "empleado / empleada",
+       "meaning": "employee"
+      },
+      {
+       "word": "artista",
+       "meaning": "artist"
+      },
+      {
+       "word": "músico / música",
+       "meaning": "musician"
+      }
+     ]
+    },
+    {
+     "title": "Majors (*Soy estudiante de…*)",
+     "words": [
+      {
+       "word": "biología",
+       "meaning": "biology"
+      },
+      {
+       "word": "negocios",
+       "meaning": "business"
+      },
+      {
+       "word": "historia",
+       "meaning": "history"
+      },
+      {
+       "word": "matemáticas",
+       "meaning": "mathematics"
+      },
+      {
+       "word": "ingeniería",
+       "meaning": "engineering"
+      },
+      {
+       "word": "enfermería",
+       "meaning": "nursing"
+      },
+      {
+       "word": "psicología",
+       "meaning": "psychology"
+      },
+      {
+       "word": "geología",
+       "meaning": "geology"
+      },
+      {
+       "word": "informática",
+       "meaning": "computer science"
+      },
+      {
+       "word": "educación",
+       "meaning": "education"
+      },
+      {
+       "word": "arte",
+       "meaning": "art"
+      },
+      {
+       "word": "español",
+       "meaning": "Spanish"
+      }
+     ]
+    },
+    {
+     "title": "Your schedule",
+     "words": [
+      {
+       "word": "la primera clase",
+       "meaning": "the first class"
+      },
+      {
+       "word": "la última clase",
+       "meaning": "the last class"
+      },
+      {
+       "word": "lunes, martes, miércoles",
+       "meaning": "Monday, Tuesday, Wednesday"
+      },
+      {
+       "word": "jueves, viernes",
+       "meaning": "Thursday, Friday"
+      },
+      {
+       "word": "sábado, domingo",
+       "meaning": "Saturday, Sunday"
+      }
+     ]
+    },
+    {
+     "title": "Events (online classes)",
+     "words": [
+      {
+       "word": "la reunión",
+       "meaning": "meeting"
+      },
+      {
+       "word": "la presentación",
+       "meaning": "presentation"
+      },
+      {
+       "word": "la práctica",
+       "meaning": "practice"
+      },
+      {
+       "word": "la cita",
+       "meaning": "appointment"
+      },
+      {
+       "word": "el partido",
+       "meaning": "game; match"
+      },
+      {
+       "word": "la fiesta",
+       "meaning": "party"
+      },
+      {
+       "word": "el cumpleaños",
+       "meaning": "birthday"
+      },
+      {
+       "word": "la cena familiar",
+       "meaning": "family dinner"
+      }
+     ]
+    }
+   ],
+   "hero": {
+    "image": "lab-1-image-1.jpg",
+    "credit": "Photo by Javier Trueba, Unsplash",
+    "url": "https://unsplash.com/photos/iQPr1XkF5F0"
+   },
+   "quiz_video_title": "Mi horario: Ana Martínez (1:40)",
+   "id": "lab-1",
+   "vocab_chapters": [
+    1
+   ],
+   "ch_label": "Ch. 1",
+   "quiz_media": true
+  },
+  {
+   "n": 2,
+   "title": "La universidad",
+   "chapters": "1–2",
+   "max_ch": 2,
+   "mode": "Camera + Screen",
+   "peer": false,
+   "summary": "Give Andrea from Colombia a campus tour: 4 places, one slide each.",
+   "context": "Your friend Andrea from Colombia is visiting your university for the first time, and you are her tour guide. Make 4 slides, one for each place, and share them in Bongo while you talk.",
+   "parts": [
+    {
+     "title": "For each place",
+     "items": [
+      "Where it is: *La biblioteca está…*",
+      "What people do there",
+      "When it's busy",
+      "Why people like it"
+     ]
+    },
+    {
+     "title": "Across the whole video",
+     "items": [
+      "4 places on campus or nearby",
+      "At least 5 different -AR verbs",
+      "*estar* for location"
+     ]
+    }
+   ],
+   "slides": {
+    "rules": [
+     "4 slides, one per place (a title slide is optional)",
+     "Each slide: the place, a photo, and 3–5 Spanish keywords",
+     "No sentences on the slides. You say the sentences."
+    ],
+    "good": [
+     "la cafetería",
+     "conversar · descansar · tomar café"
+    ],
+    "bad": "En la cafetería los estudiantes conversan y descansan."
+   },
+   "photo_links": [
+    {
+     "name": "UNG photo gallery",
+     "url": "https://ung.edu/university-relations/photo-gallery/"
+    },
+    {
+     "name": "Gainesville",
+     "url": "https://www.flickr.com/photos/uofnorthgeorgia/albums/72177720310327684/"
+    },
+    {
+     "name": "Dahlonega",
+     "url": "https://www.flickr.com/photos/uofnorthgeorgia/albums/72177720311185488/"
+    },
+    {
+     "name": "Oconee",
+     "url": "https://www.flickr.com/photos/uofnorthgeorgia/albums/72177720310699830/"
+    },
+    {
+     "name": "Cumming",
+     "url": "https://www.flickr.com/photos/uofnorthgeorgia/albums/72177720327464736/"
+    }
+   ],
+   "quiz_topics": [
+    "University vocabulary and questions",
+    "-AR verbs and their forms"
+   ],
+   "lab_vocab": [
+    {
+     "title": "Campus places",
+     "words": [
+      {
+       "word": "la biblioteca",
+       "meaning": "library"
+      },
+      {
+       "word": "la cafetería",
+       "meaning": "cafeteria"
+      },
+      {
+       "word": "el gimnasio",
+       "meaning": "gym"
+      },
+      {
+       "word": "el laboratorio",
+       "meaning": "lab"
+      },
+      {
+       "word": "la residencia estudiantil",
+       "meaning": "dorm"
+      },
+      {
+       "word": "el estadio",
+       "meaning": "stadium"
+      },
+      {
+       "word": "la librería",
+       "meaning": "bookstore"
+      }
+     ]
+    },
+    {
+     "title": "-AR verbs",
+     "words": [
+      {
+       "word": "estudiar",
+       "meaning": "to study"
+      },
+      {
+       "word": "trabajar",
+       "meaning": "to work"
+      },
+      {
+       "word": "caminar",
+       "meaning": "to walk"
+      },
+      {
+       "word": "conversar",
+       "meaning": "to chat"
+      },
+      {
+       "word": "practicar",
+       "meaning": "to practice"
+      },
+      {
+       "word": "escuchar música",
+       "meaning": "to listen to music"
+      },
+      {
+       "word": "descansar",
+       "meaning": "to rest"
+      }
+     ]
+    },
+    {
+     "title": "Location",
+     "words": [
+      {
+       "word": "está",
+       "meaning": "is (location)"
+      },
+      {
+       "word": "Aquí está…",
+       "meaning": "Here is…"
+      }
+     ]
+    }
+   ],
+   "hero": {
+    "image": "lab-2-image-1.jpg",
+    "credit": "“Now that's an admissions building!” by Chris Pesotski, Flickr, CC BY-NC-ND 2.0",
+    "url": ""
+   },
+   "id": "lab-2",
+   "vocab_chapters": [
+    1,
+    2
+   ],
+   "ch_label": "Ch. 1–2",
+   "quiz_media": true
+  },
+  {
+   "n": 3,
+   "title": "La familia",
+   "chapters": "1–3",
+   "max_ch": 3,
+   "mode": "Camera + Screen",
+   "peer": false,
+   "summary": "Introduce 3 relatives to Carmen from Mexico, one slide each.",
+   "context": "Introduce your family to Carmen, a friend from Mexico. Make one slide for each relative and share them in Bongo while you talk. Use a family photo, a family tree, or drawings if you prefer privacy.",
+   "parts": [
+    {
+     "title": "For each of at least 3 relatives",
+     "items": [
+      "Who they are and their name",
+      "Their age (*tener … años*)",
+      "At least 3 adjectives that agree with the person",
+      "Where they live (*vive en…*)",
+      "What they do (*trabaja*, *estudia*, *es…*)",
+      "One more detail of your choice"
+     ]
+    }
+   ],
+   "slides": {
+    "rules": [
+     "One slide per relative, at least 3 (a title slide is optional)",
+     "Each slide: a photo, the name, and 3–5 Spanish keywords",
+     "No sentences on the slides. You say the sentences."
+    ],
+    "good": [
+     "mi madre · Ana",
+     "48 años · trabajadora · inteligente · Atlanta"
+    ],
+    "bad": "Mi madre Ana tiene 48 años y es muy trabajadora."
+   },
+   "quiz_topics": [
+    "Family words and adjectives",
+    "-ER and -IR verbs"
+   ],
+   "lab_vocab": [
+    {
+     "title": "Family",
+     "words": [
+      {
+       "word": "los padres",
+       "meaning": "parents"
+      },
+      {
+       "word": "el hermano / la hermana",
+       "meaning": "brother / sister"
+      },
+      {
+       "word": "el abuelo / la abuela",
+       "meaning": "grandfather / grandmother"
+      },
+      {
+       "word": "el tío / la tía",
+       "meaning": "uncle / aunt"
+      },
+      {
+       "word": "el primo / la prima",
+       "meaning": "cousin"
+      }
+     ]
+    },
+    {
+     "title": "Adjectives",
+     "words": [
+      {
+       "word": "alto/a · bajo/a",
+       "meaning": "tall · short"
+      },
+      {
+       "word": "joven · mayor",
+       "meaning": "young · older"
+      },
+      {
+       "word": "simpático/a",
+       "meaning": "nice"
+      },
+      {
+       "word": "trabajador/a",
+       "meaning": "hardworking"
+      },
+      {
+       "word": "inteligente",
+       "meaning": "intelligent"
+      },
+      {
+       "word": "serio/a · cómico/a",
+       "meaning": "serious · funny"
+      }
+     ]
+    },
+    {
+     "title": "Sentence starters",
+     "words": [
+      {
+       "word": "Este es mi… / Esta es mi…",
+       "meaning": "This is my…"
+      },
+      {
+       "word": "Se llama…",
+       "meaning": "His / her name is…"
+      },
+      {
+       "word": "Tiene … años.",
+       "meaning": "He / she is … years old."
+      },
+      {
+       "word": "Vive en…",
+       "meaning": "He / she lives in…"
+      },
+      {
+       "word": "Trabaja de…",
+       "meaning": "He / she works as…"
+      }
+     ]
+    }
+   ],
+   "hero": {
+    "image": "lab-3-image-1.jpg",
+    "credit": "Photo by Niko Samik, Unsplash",
+    "url": "https://unsplash.com/photos/BIsJb3wClf8"
+   },
+   "id": "lab-3",
+   "vocab_chapters": [
+    1,
+    2,
+    3
+   ],
+   "ch_label": "Ch. 1–3",
+   "quiz_media": false
+  },
+  {
+   "n": 4,
+   "title": "Los pasatiempos",
+   "chapters": "1–4",
+   "max_ch": 4,
+   "mode": "Camera",
+   "peer": true,
+   "summary": "Your free time and a dream weekend trip, ending with a dilemma for classmates. Then a video comment.",
+   "context": "You're planning a dream weekend trip to a specific place in the U.S. (a named city or park, not just \"the beach\"). Connect your free time now to that trip, and end with a choice your classmates can help you make.",
+   "parts": [
+    {
+     "title": "A · Your free time now",
+     "items": [
+      "What you do, where, and with whom",
+      "Use different verbs: *prefiero, quiero, puedo, vuelvo, voy*"
+     ]
+    },
+    {
+     "title": "B · The trip",
+     "items": [
+      "Where you're going, who's going, and when",
+      "At least 3 plans with *ir a* + infinitive"
+     ]
+    },
+    {
+     "title": "C · Your dilemma",
+     "items": [
+      "End with a real choice for your classmates, using *yo* and another person",
+      "*Quiero ir a las montañas, pero mi amiga prefiere la playa. ¿Qué hacemos?*"
+     ]
+    }
+   ],
+   "peer_points": [
+    "React to their trip: would you want to go? Use *querer* or *preferir*.",
+    "Answer their dilemma: *Puedes… / Debes… / Tienes que…*",
+    "Add your own preference: *Yo prefiero… porque…*"
+   ],
+   "quiz_topics": [
+    "Pastimes vocabulary",
+    "*ir* and verbs with irregular forms"
+   ],
+   "lab_images": [
+    {
+     "label": "ir de excursión",
+     "image": "lab-4-image-2-irdeexcursion.jpg"
+    },
+    {
+     "label": "nadar",
+     "image": "lab-4-image-2-nadar.jpg"
+    },
+    {
+     "label": "el baloncesto",
+     "image": "lab-4-image-2-baloncesto.jpg"
+    },
+    {
+     "label": "esquiar",
+     "image": "lab-4-image-2-esquiar.jpg"
+    },
+    {
+     "label": "patinar",
+     "image": "lab-4-image-2-patinar.jpg"
+    },
+    {
+     "label": "pasear en bicicleta",
+     "image": "lab-4-image-2-pasearenbici.jpg"
+    },
+    {
+     "label": "ver películas",
+     "image": "lab-4-image-2-verpeliculas.jpg"
+    },
+    {
+     "label": "tocar la guitarra",
+     "image": "lab-4-image-2-tocarguitarra.jpg"
+    },
+    {
+     "label": "los videojuegos",
+     "image": "lab-4-image-2-videojuegos.jpg"
+    }
+   ],
+   "lab_images_en": [
+    "to go hiking",
+    "to swim",
+    "basketball",
+    "to ski",
+    "to skate",
+    "to ride a bike",
+    "to watch movies",
+    "to play the guitar",
+    "video games"
+   ],
+   "lab_images_credit": "Photos from Unsplash: ben o'bro, Yu Chen Lin, Steven Abraham, Matthieu Pétiard, Marisol Benitez, Ibrahima Toure, Kevin Woblick, David Schultz, Vitaly Gariev.",
+   "hero": {
+    "image": "lab-4-image-1.jpg",
+    "credit": "Photo by Léonard Cotte, Unsplash",
+    "url": "https://unsplash.com/photos/DUZ9XT10Y_A"
+   },
+   "id": "lab-4",
+   "vocab_chapters": [
+    1,
+    2,
+    3,
+    4
+   ],
+   "ch_label": "Ch. 1–4",
+   "quiz_media": true
+  },
+  {
+   "n": 5,
+   "title": "Las vacaciones",
+   "chapters": "1–4",
+   "max_ch": 4,
+   "mode": "Camera",
+   "peer": true,
+   "summary": "Be Rafa's guide to two places, say what people do there, give him tips, and end with a question for your classmates. Then a video comment.",
+   "context": "Rafa is visiting North Georgia for a weekend, and you're his guide. In one video, show him two real places you know. Online students can use places near where they live.",
+   "parts": [
+    {
+     "title": "A · Two places",
+     "items": [
+      "Where each one is (*estar*): *Está cerca de…*",
+      "What each one is like (*ser*): *Es pequeño y bonito.*",
+      "*¿Qué hace la gente allí?* Two things people do: *La gente camina y come.*",
+      "One practical fact: a day, a time, or a price: *Abre a las nueve.*"
+     ]
+    },
+    {
+     "title": "B · Tips for Rafa",
+     "items": [
+      "3 tips, with a different starter each time: *Debes…, Puedes…, Tienes que…*"
+     ]
+    },
+    {
+     "title": "C · Your favorite",
+     "items": [
+      "Which place you prefer and why: *Prefiero… porque…*",
+      "End with a question for your classmates: *¿Cuál es su lugar favorito? ¿Qué hace la gente allí?*"
+     ]
+    }
+   ],
+   "peer_points": [
+    "Answer the question: *Mi lugar favorito es… Está en…*",
+    "Say what people do there: *La gente…*",
+    "Give the speaker one tip: *Debes ir a… / Tienes que visitar…*"
+   ],
+   "quiz_topics": [
+    "Pastimes and vacation vocabulary",
+    "Uses of *estar* and Chapter 5 verbs"
+   ],
+   "lab_vocab": [
+    {
+     "title": "For your tour",
+     "words": [
+      {
+       "word": "el lugar",
+       "meaning": "place"
+      },
+      {
+       "word": "la gente",
+       "meaning": "people"
+      },
+      {
+       "word": "allí",
+       "meaning": "there"
+      },
+      {
+       "word": "cerca de / lejos de",
+       "meaning": "near / far from"
+      },
+      {
+       "word": "abre / cierra",
+       "meaning": "it opens / it closes"
+      },
+      {
+       "word": "cuesta",
+       "meaning": "it costs"
+      }
+     ]
+    },
+    {
+     "title": "Tips",
+     "words": [
+      {
+       "word": "Debes…",
+       "meaning": "You should…"
+      },
+      {
+       "word": "Puedes…",
+       "meaning": "You can…"
+      },
+      {
+       "word": "Tienes que…",
+       "meaning": "You have to…"
+      }
+     ]
+    }
+   ],
+   "hero": {
+    "image": "lab-5-image-1.jpg",
+    "credit": "Photo by Meg von Haartman, Unsplash",
+    "url": "https://unsplash.com/photos/BSU8mI89gmY"
+   },
+   "id": "lab-5",
+   "vocab_chapters": [
+    1,
+    2,
+    3,
+    4
+   ],
+   "ch_label": "Ch. 1–4",
+   "tips": [
+    "*La gente* is singular: *la gente camina*, not *caminan*.",
+    "*Está* says where a place is. *Es* says what it's like."
+   ],
+   "peer_intro": "Watch one classmate's video.",
+   "quiz_media": true
+  },
+  {
+   "n": 6,
+   "title": "El repaso",
+   "chapters": "1–5",
+   "max_ch": 5,
+   "mode": "Camera",
+   "peer": false,
+   "summary": "Oral final practice: your family visits UNG for the weekend. Uses all 5 chapters.",
+   "context": "Your family is visiting you at UNG for the weekend, and you're planning everything. This is practice for the oral final: use as many chapters as you can.",
+   "parts": [
+    {
+     "title": "A · Who's visiting (Ch. 1, 3)",
+     "items": [
+      "Names, relationships, and ages (*tener*)",
+      "At least 2 adjectives per person"
+     ]
+    },
+    {
+     "title": "B · Your week (Ch. 2)",
+     "items": [
+      "Your class or work schedule with -AR verbs",
+      "Where your classes are (*estar*) and when you're free"
+     ]
+    },
+    {
+     "title": "C · Weekend plans (Ch. 4)",
+     "items": [
+      "At least 3 plans with *ir a* + infinitive",
+      "*quiero, prefiero, podemos, volvemos*"
+     ]
+    },
+    {
+     "title": "D · Where everyone is staying (Ch. 5)",
+     "items": [
+      "Conditions and feelings with *estar*: *El hotel está limpio. Estamos contentos.*",
+      "Something someone is doing right now: *Mi mamá está buscando un restaurante.*"
+     ]
+    }
+   ],
+   "checklist": [
+    "*ser* for who people are and what they're like",
+    "*estar* for location, conditions, and feelings",
+    "3 different -AR verbs",
+    "2 -ER / -IR verbs",
+    "A stem-changing verb (*quiero, prefiero, puedo*)",
+    "3 plans with *ir a* + infinitive",
+    "*tener* for ages or *tener* expressions",
+    "The present progressive (*está / estamos* + -ando / -iendo)"
+   ],
+   "quiz_topics": [
+    "Two short videos, each with its own questions"
+   ],
+   "quiz_rules": [
+    "Use only the information from that section's video.",
+    "Write verbs in the present tense.",
+    "Write numbers as words, not digits.",
+    "Fill-in-the-blank: use the exact words from the video. Spelling counts.",
+    "Select all that apply: choose every correct option."
+   ],
+   "hero": {
+    "image": "lab-6-image-1.jpg",
+    "credit": "Photo by Sean Foster, Unsplash",
+    "url": "https://unsplash.com/photos/roCNpxIF9gk"
+   },
+   "id": "lab-6",
+   "vocab_chapters": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "ch_label": "Ch. 1–5",
+   "quiz_media": true
+  }
+ ],
+ "d2l": {
+  "_note": "D2L replaces {orgUnitId} with the course's ID, so these survive a course copy. lab_folder: after you create the LAB module, replace this with its quickLink (Content > LAB > ... > Copy link). Until then it opens Content.",
+  "lab_folder": "/d2l/le/content/{orgUnitId}/Home",
+  "guidelines_quiz": {
+   "inperson": "/d2l/common/dialogs/quickLink/quickLink.d2l?ou={orgUnitId}&type=quiz&rcode=usgx-44661866",
+   "online": "/d2l/common/dialogs/quickLink/quickLink.d2l?ou={orgUnitId}&type=quiz&rcode=usgx-44668675"
+  },
+  "lab1_video": {
+   "inperson": "/d2l/common/dialogs/quickLink/quickLink.d2l?ou={orgUnitId}&type=lti&rCode=usgx-45407451",
+   "online": "/d2l/common/dialogs/quickLink/quickLink.d2l?ou={orgUnitId}&type=lti&rCode=usgx-45407596"
+  }
+ },
+ "course_code": "span1001",
+ "points": 25,
+ "credit_line": "SPAN 1001 is 4 credit hours: 3 in class and 1 in the Language Lab. The lab is 6 short speaking videos you record in Bongo.",
+ "default_length": "1.5–2 min",
+ "quiz_media_note": true,
+ "variants": [
+  {
+   "label": "In person",
+   "sub": "In-person sections",
+   "due_key": "SPAN1001_regular",
+   "gq_link": "/d2l/common/dialogs/quickLink/quickLink.d2l?ou={orgUnitId}&type=quiz&rcode=usgx-44661866",
+   "tutoring": "in person",
+   "inlab": true,
+   "key": "inperson"
+  },
+  {
+   "label": "Online",
+   "sub": "Online sections",
+   "due_key": "SPAN1001_regular",
+   "gq_link": "/d2l/common/dialogs/quickLink/quickLink.d2l?ou={orgUnitId}&type=quiz&rcode=usgx-44668675",
+   "tutoring": "online",
+   "inlab": false,
+   "key": "online"
+  }
+ ],
+ "quiz_exports": {
+  "dir": "../../labs-regular-inperson/preparation/quiz_questions",
+  "items_from": "inperson",
+  "files": {
+   "inperson": {
+    "lab-1": "6022353",
+    "lab-2": "6022354",
+    "lab-3": "6022355",
+    "lab-4": "6022356",
+    "lab-5": "6022357",
+    "lab-6": "6022358"
+   },
+   "online": {
+    "lab-1": "6482706",
+    "lab-2": "6482707",
+    "lab-3": "6482708",
+    "lab-4": "6482732",
+    "lab-5": "6482733",
+    "lab-6": "6482734"
+   }
+  },
+  "image_dir": "../../labs-regular-inperson/preparation"
+ },
+ "quiz_pages": [
+  {
+   "lab": "lab-1",
+   "slug": "s1",
+   "where": "Section text: “Listen to the audio and respond to the questions”",
+   "section": "Listen to the audio and respond to the questions",
+   "title": "Mi horario: Ana Martínez",
+   "text": "Watch Ana's video, then answer the questions below. You can replay it at any time.",
+   "media": {
+    "inperson": {
+     "kind": "kaltura",
+     "rcode": "usgx-45407451"
+    },
+    "online": {
+     "kind": "kaltura",
+     "rcode": "usgx-45407596"
+    }
+   },
+   "media_title": "Mi horario, Ana Martínez (1:40)",
+   "words": true,
+   "accents": true
+  },
+  {
+   "lab": "lab-2",
+   "slug": "s1",
+   "where": "Section text: “Vocabulario”",
+   "section": "Vocabulario",
+   "title": "Vocabulario",
+   "text": "Listen to the audio, then fill in the missing words in the text below. Write numbers as words.",
+   "media": {
+    "inperson": {
+     "kind": "kaltura",
+     "rcode": "usgx-45424183"
+    },
+    "online": {
+     "kind": "kaltura",
+     "rcode": "usgx-45431227"
+    }
+   },
+   "media_title": "Lab 2 quiz audio (0:31)",
+   "audio": true,
+   "accents": true
+  },
+  {
+   "lab": "lab-2",
+   "slug": "s2_1",
+   "where": "Section text: “Fill in the blanks”",
+   "section": "Fill in the blanks",
+   "title": "Fill in the blanks",
+   "text": "Choose a verb from the box for each sentence below, and conjugate it.",
+   "bank": [
+    [
+     "explicar",
+     "to explain"
+    ],
+    [
+     "dibujar",
+     "to draw"
+    ],
+    [
+     "cenar",
+     "to have dinner"
+    ],
+    [
+     "estudiar",
+     "to study"
+    ],
+    [
+     "trabajar",
+     "to work"
+    ]
+   ],
+   "accents": true
+  },
+  {
+   "lab": "lab-3",
+   "slug": "s2",
+   "where": "Section text: “Un poco de gramática”",
+   "section": "Un poco de gramática",
+   "title": "Un poco de gramática",
+   "text": "Choose the verb that fits each sentence below, and conjugate it.",
+   "bank": [
+    [
+     "recibir",
+     "to receive"
+    ],
+    [
+     "compartir",
+     "to share"
+    ],
+    [
+     "abrir",
+     "to open"
+    ],
+    [
+     "leer",
+     "to read"
+    ],
+    [
+     "asistir",
+     "to attend"
+    ]
+   ],
+   "accents": true
+  },
+  {
+   "lab": "lab-4",
+   "slug": "s1",
+   "where": "Question 1 text (section “A escuchar”)",
+   "item": [
+    "A escuchar",
+    0
+   ],
+   "title": "A escuchar",
+   "text": "Watch from 0:48 to 1:32. Select all the activities you hear.",
+   "media": {
+    "all": {
+     "kind": "youtube",
+     "src": "https://www.youtube.com/embed/qXjMDCKS8d0?start=48&end=92&hl=es&rel=0"
+    }
+   },
+   "media_title": "Video en español (0:48–1:32)"
+  },
+  {
+   "lab": "lab-5",
+   "slug": "s2_2",
+   "where": "Question 2 text (section “Un poco de gramática”)",
+   "item": [
+    "Un poco de gramática",
+    1
+   ],
+   "title": "Escucha: pregunta 1",
+   "text": "Listen to the question, then choose the best answer.",
+   "media": {
+    "all": {
+     "kind": "kaltura",
+     "rcode": "usgx-42694931"
+    }
+   },
+   "media_title": "Lab 5 question 1 (audio)",
+   "audio": true
+  },
+  {
+   "lab": "lab-5",
+   "slug": "s2_3",
+   "where": "Question 3 text (section “Un poco de gramática”)",
+   "item": [
+    "Un poco de gramática",
+    2
+   ],
+   "title": "Escucha: pregunta 2",
+   "text": "Listen to the question, then choose the best answer.",
+   "media": {
+    "all": {
+     "kind": "kaltura",
+     "rcode": "usgx-42694935"
+    }
+   },
+   "media_title": "Lab 5 question 2 (audio)",
+   "audio": true
+  },
+  {
+   "lab": "lab-5",
+   "slug": "s2_4",
+   "where": "Question 4 text (section “Un poco de gramática”)",
+   "item": [
+    "Un poco de gramática",
+    3
+   ],
+   "title": "Escucha: pregunta 3",
+   "text": "Listen to the question, then choose the best answer.",
+   "media": {
+    "all": {
+     "kind": "kaltura",
+     "rcode": "usgx-42695022"
+    }
+   },
+   "media_title": "Lab 5 question 3 (audio)",
+   "audio": true
+  },
+  {
+   "lab": "lab-5",
+   "slug": "s2_5",
+   "where": "Question 5 text (section “Un poco de gramática”)",
+   "item": [
+    "Un poco de gramática",
+    4
+   ],
+   "title": "Escucha: pregunta 4",
+   "text": "Listen to the question, then choose the best answer.",
+   "media": {
+    "all": {
+     "kind": "kaltura",
+     "rcode": "usgx-42695024"
+    }
+   },
+   "media_title": "Lab 5 question 4 (audio)",
+   "audio": true
+  },
+  {
+   "lab": "lab-5",
+   "slug": "s2_6",
+   "where": "Question 6 text (section “Un poco de gramática”)",
+   "item": [
+    "Un poco de gramática",
+    5
+   ],
+   "title": "Escucha: pregunta 5",
+   "text": "Listen to the question, then choose the best answer. You may need to select more than one.",
+   "media": {
+    "all": {
+     "kind": "kaltura",
+     "rcode": "usgx-42695026"
+    }
+   },
+   "media_title": "Lab 5 question 5 (audio)",
+   "audio": true
+  },
+  {
+   "lab": "lab-6",
+   "slug": "s1",
+   "where": "Section text: “Part 1”",
+   "section": "Part 1",
+   "title": "Parte 1",
+   "text": "Watch the video, then answer the questions in Part 1. Write numbers as words.",
+   "media": {
+    "all": {
+     "kind": "kaltura",
+     "rcode": "usgx-42663623"
+    }
+   },
+   "media_title": "Lab 6 video, part 1",
+   "accents": true
+  },
+  {
+   "lab": "lab-6",
+   "slug": "s2",
+   "where": "Section text: “Part 2”",
+   "section": "Part 2",
+   "title": "Parte 2",
+   "text": "Watch the video, then answer the questions in Part 2.",
+   "media": {
+    "all": {
+     "kind": "kaltura",
+     "rcode": "usgx-42663629"
+    }
+   },
+   "media_title": "Lab 6 video, part 2",
+   "accents": true
+  }
+ ],
+ "proposal": {
+  "lead": "Same six labs, same Bongo recordings. Students find everything in one place, test their setup before the first lab, and are graded on one speaking rubric.",
+  "now": [
+   "Labs live in a <b>Start Here</b> module plus 6 subfolders, with 3–4 pages of instructions per lab",
+   "Pages sometimes disagree (how many places in Lab 2, one or two videos in Lab 5)",
+   "Labs are due on Fridays at 3:00 PM",
+   "Students first find out their setup can't record on a due date",
+   "No face or no audio: Incomplete the first time, then 0",
+   "Rubric with an Engagement row that fits only Labs 4–5, and no vocabulary row",
+   "Accent questions are multiple choice"
+  ],
+  "proposed": [
+   "One <b>LAB</b> folder: a short description, the Guidelines Quiz, Lab 0, then each lab's quiz and recording. Instructions live inside Bongo",
+   "One set of instructions, so the details always match",
+   "Labs are due at <b>{DUE_TIME}</b>, as in SPAN 1002",
+   "<b>Lab 0</b> in the first week: a one-minute camera + screen check that unlocks the labs",
+   "No face or no audio: 0, no resubmission, as in SPAN 1002",
+   "One <b>speaking rubric</b> (25 points) with a vocabulary row and a 0 column",
+   "Students <b>type</b> accented words in the Guidelines Quiz, and an accent bar sits inside the quizzes"
+  ],
+  "notice": [
+   "<b>A clear start:</b> the announcement walks them through 4 steps, with buttons to the LAB folder and the Guidelines Quiz.",
+   "<b>Simpler Bongo pages:</b> the task, the rules and the recording steps on one page, with tabs for vocabulary and troubleshooting.",
+   "<b>Help for their kind of lab:</b> Troubleshooting is split into video labs and slide labs, with one fallback for each: a phone or camera-app take, or a PowerPoint or Canva MP4.",
+   "<b>Clear responsibility:</b> students make sure their recording works and is in the right format. No late labs, including for technology problems reported before the due time. Students with an Excused Absence tell the Lab within 2 business days, and every make-up closes 7 days after the due date."
+  ],
+  "tasks": [
+   "<b>Lab 1:</b> no peer review.",
+   "<b>Lab 2:</b> a campus tour of 4 places, one slide each.",
+   "<b>Lab 3:</b> at least 3 relatives, one slide each.",
+   "<b>Labs 4–5:</b> students watch one classmate's video and leave a video comment.",
+   "<b>Lab 5:</b> one video: a North Georgia tour for Rafa with tips, using Chapters 1–4 only, so it works before Chapter 5 is taught.",
+   "<b>Recording in the Lab:</b> optional for in-person sections. Online sections record on their own and can book online tutoring."
+  ],
+  "same": [
+   "6 labs, 25 points each, graded by Language Lab staff.",
+   "Each lab is a mini-quiz plus a Bongo recording, 1.5–2 minutes, face visible, Spanish only.",
+   "No late work apart from Excused Absences. The Guidelines Quiz (75%) still unlocks the labs, now together with Lab 0."
+  ]
+ },
+ "alt_fixes": {
+  "w": "a person taking a photo",
+  "baseball glove ": "a baseball glove",
+  "monument": "a monument"
+ },
+ "setup_notes": [
+  "In-person Lab 5 quiz: its description iframe points to the Lab 1 description. Replacing the description fixes it.",
+  "Lab 2 quiz, fill-in question: delete the typed accent line (á é í ó ú ñ) at the end; the in-quiz page has an accent bar.",
+  "Lab 5 quiz, picture matching: one image's alt text is just \"w\". Change it to \"a person taking a photo\".",
+  "Lab 6 quiz: the question says to include accents, but the key also accepts biologia and espanol without them. Decide which it should be."
+ ]
+}

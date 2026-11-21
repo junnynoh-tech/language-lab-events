@@ -1,0 +1,49 @@
+{
+ "_about": "Each campus's Language Lab: shown on that campus's copy of the pages. Copied from the Lab Hub (current/data/campuses.json) on 2026-11-21.",
+ "campuses": [
+  {
+   "code": "gvl",
+   "banner": "GA",
+   "name": "Gainesville",
+   "coordinator": "Mr. Daniel Noh",
+   "room": "Martha T. Nesbitt 4201",
+   "hours": "Mon–Fri, 8:00 AM–5:00 PM",
+   "email": "languagelab-gvl@ung.edu",
+   "phone": "(678) 717-3868",
+   "wconline": "https://unglanglab.mywconline.com/schedule/calendar?scheduleid=sc6655efb977156"
+  },
+  {
+   "code": "dah",
+   "banner": "A",
+   "name": "Dahlonega",
+   "coordinator": "Mrs. Ashley Andrews",
+   "room": "Dunlap Hall 317",
+   "hours": "Mon–Fri, 8:00 AM–5:00 PM",
+   "email": "languagelab-dah@ung.edu",
+   "phone": "(706) 864-1682",
+   "wconline": "https://unglanglab.mywconline.com/schedule/calendar?scheduleid=sc6655efb977156"
+  },
+  {
+   "code": "ocn",
+   "banner": "OC",
+   "name": "Oconee",
+   "coordinator": "Grace Gonzalez Sanchez",
+   "room": "Student Resource Center 573",
+   "hours": "Mon–Fri, 8:00 AM–5:00 PM",
+   "email": "languagelab-ocn@ung.edu",
+   "phone": "(706) 310-6296",
+   "wconline": "https://unglanglab.mywconline.com/schedule/calendar?scheduleid=sc6655efb977156"
+  },
+  {
+   "code": "cmg",
+   "banner": "9",
+   "name": "Cumming",
+   "coordinator": "Mr. Daniel Noh",
+   "room": "Room 1219",
+   "hours": "Mon–Thu, 8:00 AM–5:00 PM (closed Friday)",
+   "email": "languagelab-cmg@ung.edu",
+   "phone": "(470) 239-3111",
+   "wconline": "https://unglanglab.mywconline.com/schedule/calendar?scheduleid=sc6655efb977156"
+  }
+ ]
+}

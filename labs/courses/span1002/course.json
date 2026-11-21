@@ -1,0 +1,1345 @@
+{
+ "_about": "Single source for every SPAN 1002 lab page: in-person, online, Stone and summer sections. Edit, then run: python3 labs/lab-builder/build_all.py labs/span1002/labs-2026/source. Text in *asterisks* is Spanish.",
+ "course": "SPAN 1002",
+ "course_code": "span1002",
+ "course_name": "Elementary Spanish II",
+ "quiz_exports": {
+  "dir": "../../quiz_instructions",
+  "items_from": "inperson",
+  "image_dir": "../../labs-regular-inperson/preparation",
+  "files": {
+   "inperson": {
+    "compras": "6747209",
+    "rutina": "6747210",
+    "cocinar": "6747211",
+    "festivos": "6747212",
+    "salud": "6747213",
+    "repaso": "6747214"
+   },
+   "online": {
+    "compras": "6537348",
+    "rutina": "6537349",
+    "cocinar": "6537350",
+    "festivos": "6537375",
+    "salud": "6537376",
+    "repaso": "6538779"
+   },
+   "stone": {
+    "rutina": "6747096",
+    "repaso": "6747100",
+    "festivos": "6747098",
+    "cocinar": "6747097",
+    "salud": "6747099",
+    "compras": "6747095"
+   },
+   "summer": {
+    "compras": "6537024",
+    "rutina": "6537040",
+    "cocinar": "6537042",
+    "salud": "6537043"
+   }
+  }
+ },
+ "labs": [
+  {
+   "id": "compras",
+   "title": "De compras",
+   "chapters": "6",
+   "ch_label": "Ch. 6",
+   "vocab_chapters": [
+    6
+   ],
+   "mode": "Camera",
+   "hero": {
+    "image": "lab-1-image-1.jpg",
+    "credit": "Photo by freestocks, Unsplash",
+    "url": "https://unsplash.com/photos/photo-of-woman-holding-white-and-black-paper-bags-_3Q3tsJ01nc"
+   },
+   "summary": "One Bongo video answering 5 groups of questions about your clothes and shopping, comparing what you wore last year with what you wear now.",
+   "context": "Record one video in Bongo that answers the questions below about your clothes and how you shop. Answer them in order, and say the name of each part (*Introducción*, *Las compras*…) before you start it.",
+   "quiz_topics": [
+    "Clothing and shopping vocabulary",
+    "*llevar* and *comprar* in the preterite",
+    "Comparing what you wear now with what you wore before"
+   ],
+   "lab_vocab": [
+    {
+     "title": "La ropa y las compras",
+     "words": [
+      {
+       "word": "camisa / camiseta",
+       "meaning": "shirt / t-shirt"
+      },
+      {
+       "word": "pantalones / jeans",
+       "meaning": "pants / jeans"
+      },
+      {
+       "word": "falda",
+       "meaning": "skirt"
+      },
+      {
+       "word": "vestido",
+       "meaning": "dress"
+      },
+      {
+       "word": "chaqueta / abrigo",
+       "meaning": "jacket / coat"
+      },
+      {
+       "word": "zapatos / botas",
+       "meaning": "shoes / boots"
+      },
+      {
+       "word": "calcetines",
+       "meaning": "socks"
+      },
+      {
+       "word": "sombrero / gorra",
+       "meaning": "hat / cap"
+      },
+      {
+       "word": "llevar / usar",
+       "meaning": "to wear"
+      },
+      {
+       "word": "vestirse (e→i)",
+       "meaning": "to get dressed"
+      },
+      {
+       "word": "comprar",
+       "meaning": "to buy"
+      },
+      {
+       "word": "costar (o→ue)",
+       "meaning": "to cost"
+      },
+      {
+       "word": "pagar",
+       "meaning": "to pay"
+      },
+      {
+       "word": "en línea",
+       "meaning": "online"
+      },
+      {
+       "word": "en persona",
+       "meaning": "in person"
+      },
+      {
+       "word": "de moda",
+       "meaning": "fashionable"
+      }
+     ]
+    }
+   ],
+   "length": "3–4 min",
+   "question_groups": [
+    {
+     "title": "Introducción",
+     "questions": [
+      {
+       "question": "¿Cómo te llamas? Dinos tu nombre completo.",
+       "guide": "What's your name? Tell us your full name."
+      },
+      {
+       "question": "¿Vives en la universidad, en tu casa con tu familia o en un departamento?",
+       "guide": "Do you live on campus, at home with your family, or in an apartment?"
+      }
+     ]
+    },
+    {
+     "title": "Las compras",
+     "questions": [
+      {
+       "question": "¿Dónde compras tu ropa? ¿En línea o en persona?",
+       "guide": "Where do you buy your clothes? Online or in person?"
+      },
+      {
+       "question": "¿Ropa nueva o ropa usada?",
+       "guide": "New clothes or used clothes?"
+      }
+     ]
+    },
+    {
+     "title": "La ropa en clase",
+     "questions": [
+      {
+       "question": "¿Qué ropa llevas para ir a clase?",
+       "guide": "What do you wear to class?"
+      },
+      {
+       "question": "¿Llevas casi siempre lo mismo o ropa diferente según el día?",
+       "guide": "Do you usually wear the same thing, or different clothes depending on the day?"
+      },
+      {
+       "question": "Compara la ropa que llevaste el año pasado con la ropa que llevas este año.",
+       "guide": "Compare the clothes you wore last year with the clothes you wear this year."
+      }
+     ]
+    },
+    {
+     "title": "Los colores",
+     "questions": [
+      {
+       "question": "¿Qué colores son tus favoritos?",
+       "guide": "What are your favorite colors?"
+      },
+      {
+       "question": "¿Tienes preferencia de colores según la estación del año?",
+       "guide": "Do you prefer different colors depending on the season?"
+      }
+     ]
+    },
+    {
+     "title": "Opiniones",
+     "questions": [
+      {
+       "question": "¿Qué tipo de ropa no te gusta para nada? ¿Por qué?",
+       "guide": "What kind of clothes do you not like at all? Why?"
+      },
+      {
+       "question": "¿Cuál es tu ropa favorita para el verano y para el invierno? Incluye los zapatos.",
+       "guide": "What are your favorite clothes for summer and for winter? Include your shoes."
+      }
+     ]
+    }
+   ],
+   "tips": [
+    "Several sentences for each part, not one word or one sentence.",
+    "Present tense for now, preterite for the past: *El año pasado llevé…, pero ahora llevo…*",
+    "You can keep the questions open while you record; your answers still come from your notecard, not a script."
+   ],
+   "was_qa": true,
+   "quiz_media": true
+  },
+  {
+   "id": "rutina",
+   "title": "Rutina para una vida sana",
+   "chapters": "7",
+   "ch_label": "Ch. 7",
+   "vocab_chapters": [
+    7
+   ],
+   "mode": "Camera + Screen",
+   "length": "2–3 min",
+   "hero": {
+    "image": "lab-2-image-1.jpg",
+    "credit": "Photo by Jenny Hill, Unsplash",
+    "url": "https://unsplash.com/photos/man-running-on-road-near-grass-field-mQVWb7kUoOE"
+   },
+   "summary": "Health Ambassador: present your healthy daily routine in 5 places, one slide each.",
+   "context": "You're a Health Ambassador for UNG's incoming students. Make 5 slides, one for each place or moment in your day where you keep healthy habits, and present them in Bongo.",
+   "parts": [
+    {
+     "title": "For each place, cover at least 3 of these",
+     "items": [
+      "Reflexive verbs: *me despierto, me ducho, me visto…*",
+      "A negative or indefinite word: *nunca, siempre, a veces, nadie, nada, también*",
+      "A verb like *gustar*: *me encanta, me molesta, me importa*",
+      "Why the habit keeps you healthy"
+     ]
+    },
+    {
+     "title": "Across the whole video",
+     "items": [
+      "5 places from your real day (bedroom, bathroom, cafeteria, library, walking between classes…)",
+      "At least 5 different reflexive verbs"
+     ]
+    }
+   ],
+   "slides": {
+    "rules": [
+     "5 slides, one per place (a title slide is optional)",
+     "Each slide: the place, a photo, and 3–5 Spanish keywords",
+     "No sentences on the slides. You say the sentences."
+    ],
+    "good": [
+     "El gimnasio",
+     "ejercitarse · estirarse · sudar"
+    ],
+    "bad": "En el gimnasio me ejercito todos los días porque es muy importante para la salud."
+   },
+   "quiz_topics": [
+    "Daily routine vocabulary and reflexive verbs",
+    "What you like or prefer to do to stay healthy"
+   ],
+   "lab_vocab": [
+    {
+     "title": "Verbos reflexivos",
+     "words": [
+      {
+       "word": "despertarse",
+       "meaning": "to wake up"
+      },
+      {
+       "word": "levantarse",
+       "meaning": "to get up"
+      },
+      {
+       "word": "ducharse",
+       "meaning": "to shower"
+      },
+      {
+       "word": "bañarse",
+       "meaning": "to bathe"
+      },
+      {
+       "word": "lavarse (la cara / las manos)",
+       "meaning": "to wash (one's face / hands)"
+      },
+      {
+       "word": "cepillarse (los dientes / el pelo)",
+       "meaning": "to brush (teeth / hair)"
+      },
+      {
+       "word": "peinarse",
+       "meaning": "to comb one's hair"
+      },
+      {
+       "word": "vestirse",
+       "meaning": "to get dressed"
+      },
+      {
+       "word": "ponerse (la ropa)",
+       "meaning": "to put on (clothes)"
+      },
+      {
+       "word": "acostarse",
+       "meaning": "to go to bed"
+      },
+      {
+       "word": "dormirse",
+       "meaning": "to fall asleep"
+      },
+      {
+       "word": "relajarse",
+       "meaning": "to relax"
+      }
+     ]
+    },
+    {
+     "title": "La rutina diaria · palabras de secuencia",
+     "words": [
+      {
+       "word": "primero",
+       "meaning": "first"
+      },
+      {
+       "word": "después",
+       "meaning": "afterward"
+      },
+      {
+       "word": "luego",
+       "meaning": "then"
+      },
+      {
+       "word": "entonces",
+       "meaning": "then; so"
+      },
+      {
+       "word": "finalmente",
+       "meaning": "finally"
+      },
+      {
+       "word": "todos los días",
+       "meaning": "every day"
+      },
+      {
+       "word": "por la mañana / tarde / noche",
+       "meaning": "in the morning / afternoon / evening"
+      }
+     ]
+    }
+   ],
+   "quiz_media": true
+  },
+  {
+   "id": "cocinar",
+   "title": "A cocinar",
+   "chapters": "8",
+   "ch_label": "Ch. 8",
+   "vocab_chapters": [
+    8
+   ],
+   "mode": "Upload",
+   "length": "1.5–2.5 min",
+   "hero": {
+    "image": "lab-3-image-1.jpg",
+    "credit": "Photo by Or Hakim, Unsplash",
+    "url": "https://unsplash.com/photos/a-person-cutting-up-vegetables-on-a-cutting-board-S2Eql9vHN3o"
+   },
+   "summary": "Record a cooking video on your phone: the ingredients, where you bought them, and each step.",
+   "context": "Record a short cooking video in Spanish on your phone. Any dish works: a sandwich, pancakes, ramen. You can prepare stages ahead of time and talk through them.",
+   "parts": [
+    {
+     "title": "Cover all four parts",
+     "items": [
+      "*Introducción*: what you're making and why you chose it",
+      "*Los ingredientes*: show and name each one, where you bought it, and what it cost (preterite: *compré, costó, pagué*)",
+      "*Los pasos*: at least 3 steps in order (*primero, después, luego, finalmente*)",
+      "*¡Listo!*: show the finished dish and react"
+     ]
+    }
+   ],
+   "quiz_topics": [
+    "Food vocabulary and meals",
+    "Comparisons (*más… que, menos… que*)"
+   ],
+   "lab_vocab": [
+    {
+     "title": "La cocina y los ingredientes",
+     "words": [
+      {
+       "word": "los ingredientes",
+       "meaning": "ingredients"
+      },
+      {
+       "word": "la harina",
+       "meaning": "flour"
+      },
+      {
+       "word": "los huevos",
+       "meaning": "eggs"
+      },
+      {
+       "word": "la leche",
+       "meaning": "milk"
+      },
+      {
+       "word": "el azúcar",
+       "meaning": "sugar"
+      },
+      {
+       "word": "la sal / la pimienta",
+       "meaning": "salt / pepper"
+      },
+      {
+       "word": "el aceite",
+       "meaning": "oil"
+      },
+      {
+       "word": "la carne / el pollo",
+       "meaning": "meat / chicken"
+      },
+      {
+       "word": "cortar",
+       "meaning": "to cut"
+      },
+      {
+       "word": "mezclar",
+       "meaning": "to mix"
+      },
+      {
+       "word": "hervir (e→ie)",
+       "meaning": "to boil"
+      },
+      {
+       "word": "freír (e→i)",
+       "meaning": "to fry"
+      },
+      {
+       "word": "hornear",
+       "meaning": "to bake"
+      },
+      {
+       "word": "añadir",
+       "meaning": "to add"
+      },
+      {
+       "word": "primero / después",
+       "meaning": "first / then"
+      },
+      {
+       "word": "finalmente",
+       "meaning": "finally"
+      },
+      {
+       "word": "costar (o→ue)",
+       "meaning": "to cost"
+      },
+      {
+       "word": "pagar",
+       "meaning": "to pay"
+      },
+      {
+       "word": "el precio",
+       "meaning": "price"
+      }
+     ]
+    }
+   ],
+   "quiz_media": true
+  },
+  {
+   "id": "festivos",
+   "title": "Días festivos",
+   "chapters": "9",
+   "ch_label": "Ch. 9",
+   "vocab_chapters": [
+    9
+   ],
+   "mode": "Camera",
+   "hero": {
+    "image": "lab-4-image-1.jpg",
+    "credit": "Photo by Gopinath Mohanta, Unsplash",
+    "url": "https://unsplash.com/photos/a-woman-in-a-purple-and-white-dress-dancing-with-sparklers-QboLojBWVvc"
+   },
+   "summary": "One Bongo video in three parts: your childhood and teen years, a memorable holiday, and your last birthday. Preterite throughout.",
+   "context": "Record one video in Bongo that answers the questions below about celebrations in your life. Answer the three parts in order and say the name of each part before you start it. Detail matters: names, places, and what happened.",
+   "quiz_topics": [
+    "Holidays, celebrations, and stages of life",
+    "Irregular verbs in the preterite"
+   ],
+   "lab_vocab": [
+    {
+     "title": "Las fiestas y el tiempo pasado",
+     "words": [
+      {
+       "word": "el cumpleaños",
+       "meaning": "birthday"
+      },
+      {
+       "word": "la Navidad",
+       "meaning": "Christmas"
+      },
+      {
+       "word": "el Año Nuevo",
+       "meaning": "New Year's"
+      },
+      {
+       "word": "el Día de Gracias",
+       "meaning": "Thanksgiving"
+      },
+      {
+       "word": "celebrar",
+       "meaning": "to celebrate"
+      },
+      {
+       "word": "regalar",
+       "meaning": "to give a gift"
+      },
+      {
+       "word": "recibir",
+       "meaning": "to receive"
+      },
+      {
+       "word": "decorar",
+       "meaning": "to decorate"
+      },
+      {
+       "word": "de niño/a",
+       "meaning": "as a child"
+      },
+      {
+       "word": "cuando era pequeño/a",
+       "meaning": "when I was young"
+      },
+      {
+       "word": "todos los años",
+       "meaning": "every year"
+      },
+      {
+       "word": "una vez",
+       "meaning": "once"
+      },
+      {
+       "word": "el pretérito",
+       "meaning": "completed event"
+      }
+     ]
+    }
+   ],
+   "length": "3–4 min",
+   "question_groups": [
+    {
+     "title": "A · La niñez y la adolescencia",
+     "questions": [
+      {
+       "question": "Compara tu niñez con tu adolescencia. ¿Qué etapa te gustó más y por qué?",
+       "guide": "Compare your childhood with your teen years. Which stage did you like more, and why?"
+      },
+      {
+       "question": "¿Dónde viviste durante cada etapa?",
+       "guide": "Where did you live during each stage?"
+      },
+      {
+       "question": "¿Quiénes fueron tus amigos en cada etapa?",
+       "guide": "Who were your friends in each stage?"
+      },
+      {
+       "question": "¿Cuál fue tu actividad favorita en cada una?",
+       "guide": "What was your favorite activity in each one?"
+      }
+     ]
+    },
+    {
+     "title": "B · Un día festivo memorable",
+     "questions": [
+      {
+       "question": "Habla de un día festivo o un día importante de tu niñez.",
+       "guide": "Talk about a holiday or an important day from your childhood."
+      },
+      {
+       "question": "¿Por qué fue importante para ti?",
+       "guide": "Why was it important to you?"
+      },
+      {
+       "question": "¿Qué pasó exactamente? Danos todos los detalles.",
+       "guide": "What exactly happened? Give us all the details."
+      }
+     ]
+    },
+    {
+     "title": "C · Tu último cumpleaños",
+     "questions": [
+      {
+       "question": "¿Cuándo es tu cumpleaños?",
+       "guide": "When is your birthday?"
+      },
+      {
+       "question": "¿Cuándo fue tu última fiesta de cumpleaños con amigos o familia?",
+       "guide": "When was your last birthday party with friends or family?"
+      },
+      {
+       "question": "¿Qué hicieron y dónde lo celebraron?",
+       "guide": "What did you do, and where did you celebrate?"
+      },
+      {
+       "question": "¿Qué comieron? ¿Tuviste un pastel?",
+       "guide": "What did you eat? Did you have a cake?"
+      },
+      {
+       "question": "¿Qué te regalaron?",
+       "guide": "What gifts did you get?"
+      }
+     ]
+    }
+   ],
+   "tips": [
+    "Use the preterite for what happened: *fui, hice, tuve, me regalaron*.",
+    "Several sentences with specific details for each part, not one-line answers.",
+    "You can keep the questions open while you record; your answers still come from your notecard, not a script."
+   ],
+   "was_qa": true,
+   "quiz_media": true
+  },
+  {
+   "id": "salud",
+   "title": "La salud física y mental",
+   "chapters": "10",
+   "ch_label": "Ch. 10",
+   "vocab_chapters": [
+    10
+   ],
+   "mode": "Camera",
+   "hero": {
+    "image": "lab-5-image-1.jpg",
+    "credit": "Photo by Annie Spratt, Unsplash",
+    "url": "https://unsplash.com/photos/man-in-white-coat-and-black-pants-standing-beside-white-wooden-picnic-table-HaCqGNFgiGE"
+   },
+   "summary": "As a UNG health coach, record one video that finishes 4 sentence starters with advice and tells about your own past habits.",
+   "context": "You're a UNG health coach. Record one video in Bongo. Parts 1–4 start a sentence: read the start out loud and finish it with specific, realistic advice. Part 5 is about you. Go in order.",
+   "quiz_topics": [
+    "Health and doctor-visit vocabulary",
+    "The preterite and the imperfect for past habits"
+   ],
+   "lab_vocab": [
+    {
+     "title": "La salud y los consejos",
+     "words": [
+      {
+       "word": "la salud",
+       "meaning": "health"
+      },
+      {
+       "word": "estar en forma",
+       "meaning": "to be in shape"
+      },
+      {
+       "word": "hacer ejercicio",
+       "meaning": "to exercise"
+      },
+      {
+       "word": "dormir lo suficiente",
+       "meaning": "to get enough sleep"
+      },
+      {
+       "word": "comer sano",
+       "meaning": "to eat healthy"
+      },
+      {
+       "word": "beber agua",
+       "meaning": "to drink water"
+      },
+      {
+       "word": "el estrés",
+       "meaning": "stress"
+      },
+      {
+       "word": "el bienestar",
+       "meaning": "wellbeing"
+      },
+      {
+       "word": "el médico / la médica",
+       "meaning": "doctor"
+      },
+      {
+       "word": "el hospital",
+       "meaning": "hospital"
+      },
+      {
+       "word": "te recomiendo + inf.",
+       "meaning": "I recommend that you…"
+      },
+      {
+       "word": "es importante + inf.:",
+       "meaning": "it is important that…"
+      },
+      {
+       "word": "deberías + inf.",
+       "meaning": "you should…"
+      },
+      {
+       "word": "evita + inf.",
+       "meaning": "avoid…"
+      }
+     ]
+    }
+   ],
+   "length": "3–4 min",
+   "question_groups": [
+    {
+     "title": "1 · Cuando no te sientes bien",
+     "questions": [
+      {
+       "question": "Cuando no te sientes bien, debes…",
+       "guide": "When you don't feel well, you should…"
+      }
+     ]
+    },
+    {
+     "title": "2 · Dolor en la rodilla",
+     "questions": [
+      {
+       "question": "Si tienes dolor en tu rodilla, tienes que…",
+       "guide": "If your knee hurts, you have to…"
+      }
+     ]
+    },
+    {
+     "title": "3 · La temporada de resfríos",
+     "questions": [
+      {
+       "question": "Cuando empieza la temporada de resfríos, es importante…",
+       "guide": "When cold season starts, it's important to…"
+      }
+     ]
+    },
+    {
+     "title": "4 · Cinco recomendaciones de salud",
+     "questions": [
+      {
+       "question": "Estas son las cinco cosas que todo estudiante universitario debe hacer para mantener buena salud…",
+       "guide": "These are the five things every college student should do to stay healthy… (five complete sentences, each with a reason)"
+      }
+     ]
+    },
+    {
+     "title": "5 · Experiencias personales de salud",
+     "questions": [
+      {
+       "question": "Describe tres cosas que hiciste el año pasado que te ayudaron a mantenerte sano o sana, y tres cosas que no te ayudaron.",
+       "guide": "Describe three things you did last year that helped you stay healthy, and three things that didn't help."
+      }
+     ]
+    }
+   ],
+   "tips": [
+    "Parts 1–3: finish each sentence with 2–3 recommendations, using *debes*, *tienes que* and *es importante* + infinitive.",
+    "Give a reason each time: *…porque…*",
+    "Part 5: the preterite for what you did last year."
+   ],
+   "was_qa": true,
+   "quiz_media": true
+  },
+  {
+   "id": "repaso",
+   "title": "El repaso",
+   "chapters": "6–10",
+   "ch_label": "Ch. 6–10",
+   "vocab_chapters": [
+    6,
+    7,
+    8,
+    9,
+    10
+   ],
+   "mode": "Camera + Screen",
+   "length": "2.5–3 min",
+   "hero": {
+    "image": "lab-6-image-1.jpg",
+    "credit": "Photo by Kirill Fokin, Unsplash",
+    "url": "https://unsplash.com/photos/a-trampoline-in-a-park-vr-XlbkazPY"
+   },
+   "summary": "Childhood memories with your own photos: where you lived (imperfect) and one memorable event (preterite).",
+   "context": "Make a short slide presentation about your childhood and present it in Bongo, with your own photos.",
+   "parts": [
+    {
+     "title": "1 · Where you lived (5–6 sentences)",
+     "items": [
+      "Your house, neighborhood, or town: what it was like and what you used to do",
+      "Imperfect: *vivía, era, había, jugábamos*",
+      "A real photo"
+     ]
+    },
+    {
+     "title": "2 · A memorable event (5–6 sentences)",
+     "items": [
+      "One specific event: a birthday, a trip, or a holiday",
+      "Preterite: *fuimos, celebré, recibí*",
+      "Why it was memorable",
+      "A real photo"
+     ]
+    }
+   ],
+   "slides": {
+    "rules": [
+     "At least 3 slides",
+     "Each slide: your photo and a few Spanish keywords",
+     "No sentences on the slides. You say the sentences."
+    ],
+    "good": [
+     "Mi cumpleaños · 8 años",
+     "recibir · celebrar · haber · ser"
+    ],
+    "bad": "Cuando tenía ocho años, celebré mi cumpleaños en el parque con mis amigos."
+   },
+   "quiz_topics": [
+    "The preterite for completed past events",
+    "The imperfect for habits, states, and descriptions",
+    "Choosing between the two"
+   ],
+   "lab_vocab": [
+    {
+     "title": "El pasado: imperfecto y pretérito",
+     "words": [
+      {
+       "word": "vivir — vivía (imp.)",
+       "meaning": "to live — I used to live"
+      },
+      {
+       "word": "ser — era (imp.)",
+       "meaning": "to be — I was (description)"
+      },
+      {
+       "word": "tener — tenía (imp.)",
+       "meaning": "to have — I had"
+      },
+      {
+       "word": "ir — fui (pret.)",
+       "meaning": "to go — I went"
+      },
+      {
+       "word": "hacer — hice (pret.)",
+       "meaning": "to do — I did"
+      },
+      {
+       "word": "ver — vi (pret.)",
+       "meaning": "to see — I saw"
+      },
+      {
+       "word": "de niño/a",
+       "meaning": "as a child"
+      },
+      {
+       "word": "cuando era pequeño/a",
+       "meaning": "when I was young"
+      },
+      {
+       "word": "un día / una vez",
+       "meaning": "one day / once"
+      },
+      {
+       "word": "de repente",
+       "meaning": "suddenly"
+      },
+      {
+       "word": "al final",
+       "meaning": "in the end"
+      }
+     ]
+    }
+   ],
+   "quiz_media": true
+  }
+ ],
+ "points": 25,
+ "credit_line": "SPAN 1002 is 4 credit hours: 3 in class and 1 in the Language Lab. The lab is {N_LABS} short speaking assignments you record in Bongo.",
+ "wconline": "https://unglanglab.mywconline.com/schedule/calendar?scheduleid=sc6655efb977156",
+ "wconline_note": "On WCONLINE, sign in with your UNG email, choose a Small Group Lab Session, then pick your campus and Spanish.",
+ "bongo_help": "https://bongolearn.zendesk.com/hc/en-us/articles/360009373374-Common-Troubleshooting-Solutions",
+ "github_images": "https://junnynoh-tech.github.io/span1002-instructions/span1002-images/",
+ "video_rules": [
+  "Your face is visible and your voice is clear the whole time.",
+  "Spanish only, in complete sentences.",
+  "Full, specific answers. One-word or one-sentence answers don't get full credit.",
+  "The length listed for each lab.",
+  "One notecard with up to 15 words. Don't read a script.",
+  "At the start, hold your notecard still in front of the camera for about 5 seconds, close enough to read. Don't just flash it.",
+  "No translators, AI tools, or outside help."
+ ],
+ "allowed": "Class notes, your Vistas textbook, and WordReference.com.",
+ "email_include": [
+  "Your full name as it appears in D2L",
+  "Your course (Spanish 1002) and your professor's name",
+  "Your class days and start time, and your CRN if you know it"
+ ],
+ "d2l": {
+  "_note": "D2L replaces {orgUnitId} with the course's ID, so these survive a course copy. lab_folder: after you create the LAB module, replace this with its quickLink (Content > LAB > ... > Copy link). Until then it opens Content.",
+  "lab_folder": "/d2l/le/content/{orgUnitId}/Home"
+ },
+ "default_ou": "3654635",
+ "variants": [
+  {
+   "label": "In person",
+   "sub": "In-person sections",
+   "due_key": "SPAN1002_regular",
+   "gq_link": "/d2l/common/dialogs/quickLink/quickLink.d2l?ou={orgUnitId}&type=quiz&rcode=usgx-22034863",
+   "tutoring": "in person",
+   "inlab": true,
+   "key": "inperson"
+  },
+  {
+   "label": "Stone",
+   "sub": "Stone sections",
+   "due_key": "SPAN1002_regular",
+   "gq_link": "/d2l/common/dialogs/quickLink/quickLink.d2l?ou={orgUnitId}&type=quiz&rcode=usgx-22034863",
+   "vocab_label": "topic",
+   "order": [
+    "rutina",
+    "repaso",
+    "festivos",
+    "cocinar",
+    "salud",
+    "compras"
+   ],
+   "overrides": [
+    {
+     "ch_label": "Módulos 2–3",
+     "parts": [
+      {
+       "title": "For each place, cover all three",
+       "items": [
+        "Reflexive verbs: *me despierto, me ducho, me visto…*",
+        "Your morning or night routine",
+        "Why the habit keeps you healthy"
+       ]
+      },
+      {
+       "title": "Across the whole video",
+       "items": [
+        "5 places from your real day (bedroom, bathroom, cafeteria, library, walking between classes…)",
+        "At least 5 different reflexive verbs"
+       ]
+      }
+     ],
+     "lab": "rutina"
+    },
+    {
+     "title": "La niñez",
+     "ch_label": "Módulos 4–5",
+     "lab": "repaso"
+    },
+    {
+     "ch_label": "Módulo 7",
+     "summary": "One Bongo video in three parts: your childhood and teen years, a memorable holiday, and your last birthday. Imperfect and preterite.",
+     "tips": [
+      "Imperfect to describe, preterite for what happened: *Cuando era niño, vivía… El año pasado fui…*",
+      "Several sentences with specific details for each part, not one-line answers.",
+      "You can keep the questions open while you record; your answers still come from your notecard, not a script."
+     ],
+     "lab": "festivos"
+    },
+    {
+     "ch_label": "Módulos 8–9",
+     "lab": "cocinar"
+    },
+    {
+     "ch_label": "Módulos 10–11",
+     "lab": "salud"
+    },
+    {
+     "ch_label": "Módulos 12–13",
+     "lab": "compras"
+    }
+   ],
+   "toc": [
+    "Start Here: Syllabus",
+    "Módulos 2–3",
+    "Módulos 4–5",
+    "Módulo 7",
+    "Módulos 8–9",
+    "Módulos 10–11",
+    "Módulos 12–13"
+   ],
+   "tutoring": "in person",
+   "inlab": false,
+   "allowed": "Class notes and WordReference.com.",
+   "key": "stone"
+  },
+  {
+   "label": "Online",
+   "sub": "Online sections",
+   "due_key": "SPAN1002_regular",
+   "gq_link": "/d2l/common/dialogs/quickLink/quickLink.d2l?ou={orgUnitId}&type=quiz&rcode=usgx-45035537",
+   "tutoring": "online",
+   "inlab": false,
+   "key": "online"
+  },
+  {
+   "label": "Summer",
+   "sub": "Summer sections",
+   "due_key": "SPAN1002_summer",
+   "term": "Summer session",
+   "gq_link": "/d2l/common/dialogs/quickLink/quickLink.d2l?ou={orgUnitId}&type=quiz&rcode=usgx-45035520",
+   "order": [
+    "compras",
+    "rutina",
+    "cocinar",
+    "salud"
+   ],
+   "tutoring": "",
+   "inlab": false,
+   "key": "summer"
+  }
+ ],
+ "quiz_pages": [
+  {
+   "lab": "compras",
+   "slug": "s1",
+   "where": "Section text: “Listen to the audio and respond to the questions”",
+   "section": "Listen to the audio and respond to the questions",
+   "title": "La ropa en la universidad",
+   "text": "Listen to the recording, then answer the questions below. You can replay it at any time.",
+   "media": {
+    "inperson": {
+     "kind": "kaltura",
+     "rcode": "usgx-45420013"
+    },
+    "stone": {
+     "kind": "kaltura",
+     "rcode": "usgx-45420013"
+    },
+    "online": {
+     "kind": "kaltura",
+     "rcode": "usgx-45420033"
+    },
+    "summer": {
+     "kind": "kaltura",
+     "rcode": "usgx-45420053"
+    }
+   },
+   "media_title": "La ropa en la universidad (audio)",
+   "audio": true
+  },
+  {
+   "lab": "rutina",
+   "slug": "s1",
+   "where": "Section text: “Vocabulario”",
+   "section": "Vocabulario",
+   "title": "Mi rutina",
+   "text": "Listen to the recording, then answer the true/false questions below.",
+   "media": {
+    "inperson": {
+     "kind": "kaltura",
+     "rcode": "usgx-45420024"
+    },
+    "stone": {
+     "kind": "kaltura",
+     "rcode": "usgx-45420024"
+    },
+    "online": {
+     "kind": "kaltura",
+     "rcode": "usgx-45420038"
+    },
+    "summer": {
+     "kind": "kaltura",
+     "rcode": "usgx-45420057"
+    }
+   },
+   "media_title": "Mi rutina (audio)",
+   "audio": true
+  },
+  {
+   "lab": "rutina",
+   "slug": "s2",
+   "where": "Section text: “Fill in the blanks”",
+   "section": "Fill in the blanks",
+   "title": "Fill in the blanks",
+   "text": "Conjugate each reflexive verb in parentheses. Include the pronoun: *me despierto*.",
+   "accents": true
+  },
+  {
+   "lab": "cocinar",
+   "slug": "s1",
+   "where": "Section text: “El vocabulario”",
+   "section": "El vocabulario",
+   "title": "A comer en familia",
+   "text": "Listen to the recording, then answer the questions in this section.",
+   "media": {
+    "inperson": {
+     "kind": "kaltura",
+     "rcode": "usgx-45420027"
+    },
+    "stone": {
+     "kind": "kaltura",
+     "rcode": "usgx-45420027"
+    },
+    "online": {
+     "kind": "kaltura",
+     "rcode": "usgx-45420042"
+    },
+    "summer": {
+     "kind": "kaltura",
+     "rcode": "usgx-45420059"
+    }
+   },
+   "media_title": "A comer en familia (audio)",
+   "audio": true
+  },
+  {
+   "lab": "festivos",
+   "slug": "s1",
+   "where": "Section text: “A escuchar”",
+   "section": "A escuchar",
+   "title": "A escuchar",
+   "text": "Watch the first 2 minutes of the video, then answer the questions. Listen for the holidays and their dates; you don't need every word.",
+   "media": {
+    "all": {
+     "kind": "youtube",
+     "src": "https://www.youtube.com/embed/T_IDKxCPuoY?end=120&rel=0"
+    }
+   },
+   "media_title": "Video: días feriados (first 2 minutes)"
+  },
+  {
+   "lab": "salud",
+   "slug": "s2_2",
+   "where": "Question 2 text (section “Un poco de gramática”)",
+   "item": [
+    "Un poco de gramática",
+    1
+   ],
+   "title": "Escucha: pregunta 1",
+   "text": "Listen to the question, then choose the best answer.",
+   "media": {
+    "inperson": {
+     "kind": "kaltura",
+     "rcode": "usgx-45420081"
+    },
+    "online": {
+     "kind": "kaltura",
+     "rcode": "usgx-45420135"
+    },
+    "summer": {
+     "kind": "kaltura",
+     "rcode": "usgx-45420111"
+    },
+    "stone": {
+     "kind": "file",
+     "src": "span1002-lab5-quiz-q1.m4a"
+    }
+   },
+   "media_title": "Question 1 (audio)",
+   "audio": true
+  },
+  {
+   "lab": "salud",
+   "slug": "s2_3",
+   "where": "Question 3 text (section “Un poco de gramática”)",
+   "item": [
+    "Un poco de gramática",
+    2
+   ],
+   "title": "Escucha: pregunta 2",
+   "text": "Listen to the question, then choose the best answer.",
+   "media": {
+    "inperson": {
+     "kind": "kaltura",
+     "rcode": "usgx-45420087"
+    },
+    "online": {
+     "kind": "kaltura",
+     "rcode": "usgx-45420137"
+    },
+    "summer": {
+     "kind": "kaltura",
+     "rcode": "usgx-45420115"
+    },
+    "stone": {
+     "kind": "file",
+     "src": "span1002-lab5-quiz-q2.m4a"
+    }
+   },
+   "media_title": "Question 2 (audio)",
+   "audio": true
+  },
+  {
+   "lab": "salud",
+   "slug": "s2_4",
+   "where": "Question 4 text (section “Un poco de gramática”)",
+   "item": [
+    "Un poco de gramática",
+    3
+   ],
+   "title": "Escucha: pregunta 3",
+   "text": "Listen to the question, then choose the best answer.",
+   "media": {
+    "inperson": {
+     "kind": "kaltura",
+     "rcode": "usgx-45420102"
+    },
+    "online": {
+     "kind": "kaltura",
+     "rcode": "usgx-45420146"
+    },
+    "summer": {
+     "kind": "kaltura",
+     "rcode": "usgx-45420119"
+    },
+    "stone": {
+     "kind": "file",
+     "src": "span1002-lab5-quiz-q3.m4a"
+    }
+   },
+   "media_title": "Question 3 (audio)",
+   "audio": true
+  },
+  {
+   "lab": "salud",
+   "slug": "s2_5",
+   "where": "Question 5 text (section “Un poco de gramática”)",
+   "item": [
+    "Un poco de gramática",
+    4
+   ],
+   "title": "Escucha: pregunta 4",
+   "text": "Listen to the question, then choose the best answer.",
+   "media": {
+    "inperson": {
+     "kind": "kaltura",
+     "rcode": "usgx-45420107"
+    },
+    "online": {
+     "kind": "kaltura",
+     "rcode": "usgx-45420148"
+    },
+    "summer": {
+     "kind": "kaltura",
+     "rcode": "usgx-45420121"
+    },
+    "stone": {
+     "kind": "file",
+     "src": "span1002-lab5-quiz-q4.m4a"
+    }
+   },
+   "media_title": "Question 4 (audio)",
+   "audio": true
+  },
+  {
+   "lab": "salud",
+   "slug": "s2_6",
+   "where": "Question 6 text (section “Un poco de gramática”)",
+   "item": [
+    "Un poco de gramática",
+    5
+   ],
+   "title": "Escucha: pregunta 5",
+   "text": "Listen to the question, then choose the best answer. You may need to select more than one.",
+   "media": {
+    "inperson": {
+     "kind": "kaltura",
+     "rcode": "usgx-45420109"
+    },
+    "online": {
+     "kind": "kaltura",
+     "rcode": "usgx-45420150"
+    },
+    "summer": {
+     "kind": "kaltura",
+     "rcode": "usgx-45420126"
+    },
+    "stone": {
+     "kind": "file",
+     "src": "span1002-lab5-quiz-q5.m4a"
+    }
+   },
+   "media_title": "Question 5 (audio)",
+   "audio": true
+  },
+  {
+   "lab": "repaso",
+   "slug": "s1",
+   "where": "Section text: “The preterite and the imperfect”",
+   "section": "The preterite and the imperfect",
+   "title": "El pretérito y el imperfecto",
+   "text": "Complete each sentence with the preterite or the imperfect.",
+   "accents": true
+  }
+ ],
+ "proposal": {
+  "toc": [
+   "Start Here: Syllabus",
+   "Chapter 6",
+   "Chapter 7",
+   "Chapter 8",
+   "Chapter 9",
+   "Chapter 10"
+  ],
+  "lead": "Same labs and Bongo recordings for every section type. Students find everything in one place, test their setup before the first lab, and are graded on one speaking rubric.",
+  "now": [
+   "Labs live in a <b>Start Here</b> module plus a subfolder for each lab, with 3–4 pages of instructions per lab",
+   "Pages sometimes disagree (3 or 5 prompts in Lab 1; recording or uploading in Lab 3)",
+   "Some labs are Question &amp; Answer prompts that students hear one at a time",
+   "Students first find out their setup can't record on a due date",
+   "Some quizzes point to the wrong recording, and audio pages are tied to one course copy",
+   "Accent questions are multiple choice"
+  ],
+  "proposed": [
+   "One <b>LAB</b> folder: a short description, the Guidelines Quiz, Lab 0, then each lab's quiz and recording. Instructions live inside Bongo",
+   "One set of instructions for every section type, in that section's lab order",
+   "<b>One individual video per lab</b>, with every question written on the Bongo page",
+   "<b>Lab 0</b> in the first week: a one-minute camera + screen check that unlocks the labs",
+   "Each lab shows its own due date, at <b>{DUE_TIME}</b>, and quiz media that works in every course copy",
+   "One <b>speaking rubric</b> (25 points), shared with SPAN 1001, with a vocabulary row and a 0 column. Students <b>type</b> accented words in the Guidelines Quiz"
+  ],
+  "notice": [
+   "<b>A clear start:</b> the announcement walks them through 4 steps, with buttons to the LAB folder and the Guidelines Quiz.",
+   "<b>The questions on the page:</b> students see every question (Spanish, with English underneath) before they record, and answer them in one video.",
+   "<b>Their own lab order:</b> Stone and summer sections see their labs numbered in their own order, with the right modules or chapters.",
+   "<b>Help for their kind of lab:</b> Troubleshooting is split into video labs (including the phone upload for A cocinar) and slide labs, with one fallback for each.",
+   "<b>Clear responsibility:</b> students make sure their recording works and is in the right format. No late labs, including for technology problems reported before the due time. Students with an Excused Absence tell the Lab within 2 business days, and every make-up closes 7 days after the due date."
+  ],
+  "tasks": [
+   "<b>A cocinar:</b> recorded on a phone and uploaded to Bongo.",
+   "<b>Días festivos:</b> preterite for regular sections; imperfect and preterite for Stone, which has already practiced the imperfect.",
+   "<b>Stone:</b> lab 2 is called <i lang=\"es\">La niñez</i> instead of <i lang=\"es\">El repaso</i>; Lab 1 drops the Chapter 7 grammar extras.",
+   "<b>Recording in the Lab:</b> optional for in-person sections. Stone and online sections record on their own and can book tutoring."
+  ],
+  "same": [
+   "Six labs (four in summer), 25 points each, graded by Language Lab staff.",
+   "Each lab is a mini-quiz plus a Bongo recording; face visible, Spanish only.",
+   "No face or no audio is 0 points with no resubmission. No late work apart from Excused Absences. The Guidelines Quiz (75%) still unlocks the labs, now together with Lab 0."
+  ]
+ },
+ "setup_notes": [
+  "In-person Lab 4 (Días festivos) quiz shows the A cocinar audio page; the new in-quiz page uses the holiday video.",
+  "Stone Lab 6 (De compras) quiz page has no working recording; the new in-quiz page uses the clothing audio.",
+  "Stone Lab 5 (salud) audio: the new in-quiz pages play their own copies from quiz-pages/audio/.",
+  "Días festivos quiz asks \"¿Cuándo es Semana Santa en el 2024?\": update the year.",
+  "El repaso quiz: fill-in questions show a typed accent line (á é í ó ú); delete it. The key accepts some answers without accents (visitabamos, pase).",
+  "Quiz totals differ: Rutina 32, A cocinar 18, Días festivos 21, El repaso 18 (the others are 25).",
+  "De compras, Días festivos and La salud are now Individual Assignments (Camera), not Question & Answer. The prompt videos recorded for the old Q&A versions are no longer needed; the lab-assistant instruction videos still are."
+ ]
+}

@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Lab Console · Student view</title>
+<!-- Student view (2026-11-21, Daniel): what students see in each course's D2L section, by language and lab type, with
+     the editor one click away. Holds NO data: it reads labs/registry.json, types.json, themes.json and
+     instructions/manifest.json from the site, and saves (theme, due dates file) as one commit through GitHub's API with
+     the key the Events console keeps in this browser (CLAUDE.md rule 11). Pages are built by labs/build_labs.py. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
+<style>
+/* Same tokens as console.html (design-system skill, student theme). Dark mode re-maps them. */
+:root {
+  --navy: #1A3A6B; --navy-dark: #132C52; --gold: #B08D3F; --offwhite: #F7F7F5; --white: #FFFFFF; --ink: #1F2937; --muted: #5A6472;
+  --bg: var(--offwhite); --surface: var(--white); --text: var(--ink); --sub: var(--muted); --line: #DCDDD8;
+  --accent: var(--navy); --accent-ink: var(--white); --rail: var(--white); --chip: #EEF0F3;
+  --ok: #1E6B45; --ok-bg: #E3F1E8; --warn: #8A4B08; --warn-bg: #FBEEDB; --bad: #A12A2A; --bad-bg: #F9E3E3; --shadow: 0 1px 2px rgba(20,30,50,.06), 0 8px 24px rgba(20,30,50,.06);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-mode="light"]) {
+  --bg: #0E1F3A; --surface: var(--navy-dark); --text: var(--offwhite); --sub: #C9CFD8; --line: #2B4670;
+  --accent: var(--offwhite); --accent-ink: var(--navy-dark); --rail: #102443; --chip: #1C3864;
+  --ok: #8FD9AE; --ok-bg: #173F33; --warn: #F2C47E; --warn-bg: #4A3415; --bad: #F4A3A3; --bad-bg: #4A1E26; --shadow: none; color-scheme: dark; } }
+:root[data-mode="dark"] {
+  --bg: #0E1F3A; --surface: var(--navy-dark); --text: var(--offwhite); --sub: #C9CFD8; --line: #2B4670;
+  --accent: var(--offwhite); --accent-ink: var(--navy-dark); --rail: #102443; --chip: #1C3864;
+  --ok: #8FD9AE; --ok-bg: #173F33; --warn: #F2C47E; --warn-bg: #4A3415; --bad: #F4A3A3; --bad-bg: #4A1E26; --shadow: none; color-scheme: dark; }
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--text); font: 400 16px/1.5 "DM Sans", sans-serif; }
+a { color: inherit; }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; border-radius: 4px; }
+h1[tabindex="-1"]:focus { outline: none; }
+.skip { position: absolute; left: 12px; top: -48px; background: var(--surface); padding: 8px 12px; border: 1px solid var(--line); border-radius: 6px; z-index: 20; }
+.skip:focus { top: 12px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.shell { display: grid; grid-template-columns: 264px 1fr; min-height: 100vh; }
+.rail { background: var(--rail); border-right: 1px solid var(--line); padding: 22px 14px; display: flex; flex-direction: column; gap: 20px; position: sticky; top: 0; height: 100vh; overflow: auto; }
+.brand { padding: 0 8px; }
+.brand small { display: block; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--sub); }
+.brand b { font: 700 23px/1.2 "Source Serif 4", serif; }
+.areas { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; padding: 4px; margin: 0 2px; border-radius: 12px; background: var(--chip); }
+.areas a { text-align: center; padding: 7px 5px; border-radius: 9px; font-weight: 600; font-size: 13px; text-decoration: none; color: var(--text); }
+.areas a:hover { background: var(--surface); }
+.areas a[aria-current="page"] { background: var(--accent); color: var(--accent-ink); }
+#nav h2 { font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--sub); margin: 0 8px 6px; }
+#nav ul { list-style: none; margin: 0 0 14px; padding: 0; }
+#nav button { width: 100%; display: flex; align-items: center; gap: 10px; padding: 8px; border: 0; background: none; border-radius: 8px; font-weight: 500; cursor: pointer; text-align: left; }
+#nav button:hover { background: var(--chip); }
+#nav button[aria-current="page"] { background: var(--accent); color: var(--accent-ink); }
+#nav .st { margin-left: auto; font-size: 13px; font-weight: 600; color: var(--sub); }
+#nav button[aria-current="page"] .st { color: inherit; }
+.rail-foot { margin-top: auto; display: grid; gap: 8px; padding: 0 8px; }
+.conn { font-size: 14px; color: var(--sub); display: flex; gap: 8px; align-items: center; }
+.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--warn); flex: none; }
+.dot.on { background: var(--ok); }
+
+main { padding: 28px 36px 64px; min-width: 0; }
+.eyebrow { font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--sub); margin: 0 0 4px; }
+h1 { font: 700 30px/1.2 "Source Serif 4", serif; margin: 0 0 6px; }
+h2 { font: 700 21px/1.3 "Source Serif 4", serif; margin: 26px 0 10px; }
+h3, h2.h3 { font: 700 17px/1.35 "DM Sans", sans-serif; margin: 0 0 6px; }
+.lede { color: var(--sub); max-width: 72ch; margin: 0 0 18px; }
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); font-weight: 600; cursor: pointer; text-decoration: none; min-height: 40px; }
+.btn:hover { border-color: var(--sub); }
+.btn.pri { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.sm { padding: 5px 10px; font-size: 14px; min-height: 34px; }
+.btn[disabled] { opacity: .55; cursor: not-allowed; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; box-shadow: var(--shadow); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 10px; padding: 0; list-style: none; }
+.chips li { font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: var(--chip); }
+.chips .ok { background: var(--ok-bg); color: var(--ok); } .chips .warn { background: var(--warn-bg); color: var(--warn); }
+.sw { display: inline-flex; gap: 3px; vertical-align: middle; } .sw i { width: 14px; height: 14px; border-radius: 4px; border: 1px solid rgba(0,0,0,.15); display: inline-block; }
+.note { border-left: 4px solid var(--gold); background: var(--chip); border-radius: 8px; padding: 10px 14px; margin: 0 0 14px; max-width: 80ch; }
+.alert { border-left: 4px solid var(--warn); background: var(--warn-bg); color: var(--text); border-radius: 8px; padding: 10px 14px; margin: 0 0 10px; }
+.course { display: grid; gap: 4px; text-align: left; cursor: pointer; font: inherit; color: inherit; width: 100%; }
+.course:hover { border-color: var(--sub); }
+.course b { font-size: 18px; }
+.course span { color: var(--sub); font-size: 14px; }
+.steps { counter-reset: s; list-style: none; padding: 0; margin: 0 0 8px; display: grid; gap: 8px; max-width: 80ch; }
+.steps li { counter-increment: s; display: grid; grid-template-columns: 30px 1fr; gap: 10px; align-items: start; }
+.steps li::before { content: counter(s); display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-weight: 700; font-size: 14px; }
+
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin: 14px 0 18px; flex-wrap: wrap; }
+.tabs button { border: 0; background: none; padding: 10px 14px; font-weight: 600; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -1px; color: var(--sub); }
+.tabs button[aria-selected="true"] { color: var(--text); border-bottom-color: var(--gold); }
+.ctl { display: flex; flex-wrap: wrap; gap: 14px; align-items: end; margin: 0 0 14px; }
+.ctl label { display: grid; gap: 4px; font-size: 14px; font-weight: 600; }
+.ctl select { min-height: 40px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); min-width: 200px; }
+.d2l { display: grid; grid-template-columns: minmax(260px, 340px) minmax(0, 1fr); gap: 16px; align-items: start; }
+.toc { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.toc header { background: #2c3e50; color: #fff; padding: 10px 14px; font-weight: 700; font-size: 14px; }
+.toc header small { display: block; font-weight: 400; opacity: .85; }
+.toc ul { list-style: none; margin: 0; padding: 6px; }
+.toc li { margin: 0; }
+.toc button { width: 100%; text-align: left; display: grid; grid-template-columns: 26px 1fr; gap: 8px; padding: 8px; border: 0; background: none; border-radius: 8px; cursor: pointer; }
+.toc button:hover { background: var(--chip); }
+.toc button[aria-current="true"] { background: var(--chip); box-shadow: inset 3px 0 0 var(--gold); }
+.toc .ic { width: 24px; height: 24px; border-radius: 6px; display: grid; place-items: center; font-size: 13px; font-weight: 700; color: #fff; }
+.toc .t { font-weight: 600; } .toc .s { display: block; font-size: 13px; color: var(--sub); }
+.toc .grp { font-size: 13px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--sub); padding: 10px 8px 4px; }
+.pv { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.pv .bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+.pv .bar .where { font-size: 14px; color: var(--sub); margin-right: auto; min-width: 0; overflow-wrap: anywhere; }
+.pv iframe { width: 100%; height: 900px; border: 0; display: block; background: #fff; }
+.theme { display: grid; gap: 10px; }
+.theme .band { height: 62px; border-radius: 10px; display: flex; align-items: center; gap: 12px; padding: 0 14px; color: #fff; font: 700 18px "Source Serif 4", serif; }
+.theme .band em { font-style: normal; }
+.theme .flag { display: grid; gap: 3px; } .theme .flag i { display: block; width: 26px; height: 4px; border-radius: 2px; }
+.theme[aria-current="true"] { outline: 3px solid var(--gold); outline-offset: 2px; }
+table.t { border-collapse: collapse; width: 100%; font-size: 15px; }
+table.t th, table.t td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.t th { font-size: 13px; letter-spacing: .04em; text-transform: uppercase; color: var(--sub); }
+.tw { overflow-x: auto; }
+.toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 10px; z-index: 30; max-width: 90vw; }
+.loading, .empty { color: var(--sub); }
+@media (max-width: 1100px) { .d2l { grid-template-columns: 1fr; } .pv iframe { height: 720px; } }
+@media (max-width: 860px) {
+  .shell { grid-template-columns: 1fr; }
+  .rail { position: static; height: auto; padding: 14px 16px; gap: 12px; }
+  #nav { display: flex; gap: 6px; overflow-x: auto; } #nav h2 { display: none; } #nav ul { display: contents; }
+  #nav button { white-space: nowrap; border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; width: auto; }
+  .rail-foot { grid-template-columns: 1fr 1fr; } .rail-foot .conn { grid-column: 1 / -1; }
+  main { padding: 20px 16px 48px; }
+  h1 { font-size: 25px; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="shell">
+  <header class="rail">
+    <div class="brand"><small>Language Lab</small><b>Lab console</b></div>
+    <nav class="areas" aria-label="Console areas"><a href="console.html">Events</a><a href="semester.html">Semester plan</a><a href="student-view.html" aria-current="page">Student view</a><a href="tutorials/index.html">Tutorials</a></nav>
+    <nav aria-label="Student view sections" id="nav"></nav>
+    <div class="rail-foot">
+      <div class="conn" id="conn"><span class="dot" aria-hidden="true"></span><span>Viewing only</span></div>
+      <button class="btn sm" type="button" id="modeBtn">Dark mode</button>
+      <a class="btn sm" href="console.html#settings">Connect (Events › Settings)</a>
+    </div>
+  </header>
+  <main id="main" tabindex="-1"><p class="loading">Loading the courses…</p></main>
+</div>
+<p class="toast" id="toast" role="status" aria-live="polite" hidden></p>
+
+<script>
+'use strict';
+const OWNER = 'junnynoh-tech', REPO = 'language-lab-events', BRANCH = 'main';
+const API = `https://api.github.com/repos/${OWNER}/${REPO}`;
+const CMS = `https://app.pagescms.org/${OWNER}/${REPO}/${BRANCH}`;
+const SITE = `https://${OWNER}.github.io/${REPO}/`;
+const TOKEN_KEY = 'labConsoleToken';   // the same key the Events console saves (Settings there)
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+let token = ''; try { token = localStorage.getItem(TOKEN_KEY) || ''; } catch (e) {}
+const S = { reg: null, types: {}, themes: {}, man: null, dd: null, view: 'overview', sha: {}, pick: {} };
+
+function toast(m, ms = 3600) { const t = $('toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, ms); }
+function setMode(m) { document.documentElement.dataset.mode = m; $('modeBtn').textContent = m === 'dark' ? 'Light mode' : 'Dark mode'; try { localStorage.setItem('labConsoleMode', m); } catch (e) {} }
+(() => { let m = null; try { m = localStorage.getItem('labConsoleMode'); } catch (e) {} setMode(m || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')); })();
+$('modeBtn').onclick = () => setMode(document.documentElement.dataset.mode === 'dark' ? 'light' : 'dark');
+function connUI() { $('conn').innerHTML = token ? '<span class="dot on" aria-hidden="true"></span><span>Connected: you can save</span>' : '<span class="dot" aria-hidden="true"></span><span>Viewing only</span>'; }
+
+/* ---------- reading: the site's own copy (same origin), fresh from GitHub when it answers ---------- */
+async function getJSON(path) {
+  try { const r = await fetch(`https://raw.githubusercontent.com/${OWNER}/${REPO}/${S.head || BRANCH}/${path}`, { cache: 'no-store' }); if (r.ok) return await r.json(); } catch (e) {}
+  try { const r = await fetch('../' + path, { cache: 'no-store' }); if (r.ok) return await r.json(); } catch (e) {}
+  return null;
+}
+async function load() {
+  try { const r = await fetch(`${API}/commits/${BRANCH}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} }); if (r.ok) S.head = (await r.json()).sha; } catch (e) {}
+  const [reg, types, themes, man, dd] = await Promise.all(['labs/registry.json', 'labs/types.json', 'labs/themes.json', 'instructions/manifest.json', 'labs/shared/lab-due-dates.json'].map(getJSON));
+  if (!reg) { $('main').innerHTML = '<div class="empty" role="alert"><b>The course list could not be read.</b> Reload in a minute.</div>'; return; }
+  Object.assign(S, { reg, types: types?.types || {}, themes: themes?.themes || {}, man: man || { courses: {}, warnings: [] }, dd });
+  connUI(); nav(); show(location.hash.slice(1) || 'overview', false);
+}
+
+/* ---------- saving: one file, one commit (GitHub contents API) ---------- */
+async function saveFile(path, text, message) {
+  if (!token) throw new Error('Connect your GitHub key first (Events › Settings), then come back.');
+  const H = { Accept: 'application/vnd.github+json', Authorization: `Bearer ${token}` };
+  const cur = await fetch(`${API}/contents/${path}?ref=${BRANCH}`, { headers: H }).then(r => r.ok ? r.json() : null);
+  const r = await fetch(`${API}/contents/${path}`, { method: 'PUT', headers: { ...H, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message, branch: BRANCH, content: btoa(unescape(encodeURIComponent(text))), ...(cur?.sha ? { sha: cur.sha } : {}) }) });
+  if (!r.ok) { const j = await r.json().catch(() => ({})); throw new Error(r.status === 401 ? 'GitHub didn’t accept the saved key. Reconnect it in Events › Settings.' : (j.message || r.statusText)); }
+}
+const dump = o => JSON.stringify(o, null, 1) + '\n';
+
+/* ---------- helpers ---------- */
+const C = code => S.reg.courses[code];
+const typeOf = code => S.types[C(code).type] || { label: C(code).type };
+const themeOf = key => S.themes[key] || { label: key, colors: {} };
+const DEF = { header: '#002147', header_accent: '#9cc9ee', link: '#005fa3', button: '#c8102e', highlight: '#b8952a' };   // the approved colors
+const col = (t, k) => (t.colors || {})[k] || DEF[k];
+const swatch = t => `<span class="sw" aria-hidden="true">${['header', 'header_accent', 'button', 'highlight'].map(k => `<i style="background:${esc(col(t, k))}"></i>`).join('')}</span>`;
+const STATUS = { approved: ['Approved · live', 'ok'], proposal: ['Proposal in progress', 'warn'], planned: ['Planned', ''] };
+const chip = ([t, c]) => `<li class="${c}">${esc(t)}</li>`;
+const due = r => r.due_day ? `Due ${r.due_day}s, ${r.due_time}` : '';
+const warnings = code => (S.man.warnings || []).filter(w => !code || w.course === code);
+
+function nav() {
+  const L = S.reg.languages.map(l => `<h2>${esc(l.name)}</h2><ul>${l.courses.filter(c => C(c)).map(c => `<li><button type="button" data-go="${c}"><span>${esc(C(c).course)}</span><span class="st">${C(c).status === 'approved' ? 'Live' : C(c).status === 'proposal' ? 'Proposal' : 'Planned'}</span></button></li>`).join('')}</ul>`).join('');
+  $('nav').innerHTML = `<h2>Student view</h2><ul><li><button type="button" data-go="overview">Overview</button></li></ul>${L}`
+    + `<h2>Setup</h2><ul><li><button type="button" data-go="types">Lab types</button></li><li><button type="button" data-go="themes">Themes</button></li><li><button type="button" data-go="dates">Due dates</button></li></ul>`;
+  $('nav').querySelectorAll('[data-go]').forEach(b => b.onclick = () => show(b.dataset.go));
+}
+function show(v, focus = true) {
+  if (v !== 'overview' && v !== 'types' && v !== 'themes' && v !== 'dates' && !S.reg.courses[v]) v = 'overview';
+  S.view = v; history.replaceState(null, '', '#' + v);
+  $('nav').querySelectorAll('[data-go]').forEach(b => b.dataset.go === v ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'));
+  $('main').innerHTML = v === 'overview' ? overview() : v === 'types' ? typesView() : v === 'themes' ? themesView() : v === 'dates' ? datesView() : courseView(v);
+  wire(v);
+  if (focus) { const h = $('main').querySelector('h1'); if (h) { h.tabIndex = -1; h.focus(); } }
+}
+
+/* ---------- overview ---------- */
+function overview() {
+  const built = S.man.built ? new Date(S.man.built).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : 'not yet';
+  const cards = S.reg.languages.map(l => `<h2>${esc(l.name)}</h2><div class="grid">${l.courses.filter(c => C(c)).map(c => { const r = C(c), t = themeOf(r.theme);
+    return `<button type="button" class="card course" data-go="${c}"><b>${esc(r.course)} · ${esc(r.name)}</b><ul class="chips">${chip(STATUS[r.status] || [r.status, ''])}<li>${esc(typeOf(c).label)}</li></ul>`
+      + `<span>${esc(due(r))}</span><span>Theme: ${swatch(t)} ${esc(t.label)}</span></button>`; }).join('')}</div>`).join('');
+  const w = warnings();
+  return `<p class="eyebrow">Student view</p><h1>What students see in D2L</h1>
+<p class="lede">Each course's LAB folder, Lab 0 and lab pages, exactly as students get them. Pick a course to look through its D2L section, change its theme, or open the part you want to edit.</p>
+${w.length ? w.map(x => `<p class="alert"><b>${esc(C(x.course)?.course || x.course)}:</b> ${esc(x.text)}</p>`).join('') : ''}
+<div class="card"><h2 class="h3">How an edit goes live</h2><ol class="steps">
+<li><span>Open a course, then <b>Edit</b>: each part of the instructions (requirements, labs, section types, settings) opens its own form in the website editor.</span></li>
+<li><span>Change the text and press <b>Save</b>. The pages rebuild on GitHub by themselves.</span></li>
+<li><span>About two minutes later the change shows here and on the students' pages. Pages last built: <b>${esc(built)}</b>${S.man.semester ? ` · ${esc(S.man.semester)}` : ''}.</span></li></ol></div>
+${cards}`;
+}
+
+/* ---------- one course ---------- */
+const TABS = [['d2l', 'D2L section'], ['edit', 'Edit'], ['theme', 'Theme']];
+function courseView(code) {
+  const r = C(code), t = themeOf(r.theme), m = S.man.courses[code];
+  const head = `<p class="eyebrow">${esc(S.reg.languages.find(l => l.courses.includes(code))?.name || '')} · ${esc(typeOf(code).label)}</p><h1>${esc(r.course)} · ${esc(r.name)}</h1>
+<ul class="chips">${chip(STATUS[r.status] || [r.status, ''])}<li>${esc(due(r))}</li><li>${swatch(t)} ${esc(t.label)}</li></ul>${r.note ? `<p class="note">${esc(r.note)}</p>` : ''}
+${warnings(code).map(x => `<p class="alert">${esc(x.text)}</p>`).join('')}`;
+  if (r.status !== 'approved' || !m) {
+    return head + `<div class="card"><h2 class="h3">${r.status === 'proposal' ? 'Still a proposal' : 'Not built yet'}</h2><p>${r.status === 'proposal' ? 'This course moves here when its faculty approve the proposal. Until then, the proposal shows every page students would see.' : 'This course has no instructions in the console yet.'}</p>`
+      + (r.proposal ? `<p><a class="btn pri" href="../${esc(r.proposal)}" target="_blank" rel="noopener">Open the proposal (new tab)</a></p>` : '') + '</div>';
+  }
+  const tab = S.pick.tab || 'd2l';
+  return head + `<div class="tabs" role="tablist" aria-label="${esc(r.course)}">${TABS.map(([k, l]) => `<button type="button" role="tab" id="tb-${k}" aria-controls="tp" aria-selected="${k === tab}" tabindex="${k === tab ? 0 : -1}" data-tab="${k}">${l}</button>`).join('')}</div>
+<section id="tp" role="tabpanel" aria-labelledby="tb-${tab}" tabindex="0">${tab === 'd2l' ? d2lTab(code) : tab === 'edit' ? editTab(code) : themeTab(code)}</section>`;
+}
+
+/* D2L section: the LAB folder as D2L lists it, and the page students open */
+function items(code, vkey, camp) {
+  const m = S.man.courses[code], v = m.variants.find(x => x.key === vkey), has = f => m.files.includes(f), slug = m.slug, P = `${camp}/`;
+  const pick = (...fs) => fs.find(has);
+  const out = [{ grp: 'Before Lab 1' },
+    { id: 'ann', ic: 'A', color: '#5b6b7f', t: 'Announcement', s: 'Course Home', f: pick(`${P}d2l/${code}-announcement-${vkey}.html`), edit: 'settings' },
+    { id: 'fold', ic: 'F', color: '#1A3A6B', t: 'LAB folder description', s: 'Requirements, lab tasks, accents, help, contact', f: pick(`${P}${code}-lab-folder-${vkey}.html`, `${P}d2l/${code}-lab-folder-${vkey}.html`), edit: 'requirements' },
+    { id: 'gq', ic: 'Q', color: '#8A4B08', t: 'Guidelines Quiz', s: 'Quiz description (the questions are in D2L)', f: pick(`${P}d2l/${code}-guidelines-quiz.html`), edit: 'settings' },
+    { id: 'l0', ic: '0', color: '#1E6B45', t: 'Lab 0', s: 'Setup check', f: pick(`${P}${code}-lab-0-${slug}-${vkey}.html`), edit: 'policy' }, { grp: 'Labs' }];
+  v.labs.forEach(L => {
+    if (m.mini_quizzes) out.push({ id: `q${L.n}`, ic: 'Q', color: '#8A4B08', t: `Lab ${L.n} Mini-Quiz`, s: 'Quiz start page', f: pick(`${P}d2l/${code}-lab-${L.n}-quiz-${vkey}.html`, `${P}d2l/${code}-lab-${L.n}-quiz.html`), edit: 'labs' });
+    out.push({ id: `b${L.n}`, ic: String(L.n), color: '#1A3A6B', t: `Lab ${L.n}: ${L.title}`, s: slug === 'bongo' ? `Bongo assignment · ${L.mode}` : L.mode, f: pick(`${P}${code}-lab-${L.n}-${slug}-${vkey}.html`), edit: 'labs' });
+  });
+  return out.filter(x => x.grp || x.f);
+}
+function d2lTab(code) {
+  const m = S.man.courses[code], vkey = S.pick.v && m.variants.some(v => v.key === S.pick.v) ? S.pick.v : m.variants[0].key;
+  const camp = S.pick.c && m.campuses.some(c => c.code === S.pick.c) ? S.pick.c : m.campuses[0].code;
+  const its = items(code, vkey, camp), cur = its.find(x => x.id === S.pick.item && x.f) || its.find(x => x.f);
+  S.pick.v = vkey; S.pick.c = camp; S.pick.item = cur?.id;
+  const v = m.variants.find(x => x.key === vkey), cname = m.campuses.find(c => c.code === camp)?.name;
+  return `<div class="ctl"><label>Section type<select id="selV">${m.variants.map(x => `<option value="${esc(x.key)}"${x.key === vkey ? ' selected' : ''}>${esc(x.label)}</option>`).join('')}</select></label>
+<label>Campus<select id="selC">${m.campuses.map(c => `<option value="${esc(c.code)}"${c.code === camp ? ' selected' : ''}>${esc(c.name)}</option>`).join('')}</select></label>
+<p class="lede" style="margin:0">${esc(v.sub || v.label)} · ${esc(cname)}. Each campus gets its own copy that shows only its own Language Lab.</p></div>
+<div class="d2l"><nav class="toc" aria-label="LAB folder in D2L"><header>Content › LAB<small>${esc(C(code).course)} · ${esc(v.label)}</small></header><ul>`
+    + its.map(x => x.grp ? `<li class="grp" aria-hidden="true">${esc(x.grp)}</li>` : `<li><button type="button" data-item="${x.id}"${x.id === cur?.id ? ' aria-current="true"' : ''}><span class="ic" style="background:${x.color}" aria-hidden="true">${esc(x.ic)}</span><span><span class="t">${esc(x.t)}</span><span class="s">${esc(x.s)}</span></span></button></li>`).join('')
+    + `</ul></nav>${cur ? preview(code, cur) : '<p class="empty">No pages for this section type yet.</p>'}</div>`;
+}
+function preview(code, x) {
+  const url = `instructions/${code}/${x.f}`, live = SITE + url;
+  return `<div class="pv"><div class="bar"><span class="where">${esc(x.t)}</span>
+<a class="btn sm" href="../${esc(url)}" target="_blank" rel="noopener">Open (new tab)</a>
+<button class="btn sm" type="button" data-copy="${esc(live)}">Copy link for D2L</button>
+<a class="btn sm" href="${CMS}/file/${x.edit === 'policy' && !S.man.courses[code].has_policy ? 'lab-policy' : `lab-${code}-${x.edit}`}" target="_blank" rel="noopener">Edit this part</a></div>
+<iframe id="pvf" title="${esc(x.t)}: what students see" src="../${esc(url)}" loading="lazy"></iframe></div>`;
+}
+
+/* Edit: one form per part of the instructions */
+function editTab(code) {
+  const r = C(code), parts = [['requirements', 'Requirements', 'The Requirements tab students read first: video rules, allowed help, what to put in an email to the Lab.'],
+    ['labs', 'Labs', 'Each lab: title, summary, task (questions or parts), tips, checklist, slide rules, word list and top picture.'],
+    ['sections', 'Section types', 'In person, online, summer…: names, D2L links, tutoring, and anything a section type changes in a lab.'],
+    ['settings', 'Course settings', 'Course name, credit line, help links and D2L links.']];
+  if (S.man.courses[code].has_policy) parts.push(['policy', 'Policy for this course', 'Overrides the shared Lab policy for this course only (Lab 0, the rubric, what happens with no face or audio).']);
+  return `<p class="lede">Each button opens one form in the website editor (new tab). Save there; the pages rebuild by themselves in about two minutes. Words in the target language go between *asterisks* to show in italics.</p>
+<div class="grid">${parts.map(([k, l, d]) => `<div class="card"><h2 class="h3">${l}</h2><p>${d}</p><a class="btn pri" href="${CMS}/file/lab-${code}-${k}" target="_blank" rel="noopener">Edit ${l.toLowerCase()}</a></div>`).join('')}
+<div class="card"><h2 class="h3">Shared by every course</h2><p>The Language Lab policy (Lab 0, rubric, excused absences, accommodations) and each course's due day, type and theme.</p><div class="row"><a class="btn" href="${CMS}/file/lab-policy" target="_blank" rel="noopener">Edit the shared policy</a><a class="btn" href="${CMS}/file/lab-courses" target="_blank" rel="noopener">Edit course settings</a></div></div></div>
+<p class="note"><b>Due day and time</b> (${esc(due(r))}) and points were approved by the faculty. Change them only after checking with the coordinator.</p>`;
+}
+
+/* Theme: like the event Backgrounds, pick one and see it */
+function band(t, code) {
+  const [subj, num] = (code ? C(code).course : 'Course 1001').split(' ');
+  const pat = t.pattern ? `background-image:url(&quot;${esc(patURI(t.pattern))}&quot;);` : '';
+  return `<div class="band" style="background-color:${esc(col(t, 'header'))};${pat}"><span class="flag" aria-hidden="true"><i style="background:${esc(col(t, 'button'))}"></i><i style="background:${esc(col(t, 'highlight'))}"></i><i style="background:${esc(col(t, 'button'))}"></i></span><span>${esc(subj)} <em style="color:${esc(col(t, 'header_accent'))}">${esc(num)}</em> · Lab 1</span></div>`;
+}
+const patURI = p => 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'><g fill='none' stroke='white' stroke-opacity='.14' stroke-width='2'>${p}</g></svg>`);
+function themeCards(selected, act, code) {
+  return `<div class="grid">${Object.entries(S.themes).map(([k, t]) => `<div class="card theme"${k === selected ? ' aria-current="true"' : ''}>${band(t, code)}<h2 class="h3">${esc(t.label)}</h2>`
+    + (act ? `<div class="row"><button class="btn sm${k === selected ? '' : ' pri'}" type="button" data-theme="${esc(k)}"${k === selected ? ' disabled' : ''}>${k === selected ? 'In use' : 'Use this theme'}</button><button class="btn sm" type="button" data-try="${esc(k)}">Try it on the preview</button></div>` : '')
+    + `</div>`).join('')}</div>`;
+}
+function themeTab(code) {
+  const r = C(code);
+  return `<p class="lede">Colors and a faint pattern for the top of every page in ${esc(r.course)}. The approved colors stay until you pick another theme. Every theme is checked for contrast when the pages build.</p>
+${themeCards(r.theme, true, code)}<p class="note">“Try it” shows the theme on the page in the D2L section tab without saving. Edit or add colors in <a href="${CMS}/file/lab-themes" target="_blank" rel="noopener">Labs · Themes</a>.</p>`;
+}
+function themeCSS(t) {   // the same rules as labs/build_labs.py theme_css(), for trying a theme before saving
+  const c = Object.fromEntries(Object.entries(t.colors || {}).filter(([, v]) => v)); if (!Object.keys(c).length) return '';
+  const m = { header: '--navy', header_accent: '--sky', link: '--blue', button: '--red', highlight: '--gold' };
+  let css = ':root{' + Object.entries(c).filter(([k]) => m[k]).map(([k, v]) => `${m[k]}:${v};`).join('') + '}';
+  if (c.button) css += `.flag i{background:${c.button};}`; if (c.highlight) css += `.flag i:nth-child(2){background:${c.highlight};}`;
+  if (t.pattern) css += `header.top{background-image:url("${patURI(t.pattern)}");background-repeat:repeat;}`;
+  return css;
+}
+
+/* ---------- setup views ---------- */
+function typesView() {
+  const used = k => Object.entries(S.reg.courses).filter(([, r]) => r.type === k).map(([, r]) => r.course);
+  return `<p class="eyebrow">Setup</p><h1>Lab types</h1><p class="lede">What students do in each lab. Each course picks a type, so a new kind of lab, like the Global Passport, can be added beside the others without changing them.</p>
+<div class="grid">${Object.entries(S.types).map(([k, t]) => `<div class="card"><ul class="chips">${chip([t.status, t.status === 'in use' ? 'ok' : t.status === 'proposal' ? 'warn' : ''])}${t.platform ? `<li>${esc(t.platform)}</li>` : ''}</ul><h2 class="h3">${esc(t.label)}</h2><p>${esc(t.what)}</p>`
+    + (t.d2l?.length ? `<p class="eyebrow">In D2L</p><ul>${t.d2l.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : '') + `<p class="lede" style="margin:0">Used by: ${esc(used(k).join(', ') || 'no course yet')}</p></div>`).join('')}</div>`;
+}
+function themesView() {
+  const used = k => Object.values(S.reg.courses).filter(r => r.theme === k).map(r => r.course);
+  return `<p class="eyebrow">Setup</p><h1>Themes</h1><p class="lede">Page colors for the lab instructions, like the event Backgrounds. Pick one for a course on its Theme tab.</p>${themeCards(null, false)}
+<div class="tw" tabindex="0" role="region" aria-label="Themes in use" style="margin-top:14px"><table class="t"><caption class="sr">Which courses use each theme</caption><thead><tr><th scope="col">Theme</th><th scope="col">Used by</th></tr></thead><tbody>${Object.entries(S.themes).map(([k, t]) => `<tr><td>${swatch(t)} ${esc(t.label)}</td><td>${esc(used(k).join(', ') || '—')}</td></tr>`).join('')}</tbody></table></div>
+<p style="margin-top:14px"><a class="btn" href="${CMS}/file/lab-themes" target="_blank" rel="noopener">Edit theme colors</a></p>`;
+}
+function datesView() {
+  const dd = S.dd || { classes: [] }, rows = Object.entries(S.reg.courses).filter(([, r]) => r.status === 'approved').map(([code, r]) => {
+    const k = `${r.course.replace(' ', '')}_regular`, c = (dd.classes || []).find(x => x.key === k), n = (c?.labs || []).length;
+    const off = c && (c.due_day !== r.due_day || c.due_time !== r.due_time);
+    return `<tr><th scope="row">${esc(r.course)}</th><td>${esc(r.due_day)}s, ${esc(r.due_time)}</td><td>${c ? `${esc(c.due_day)}s, ${esc(c.due_time)}${off ? ' <b style="color:var(--bad)">(differs)</b>' : ''}` : '—'}</td><td>${n ? `${n} dates` : 'not yet: pages say “dates in D2L”'}</td></tr>`; }).join('');
+  return `<p class="eyebrow">Setup</p><h1>Due dates</h1><p class="lede">The day and time come from each course's approved settings. The dates come from the Semester plan: build the term's Lab calendar there, download its <code>lab-due-dates.json</code> (Lab calendar › Share), and upload it here.</p>
+<div class="card"><h2 class="h3">${esc(dd.semester_label || 'No term yet')}</h2><div class="tw" tabindex="0" role="region" aria-label="Due days and dates"><table class="t"><caption class="sr">Due day, time and dates per course</caption><thead><tr><th scope="col">Course</th><th scope="col">Approved</th><th scope="col">Semester plan says</th><th scope="col">Dates</th></tr></thead><tbody>${rows}</tbody></table></div>
+<p class="lede" style="margin:12px 0">If the Semester plan's day or time differs, the pages use the approved setting. Fix it in the Semester plan so the Lab Hub agrees.</p>
+<div class="row"><label class="btn" for="ddFile">Upload lab-due-dates.json</label><input id="ddFile" type="file" accept=".json,application/json" class="sr"><a class="btn" href="semester.html">Open the Semester plan</a></div><p id="ddMsg" class="lede" role="status" style="margin:10px 0 0"></p></div>`;
+}
+
+/* ---------- wiring ---------- */
+function wire(v) {
+  $('main').querySelectorAll('[data-go]').forEach(b => b.onclick = () => show(b.dataset.go));
+  const tabs = [...$('main').querySelectorAll('[role=tab]')];
+  tabs.forEach((b, i) => { b.onclick = () => { S.pick.tab = b.dataset.tab; show(v, false); $('tb-' + b.dataset.tab).focus(); };
+    b.onkeydown = e => { const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0; if (d) { e.preventDefault(); tabs[(i + d + tabs.length) % tabs.length].click(); } }; });
+  const sv = $('selV'), sc = $('selC');
+  if (sv) sv.onchange = () => { S.pick.v = sv.value; show(v, false); $('selV').focus(); };
+  if (sc) sc.onchange = () => { S.pick.c = sc.value; show(v, false); $('selC').focus(); };
+  $('main').querySelectorAll('[data-item]').forEach(b => b.onclick = () => { S.pick.item = b.dataset.item; show(v, false); $('main').querySelector(`[data-item="${b.dataset.item}"]`).focus(); });
+  $('main').querySelectorAll('[data-copy]').forEach(b => b.onclick = async () => { try { await navigator.clipboard.writeText(b.dataset.copy); toast('Link copied. Paste it into the D2L item.'); } catch (e) { prompt('Copy this link:', b.dataset.copy); } });
+  $('main').querySelectorAll('[data-try]').forEach(b => b.onclick = () => { S.pick.try = b.dataset.try; S.pick.tab = 'd2l'; show(v, false); toast(`Showing “${themeOf(b.dataset.try).label}” on this page only. Nothing is saved.`); });
+  const f = $('pvf');
+  if (f && S.pick.try) f.addEventListener('load', () => { try { const st = f.contentDocument.createElement('style'); st.textContent = themeCSS(themeOf(S.pick.try)); f.contentDocument.head.appendChild(st); } catch (e) {} }, { once: true });
+  $('main').querySelectorAll('[data-theme]').forEach(b => b.onclick = async () => {
+    const code = v, k = b.dataset.theme, reg = JSON.parse(JSON.stringify(S.reg)); reg.courses[code].theme = k;
+    b.disabled = true; b.textContent = 'Saving…';
+    try { await saveFile('labs/registry.json', dump(reg), `${C(code).course}: theme ${themeOf(k).label}`); S.reg = reg; S.pick.try = null;
+      toast(`Saved. ${C(code).course}'s pages rebuild with “${themeOf(k).label}” in about two minutes.`, 6000); show(v, false);
+    } catch (e) { toast(e.message, 7000); b.disabled = false; b.textContent = 'Use this theme'; }
+  });
+  const dfile = $('ddFile');
+  if (dfile) dfile.onchange = async () => {
+    const msg = $('ddMsg'), file = dfile.files[0]; if (!file) return;
+    try { const o = JSON.parse(await file.text());
+      if (!Array.isArray(o.classes) || !o.semester_label) throw new Error('That file isn’t a lab-due-dates.json from the Semester plan (it needs a term and a list of classes).');
+      msg.textContent = `Uploading ${o.semester_label}: ${o.classes.length} classes…`;
+      await saveFile('labs/shared/lab-due-dates.json', JSON.stringify(o, null, 2) + '\n', `Lab due dates: ${o.semester_label}`);
+      S.dd = o; show('dates', false); $('ddMsg').textContent = `Saved ${o.semester_label}. The pages rebuild with these dates in about two minutes.`;
+    } catch (e) { msg.textContent = e.message; } finally { dfile.value = ''; }
+  };
+}
+window.addEventListener('hashchange', () => { const h = location.hash.slice(1); if (h && h !== S.view && S.reg) show(h); });
+load();
+</script>
+</body>
+</html>

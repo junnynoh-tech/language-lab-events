@@ -1,0 +1,71 @@
+{
+ "_about": "Every course with Language Lab labs: its language, lab type, status, theme and due day and time. The console's Student view reads this; theme and status can be changed there or in the website editor › Lab courses. status: approved = built from labs/courses/<code> and live under instructions/<code>/; proposal = still with faculty (link only); planned = a slot for the future.",
+ "languages": [
+  {
+   "code": "SPAN",
+   "name": "Spanish",
+   "courses": [
+    "span1001",
+    "span1002"
+   ]
+  },
+  {
+   "code": "FREN",
+   "name": "French",
+   "courses": [
+    "fren1001",
+    "fren1002"
+   ]
+  }
+ ],
+ "courses": {
+  "span1001": {
+   "course": "SPAN 1001",
+   "name": "Elementary Spanish I",
+   "language": "SPAN",
+   "type": "bongo-video",
+   "status": "approved",
+   "theme": "ung",
+   "due_day": "Friday",
+   "due_time": "5:00 PM",
+   "note": "Approved by the Spanish faculty, November 2026. Due Fridays at 5:00 PM, the same as SPAN 1002.",
+   "local_source": "span1001/labs-regular-2026/source"
+  },
+  "span1002": {
+   "course": "SPAN 1002",
+   "name": "Elementary Spanish II",
+   "language": "SPAN",
+   "type": "bongo-video",
+   "status": "approved",
+   "theme": "ung",
+   "due_day": "Friday",
+   "due_time": "5:00 PM",
+   "note": "Approved by the Spanish faculty, November 2026, with one change: due Fridays at 5:00 PM, the same as SPAN 1001 (was Wednesdays).",
+   "local_source": "span1002/labs-2026/source"
+  },
+  "fren1001": {
+   "course": "FREN 1001",
+   "name": "Elementary French I",
+   "language": "FREN",
+   "type": "bongo-video",
+   "status": "approved",
+   "theme": "ung",
+   "due_day": "Wednesday",
+   "due_time": "11:59 PM",
+   "note": "Moved to the console November 2026. Due Wednesdays at 11:59 PM, as in the proposal.",
+   "local_source": "fren1001/labs-2026/source"
+  },
+  "fren1002": {
+   "course": "FREN 1002",
+   "name": "Elementary French II",
+   "language": "FREN",
+   "type": "talkabroad-workshop",
+   "status": "proposal",
+   "theme": "ung",
+   "due_day": "Friday",
+   "due_time": "5:00 PM",
+   "note": "Proposal in progress with the French faculty. Not moved yet.",
+   "proposal": "proposals/french/fren1002.html"
+  }
+ }
+}

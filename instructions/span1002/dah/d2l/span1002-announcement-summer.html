@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SPAN 1002 · Language Lab announcement</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700;900&family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#002147;--navy-2:#0b2f5c;--blue:#005fa3;--sky:#9cc9ee;--red:#c8102e;--gold:#b8952a;--gold-dk:#7a5d14;--gold-lt:#fdf6e3;
+--ink:#0d1525;--muted:#4a5f75;--cream:#f7f9fc;--white:#fff;--line:#d5e0ee;--line-2:#9fb3cc;--green:#1a5c1a;--green-lt:#eef8ee;--red-lt:#fff0f2;}
+*,*::before,*::after{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{font-family:'DM Sans',Arial,sans-serif;font-size:17px;line-height:1.6;color:var(--ink);background:var(--cream);}
+a{color:var(--blue);} a:hover{color:var(--navy);}
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outline-offset:2px;}
+.skip{position:absolute;left:-9999px;top:0;background:var(--gold-dk);color:#fff;padding:10px 16px;font-weight:700;z-index:100;}
+.skip:focus{left:0;}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;}
+header.top{background:var(--navy);color:#fff;padding:20px 28px;display:flex;align-items:center;gap:18px;}
+.flag{display:flex;flex-direction:column;gap:3px;flex-shrink:0;position:relative;}.flag i{display:block;width:34px;height:5px;border-radius:2px;background:#c8102e;transition:background .9s ease;}.flag i:nth-child(2){background:#b8952a;}
+.flag .flagtip{position:absolute;left:44px;top:-4px;background:rgba(0,0,0,.8);color:#fff;font:700 13px 'DM Sans',Arial,sans-serif;padding:3px 8px;border-radius:4px;white-space:nowrap;opacity:0;transition:opacity .2s;pointer-events:none;z-index:10;}
+.flag:hover .flagtip{opacity:1;}
+.top h1 .c{transition:color .9s ease;}
+.top h1{font-family:'Fraunces',Georgia,serif;font-weight:900;font-size:1.65rem;line-height:1.15;margin:0;}
+.top h1 .c{color:var(--sky);}
+.top p{margin:2px 0 0;font-size:.95rem;color:#d6e2f0;}
+.top .num{margin-left:auto;font-family:'Fraunces',Georgia,serif;font-weight:900;font-size:3rem;line-height:1;color:var(--sky);}
+/* Console (2026-11-10, like the events console admin/console.html): the flag banner on top, then a white
+   rail flush left with compact items, and the content using the full width. No vh units: in a D2L iframe
+   the frame grows to fit the page, and a vh height would make it grow forever. */
+.layout{display:grid;grid-template-columns:248px minmax(0,1fr);align-items:stretch;}
+.side{background:var(--white);border-right:1px solid var(--line);padding:18px 12px 24px;}
+.tabs{display:flex;flex-direction:column;gap:2px;position:sticky;top:12px;}
+.grp{font-size:.74rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:14px 10px 4px;}
+.grp:first-child{margin-top:0;}
+.tab{display:block;width:100%;text-align:left;font:inherit;font-size:.97rem;font-weight:600;line-height:1.3;color:var(--ink);background:none;border:0;border-radius:8px;padding:7px 10px;cursor:pointer;min-height:40px;}
+.tab small{display:block;font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:1px;}
+.tab:hover{background:#eef2f7;}
+.tab[aria-selected="true"]{background:var(--navy);color:#fff;}
+.tab[aria-selected="true"] small{color:#e8d080;}
+.tab.lab{background:var(--gold-lt);box-shadow:inset 3px 0 0 var(--gold);}
+.tab.lab:hover{background:#f8ecc8;}
+.tab.lab[aria-selected="true"]{background:var(--gold-dk);color:#fff;box-shadow:none;}
+.tab.lab[aria-selected="true"] small{color:#fff3cf;}
+.layout>main{padding:22px clamp(16px,3vw,44px) 56px;}
+.layout>main>.panel{max-width:1100px;}
+.panel[hidden]{display:none;}
+.panel:focus{outline:none;}
+main{min-width:0;}
+h2{font-family:'Fraunces',Georgia,serif;font-size:1.5rem;color:var(--navy);margin:0 0 10px;line-height:1.25;}
+h3{font-size:1.05rem;color:var(--navy);margin:22px 0 6px;}
+p{margin:0 0 10px;}
+ul,ol{margin:0 0 10px;padding-left:22px;} li{margin:3px 0;}
+.facts{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px;padding:0;list-style:none;}
+.facts li{margin:0;background:var(--white);border:1.5px solid var(--line-2);border-radius:999px;padding:5px 14px;font-size:.95rem;}
+.facts li b{color:var(--navy);}
+.facts li.due{border-color:var(--red);background:var(--red-lt);}
+.box{background:var(--white);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:0 0 14px;}
+.box h3:first-child{margin-top:0;}
+.box h3:first-child+h3{margin-top:6px;}
+.note{border-left:4px solid var(--gold);background:var(--white);border-radius:0 8px 8px 0;padding:10px 14px;margin:0 0 14px;}
+.qlist{list-style:none;padding:0;margin:0;counter-reset:q;}
+.qlist li{counter-increment:q;position:relative;padding:9px 0 9px 42px;border-bottom:1px solid var(--line);margin:0;}
+.qlist li:last-child{border-bottom:none;}
+.qlist li::before{content:counter(q);position:absolute;left:0;top:10px;width:28px;height:28px;border-radius:50%;background:var(--navy);color:#fff;font-weight:700;font-size:.9rem;display:flex;align-items:center;justify-content:center;}
+.qlist .q{display:block;font-size:1.1rem;font-weight:600;color:var(--navy);}
+.qlist .q i{font-style:normal;}
+.qlist .g{display:block;color:var(--muted);font-size:.95rem;}
+.qlist .t{display:block;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.15rem;color:var(--navy);margin:0 0 4px;}
+.qsub{list-style:none;padding:0;margin:0;}
+.qsub li{counter-increment:none;padding:5px 0 5px 0;border:none;}
+.qsub li::before{content:none;}
+.qlist .qsub .q{font-size:1.05rem;}
+.steps{counter-reset:s;list-style:none;padding:0;}
+.steps li{counter-increment:s;padding-left:34px;position:relative;margin:6px 0;}
+.steps li::before{content:counter(s);position:absolute;left:0;top:1px;width:24px;height:24px;border-radius:50%;border:2px solid var(--navy);color:var(--navy);font-weight:700;font-size:.85rem;display:flex;align-items:center;justify-content:center;}
+.slide-ex{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0 0;}
+.slide-ex div{border-radius:8px;padding:10px 12px;font-size:.95rem;}
+.slide-ex .ok{background:var(--green-lt);border:1.5px solid var(--green);}
+.slide-ex .no{background:var(--red-lt);border:1.5px solid var(--red);}
+.slide-ex b{display:block;font-size:.85rem;text-transform:uppercase;letter-spacing:.05em;}
+.slide-ex .ok b{color:var(--green);} .slide-ex .no b{color:#9b0c23;}
+.slide-ex .t{font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.1rem;color:var(--navy);display:block;}
+.check{list-style:none;padding:0;} .check li{display:flex;gap:10px;align-items:flex-start;}
+.check input{width:24px;height:24px;margin-top:4px;accent-color:var(--navy);flex-shrink:0;}
+.subtabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px;}
+.subtab{font:inherit;font-size:.95rem;font-weight:600;padding:6px 14px;min-height:44px;border-radius:999px;border:1.5px solid var(--line-2);background:var(--white);color:var(--navy);cursor:pointer;}
+.subtab[aria-selected="true"]{background:var(--navy);border-color:var(--navy);color:#fff;}
+table{border-collapse:collapse;width:100%;margin:0 0 8px;background:var(--white);font-size:.98rem;}
+th,td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line);vertical-align:top;}
+th{font-size:.85rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);background:var(--cream);}
+td:first-child{font-weight:600;color:var(--navy);width:48%;}
+.say{border:1px solid var(--line-2);background:var(--white);color:var(--navy);border-radius:6px;min-width:36px;min-height:36px;cursor:pointer;margin-left:6px;font-size:.95rem;}
+.imgs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:0 0 6px;}
+.imgs figure{margin:0;background:var(--white);border:1px solid var(--line);border-radius:8px;overflow:hidden;}
+.imgs img{width:100%;height:110px;object-fit:cover;display:block;}
+.imgs figcaption{padding:6px 9px;font-size:.92rem;} .imgs figcaption b{display:block;color:var(--navy);}
+.credit{font-size:.85rem;color:var(--muted);}
+.grid2{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;}
+.camp{background:var(--white);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:.95rem;}
+.camp h3{margin:0 0 4px;}
+.camp a{display:inline-block;padding:3px 0;min-height:24px;}
+.labrow{display:grid;grid-template-columns:52px 1fr;gap:12px;background:var(--white);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:0 0 10px;}
+.labrow .n{font-family:'Fraunces',Georgia,serif;font-weight:900;font-size:2rem;color:var(--blue);line-height:1;}
+.labrow h3{margin:0 0 2px;}
+.labstate{margin:0;font-size:.875rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;}
+.labstate:empty{display:none;}
+.labrow.past{background:var(--cream);border-style:dashed;}
+.labrow.past .n,.labrow.past h3,.labrow.past p,.labrow.past .meta b{color:var(--muted);}
+.labrow.current{border:2px solid var(--gold);box-shadow:0 6px 20px rgba(122,93,20,.18);transform:scale(1.015);background:var(--gold-lt);}
+.labrow.current .labstate{display:inline-block;background:var(--gold-dk);color:#fff;border-radius:999px;padding:1px 10px;margin-bottom:4px;}
+.box.honesty{border-left:5px solid var(--red);}
+.labrow .meta{font-size:.92rem;color:var(--muted);margin:0 0 4px;}
+.labrow .meta b{color:var(--red);}
+.btn{display:inline-block;background:var(--navy);color:#fff;text-decoration:none;font-weight:700;padding:10px 18px;border-radius:8px;min-height:44px;}
+.btn:hover{background:var(--navy-2);color:#fff;}
+.btn.gold{background:var(--gold-dk);} .btn.gold:hover{background:#5f480f;}
+.labpanel{background:var(--gold-lt);border:1.5px solid var(--gold);border-radius:12px;padding:18px 20px;}
+.cards{display:flex;flex-wrap:wrap;gap:10px;list-style:none;padding:0;margin:0 0 6px;}
+.cards li{margin:0;}
+.wcard{font:inherit;min-width:150px;min-height:64px;padding:8px 14px;border-radius:10px;border:1.5px solid var(--navy);background:var(--white);cursor:pointer;text-align:center;}
+.wcard .w{display:block;font-weight:700;font-size:1.1rem;color:var(--navy);}
+.wcard .m{display:block;font-size:.95rem;color:var(--muted);}
+.wcard .m[hidden]{display:none;}
+.wcard[aria-expanded="true"]{background:var(--sky);border-color:var(--sky);}
+.wcard[aria-expanded="true"] .m{color:var(--ink);}
+.linkbtn{font:inherit;font-weight:700;color:var(--navy);background:var(--white);border:1.5px solid var(--navy);border-radius:999px;padding:6px 16px;min-height:44px;cursor:pointer;}
+.hero{margin:0 0 14px;}
+.hero img{display:block;width:100%;height:180px;object-fit:cover;border-radius:12px;}
+.hero figcaption{font-size:.85rem;color:var(--muted);margin-top:4px;}
+.hero figcaption a{color:var(--muted);display:inline-block;min-height:24px;padding:2px 0;}
+.video{position:relative;width:100%;max-width:720px;aspect-ratio:16/9;background:#0b1a2e;border-radius:12px;overflow:hidden;margin:0 0 14px;}
+.video iframe{position:absolute;inset:0;width:100%;height:100%;border:0;}
+details.box summary{cursor:pointer;min-height:32px;color:var(--navy);}
+details.box[open] summary{margin-bottom:6px;}
+.btnrow{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 16px;}
+.btn.ghost{background:var(--white);color:var(--navy);border:1.5px solid var(--navy);}
+.btn.ghost:hover{background:var(--cream);color:var(--navy);}
+footer.foot{margin:0 0 0 248px;padding:0 clamp(16px,3vw,44px) 30px;font-size:.88rem;color:var(--muted);}
+.single{max-width:760px;margin:0 auto;padding:22px 24px 60px;}
+@media (max-width:820px){
+ .layout{grid-template-columns:minmax(0,1fr);}
+ .side{border-right:0;border-bottom:1px solid var(--line);padding:10px 12px;} .tabs{flex-direction:row;flex-wrap:wrap;gap:4px;position:static;}
+ .tab{width:auto;flex:1 1 40%;} .grp{display:none;} .layout>main{padding:16px 16px 48px;} footer.foot{margin:0;padding:0 16px 24px;}
+ header.top{padding:16px;} .top .num{font-size:2.3rem;} .slide-ex{grid-template-columns:1fr;}
+ .single{padding:14px 16px 50px;}
+}
+@page{size:letter;margin:.65in;}
+@media print{
+ .side,.skip,.no-print,.accent-tab,.say{display:none!important;}
+ body{background:#fff;} header.top{background:#fff;color:#000;border-bottom:2px solid #000;}
+ .top h1 .c,.top .num,.top p{color:#000;}
+ .layout{grid-template-columns:1fr;} .layout>main{padding:0;} footer.foot{margin:0;} .panel[hidden]{display:block!important;}
+ .box,.labrow,.camp{break-inside:avoid;}
+}
+
+.os-switch{display:inline-flex;border:1.5px solid var(--navy);border-radius:999px;overflow:hidden;margin:0 0 14px;}
+.os-switch button{font:inherit;font-weight:700;padding:8px 22px;min-height:44px;border:none;background:var(--white);color:var(--navy);cursor:pointer;}
+.os-switch button[aria-pressed="true"]{background:var(--navy);color:#fff;}
+.kb{display:flex;flex-direction:column;gap:4px;background:#e9eef5;border:1px solid var(--line-2);border-radius:12px;padding:10px;margin:8px 0 6px;max-width:760px;overflow-x:auto;}
+.kb-row{display:flex;gap:4px;}
+.key{flex:1 0 40px;min-width:42px;height:54px;border-radius:6px;background:#fff;border:1px solid #b9c6d6;box-shadow:0 1px 0 #9fb3cc;position:relative;font-size:15px;line-height:1;color:var(--ink);}
+.key .o{position:absolute;left:7px;bottom:7px;font-weight:700;font-size:17px;}
+.key .s{position:absolute;left:7px;top:5px;font-size:14px;color:var(--muted);}
+.key .us{position:absolute;right:5px;bottom:6px;font-size:14px;color:#5b6b7f;}
+.key.w15{flex-basis:62px;} .key.w2{flex-basis:80px;} .key.w25{flex-basis:96px;} .key.sp{flex:6 0 200px;}
+.key.mod .o{font-size:14px;font-weight:600;color:var(--muted);}
+.key.moved{background:var(--gold-lt);border-color:var(--gold);}
+.key.blank{background:#f3f5f8;}
+.key.hl{background:var(--navy);border-color:var(--navy);}
+.key.hl .o,.key.hl .s,.key.hl .us{color:#fff;}
+.kb-legend{font-size:.92rem;color:var(--muted);margin:0 0 10px;}
+.kb-legend span{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin:0 4px 0 10px;}
+kbd{font:600 .9em 'DM Sans',Arial,sans-serif;background:var(--white);border:1px solid var(--line-2);border-bottom-width:2px;border-radius:5px;padding:1px 6px;white-space:nowrap;}
+.practice{background:var(--white);border:1.5px solid var(--navy);border-radius:12px;padding:14px 18px;margin:10px 0;}
+.practice .target{font-family:'Fraunces',Georgia,serif;font-size:1.5rem;font-weight:700;color:var(--navy);margin:2px 0 8px;}
+.practice input{width:100%;max-width:520px;font:inherit;font-size:1.15rem;padding:9px 12px;border:1.5px solid var(--line-2);border-radius:8px;min-height:48px;}
+.practice input:focus-visible{outline:3px solid var(--gold);outline-offset:1px;}
+.practice .fb{min-height:52px;margin:8px 0;font-weight:600;}
+.practice .fb.ok{color:var(--green);} .practice .fb.hint{color:var(--navy);}
+.practice .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.practice .count{color:var(--muted);font-size:.92rem;}
+@media print{.practice,.os-switch{display:none!important;}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to main content</a>
+<header class="top">
+  <span class="flag" role="img" aria-label="Flag of España"><i></i><i></i><i></i><span class="flagtip" aria-hidden="true">España</span></span>
+  <div><h1>SPAN <span class="c">1002</span> · Language Lab</h1><p>Welcome · Summer sections · Dahlonega</p></div>
+  
+</header>
+<main id="main" class="single">
+<h2 lang="es">¡Bienvenidos al Language Lab!</h2>
+<p>SPAN 1002 includes 4 short speaking labs. Everything is in one place: <b>Content › LAB</b>.</p>
+<div class="btnrow"><a class="btn" href="/d2l/le/content/{orgUnitId}/Home">Open the LAB folder</a><a class="btn ghost" href="/d2l/common/dialogs/quickLink/quickLink.d2l?ou={orgUnitId}&amp;type=quiz&amp;rcode=usgx-45035520">Take the Guidelines Quiz</a></div>
+<div class="box"><h3>Get started</h3><ol class="steps">
+<li>Open <b>Content › LAB</b> and read the folder description, starting with <b>Requirements</b>.</li>
+<li>Set up Spanish accents on your computer. Steps are in the <b>Quizzes &amp; accents</b> tab.</li>
+<li>Complete <b>Lab 0</b>: pass the <b>Guidelines Quiz</b> (75%), then record the one-minute <b>Bongo setup check</b>. Together they unlock Lab 1.</li>
+<li>For each lab: take the <b>Mini-Quiz</b>, then record the <b>Bongo</b> assignment.</li>
+</ol></div>
+<ul class="facts"><li class="due"><b>Due dates</b> listed in D2L</li><li><b>Late work</b> not accepted</li></ul>
+
+<p style="margin-top:14px">Questions? Email the Dahlonega Language Lab:</p><p><a href="mailto:languagelab-dah@ung.edu">languagelab-dah@ung.edu</a> (Dahlonega Language Lab)</p>
+<p lang="es">¡Buen semestre!<br>UNG Language Lab</p>
+</main>
+
+<script>
+(function(){
+  function setup(listSel, tabSel){
+    document.querySelectorAll(listSel).forEach(function(list){
+      var tabs=[].slice.call(list.querySelectorAll(tabSel));
+      function show(t, focus){
+        tabs.forEach(function(x){var on=x===t;x.setAttribute('aria-selected',on);x.tabIndex=on?0:-1;
+          document.getElementById(x.getAttribute('aria-controls')).hidden=!on;});
+        if(focus) t.focus();
+      }
+      tabs.forEach(function(t,i){
+        t.addEventListener('click',function(){show(t);
+          if(list.classList.contains('tabs')){try{history.replaceState(null,'','#'+t.id.replace('tab-',''));}catch(e){}}});
+        t.addEventListener('keydown',function(ev){
+          var k=ev.key,j=null;
+          if(k==='ArrowDown'||k==='ArrowRight') j=(i+1)%tabs.length;
+          else if(k==='ArrowUp'||k==='ArrowLeft') j=(i-1+tabs.length)%tabs.length;
+          else if(k==='Home') j=0; else if(k==='End') j=tabs.length-1;
+          if(j!==null){ev.preventDefault();show(tabs[j],true);}
+        });
+      });
+      if(list.classList.contains('tabs')){
+        var h=(location.hash||'').slice(1), t=h&&document.getElementById('tab-'+h);
+        if(t&&tabs.indexOf(t)>=0) show(t);
+      }
+    });
+  }
+  setup('.tabs','.tab'); setup('.subtabs','.subtab');
+  document.querySelectorAll('[data-goto]').forEach(function(a){a.addEventListener('click',function(ev){
+    var t=document.getElementById('tab-'+a.getAttribute('data-goto')); if(t){ev.preventDefault();t.click();t.focus();window.scrollTo(0,0);}});});
+})();
+(function(){
+  // In a D2L iframe (same site, with a height="" attribute from the setup snippets), grow the frame to fit
+  // this page so there's no inner scrollbar. Pages on GitHub can't do this (different site), and preview
+  // frames in the proposal and guides have no height attribute, so they keep their own size.
+  function fit(){ try{ var f=window.frameElement; if(f&&f.hasAttribute('height')) f.style.height=(document.documentElement.scrollHeight+6)+'px'; }catch(e){} }
+  window.addEventListener('load',fit); document.addEventListener('click',function(){ setTimeout(fit,60); });
+  if(window.ResizeObserver) new ResizeObserver(fit).observe(document.body);
+})();
+function say(t){try{var u=new SpeechSynthesisUtterance(t);u.lang='es-MX';u.rate=.9;speechSynthesis.cancel();speechSynthesis.speak(u);}catch(e){}}
+
+(function(){
+  // The banner flag cycles through Spanish-speaking countries (as on the original lab pages).
+  // Paused while you point at it; no cycling for people who ask for reduced motion.
+  var flags=[["España",["#c8102e","#b8952a","#c8102e"],"#9cc9ee"],["México",["#006847","#ffffff","#ce1126"],"#9cc9ee"],["Argentina",["#74acdf","#ffffff","#74acdf"],"#9cc9ee"],
+   ["Colombia",["#fcd116","#003087","#ce1126"],"#fcd116"],["Chile",["#d52b1e","#ffffff","#002d62"],"#9cc9ee"],["Perú",["#d91023","#ffffff","#d91023"],"#9cc9ee"],
+   ["Venezuela",["#cf142b","#00247d","#cf9a00"],"#e0b030"],["Cuba",["#002a8f","#ffffff","#002a8f"],"#9cc9ee"],["Ecuador",["#ffd100","#003893","#ef3340"],"#ffd100"],
+   ["Bolivia",["#d52b1e","#f4e400","#007a3d"],"#f4e400"],["Guatemala",["#4997d0","#ffffff","#4997d0"],"#9cc9ee"],["Costa Rica",["#002b7f","#cf142b","#ffffff"],"#9cc9ee"],
+   ["Uruguay",["#ffffff","#5b9bd5","#ffffff"],"#9cc9ee"],["Honduras",["#009bde","#ffffff","#009bde"],"#9cc9ee"],["Nicaragua",["#003f87","#ffffff","#003f87"],"#9cc9ee"],
+   ["El Salvador",["#0f47af","#ffffff","#0f47af"],"#9cc9ee"],["Rep. Dominicana",["#002d62","#cf142b","#002d62"],"#9cc9ee"],["Puerto Rico",["#002d62","#ffffff","#cf142b"],"#9cc9ee"],
+   ["Panamá",["#da121a","#ffffff","#005eb8"],"#9cc9ee"],["Paraguay",["#d52b1e","#ffffff","#0032a0"],"#9cc9ee"]];
+  var w=document.querySelector('.top .flag'); if(!w) return;
+  var bars=w.querySelectorAll('i'), tip=w.querySelector('.flagtip'), acc=document.querySelector('.top h1 .c'), i=0, paused=false;
+  for(var k=flags.length-1;k>1;k--){var j=1+Math.floor(Math.random()*k),t=flags[k];flags[k]=flags[j];flags[j]=t;}  // España first, then a random order
+  function show(f){ for(var b=0;b<3;b++) bars[b].style.background=f[1][b]; w.setAttribute('aria-label','Flag of '+f[0]); if(tip) tip.textContent=f[0]; if(acc) acc.style.color=f[2]; }
+  show(flags[0]);
+  if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  w.addEventListener('mouseenter',function(){paused=true;}); w.addEventListener('mouseleave',function(){paused=false;});
+  setInterval(function(){ if(paused) return; i=(i+1)%flags.length; show(flags[i]); },6000);
+})();
+</script>
+
+</body>
+</html>

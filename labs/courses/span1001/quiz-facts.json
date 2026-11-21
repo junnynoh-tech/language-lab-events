@@ -1,0 +1,231 @@
+{
+ "lab-1": {
+  "blocks": [
+   {
+    "kind": "item",
+    "type": "Matching",
+    "points": 6.0
+   },
+   {
+    "kind": "item",
+    "type": "Fill in the Blanks",
+    "points": 3.0
+   },
+   {
+    "kind": "item",
+    "type": "Fill in the Blanks",
+    "points": 3.0
+   },
+   {
+    "kind": "item",
+    "type": "Multi-Select",
+    "points": 6.0
+   },
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 2.0
+   },
+   {
+    "kind": "item",
+    "type": "Fill in the Blanks",
+    "points": 3.0
+   },
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 2.0
+   }
+  ]
+ },
+ "lab-2": {
+  "blocks": [
+   {
+    "kind": "item",
+    "type": "Fill in the Blanks",
+    "points": 5.0
+   },
+   {
+    "kind": "item",
+    "type": "Fill in the Blanks",
+    "points": 10.0
+   },
+   {
+    "kind": "item",
+    "type": "Matching",
+    "points": 10.0
+   }
+  ]
+ },
+ "lab-3": {
+  "blocks": [
+   {
+    "kind": "item",
+    "type": "Matching",
+    "points": 10.0
+   },
+   {
+    "kind": "item",
+    "type": "Fill in the Blanks",
+    "points": 15.0
+   }
+  ]
+ },
+ "lab-4": {
+  "blocks": [
+   {
+    "kind": "item",
+    "type": "Multi-Select",
+    "points": 8.0
+   },
+   {
+    "kind": "item",
+    "type": "Matching",
+    "points": 9.0
+   },
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 2.0
+   },
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 2.0
+   },
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 2.0
+   },
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 2.0
+   }
+  ]
+ },
+ "lab-5": {
+  "blocks": [
+   {
+    "kind": "item",
+    "type": "Matching",
+    "points": 5.0
+   },
+   {
+    "kind": "item",
+    "type": "Matching",
+    "points": 10.0
+   },
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 2.0
+   },
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 2.0
+   },
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 2.0
+   },
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 2.0
+   },
+   {
+    "kind": "item",
+    "type": "Multi-Select",
+    "points": 2.0
+   }
+  ]
+ },
+ "lab-6": {
+  "blocks": [
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 1.0
+   },
+   {
+    "kind": "item",
+    "type": "Multi-Select",
+    "points": 5.0
+   },
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 1.0
+   },
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 1.0
+   },
+   {
+    "kind": "item",
+    "type": "True/False",
+    "points": 1.0
+   },
+   {
+    "kind": "item",
+    "type": "True/False",
+    "points": 1.0
+   },
+   {
+    "kind": "item",
+    "type": "Fill in the Blanks",
+    "points": 1.0
+   },
+   {
+    "kind": "item",
+    "type": "Fill in the Blanks",
+    "points": 1.0
+   },
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 1.0
+   },
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 1.0
+   },
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 1.0
+   },
+   {
+    "kind": "item",
+    "type": "Multiple Choice",
+    "points": 1.0
+   },
+   {
+    "kind": "item",
+    "type": "Multi-Select",
+    "points": 6.0
+   },
+   {
+    "kind": "item",
+    "type": "Fill in the Blanks",
+    "points": 1.0
+   },
+   {
+    "kind": "item",
+    "type": "Fill in the Blanks",
+    "points": 1.0
+   },
+   {
+    "kind": "item",
+    "type": "Fill in the Blanks",
+    "points": 1.0
+   }
+  ]
+ }
+}

@@ -200,6 +200,10 @@
       "href": "../semester.html"
     },
     {
+      "label": "Student view",
+      "href": "../student-view.html"
+    },
+    {
       "label": "Tutorials"
     }
   ]

@@ -1,0 +1,36 @@
+{
+ "_about": "Lab types. Each course picks one in labs/registry.json. A type says what students do and which D2L items each lab has, so a new kind of lab (the Global Passport) can be added without changing the others.",
+ "types": {
+  "bongo-video": {
+   "label": "Bongo video labs",
+   "status": "in use",
+   "platform": "Bongo",
+   "what": "Each lab: an optional mini-quiz, then a 1.5–2 minute Bongo video in the target language, graded on the speaking rubric.",
+   "d2l": [
+    "LAB folder description",
+    "Guidelines Quiz",
+    "Lab 0: setup check",
+    "Each lab: Mini-Quiz (if the course has them), then the Bongo assignment"
+   ]
+  },
+  "talkabroad-workshop": {
+   "label": "TalkAbroad conversations with workshops",
+   "status": "proposal",
+   "platform": "TalkAbroad",
+   "what": "Each lab: a workshop with a lab assistant, then a 15-minute TalkAbroad conversation with a native speaker.",
+   "d2l": [
+    "LAB folder description",
+    "Guidelines Quiz",
+    "Lab 0: TalkAbroad setup",
+    "Each lab: Workshop dropbox, then TalkAbroad dropbox"
+   ]
+  },
+  "global-passport": {
+   "label": "Global Passport",
+   "status": "planned",
+   "platform": "",
+   "what": "Planned for the Fall 2027 lab redesign. Its parts get added here when the design is ready.",
+   "d2l": []
+  }
+ }
+}
