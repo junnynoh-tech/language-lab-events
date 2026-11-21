@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Language Lab</title>
+<!-- Language Lab instructions for D2L (2026-11-21). Upload this one file to D2L once; it never needs to change.
+     An iframe in D2L points at it, e.g. lab-page.html?p=span1001/gvl/span1001-lab-folder-inperson.html, and it shows the
+     current page from the Lab's GitHub site. Students get no "external content" prompt: the frame D2L embeds is this
+     D2L file. Edits made in the Lab console show here about two minutes after they're saved.
+     Safety: the page from GitHub runs in a sandboxed frame with no access to D2L or the student's session.
+     Only pages under the Lab's instructions/ folder can be shown (p= is checked). No data is stored here. -->
+<style>
+html,body{margin:0;padding:0;background:#fff;}
+#f{display:block;width:100%;border:0;height:900px;}
+#msg{font:16px/1.5 Arial,sans-serif;color:#1f2937;padding:16px;}
+#msg a{display:inline-block;margin-top:8px;padding:10px 16px;background:#1a3a6b;color:#fff;border-radius:8px;text-decoration:none;font-weight:700;}
+</style>
+</head>
+<body>
+<main id="m"><p id="msg" role="status">Loading…</p></main>
+<script>
+(function () {
+  'use strict';
+  var BASE = 'https://junnynoh-tech.github.io/language-lab-events/instructions/';
+  var p = new URLSearchParams(location.search).get('p') || '';
+  var msg = document.getElementById('msg');
+  if (!/^[a-z0-9]+(\/[a-z0-9-]+)*\.html$/.test(p)) { msg.textContent = 'This Language Lab link is incomplete. Tell your professor or the Language Lab.'; return; }
+  var url = BASE + p;
+  function fallback() {
+    msg.innerHTML = 'This page didn’t load here. <br><a target="_blank" rel="noopener">Open it in a new tab</a>';
+    msg.querySelector('a').href = url;
+  }
+  // D2L fills in {orgUnitId} only in content it serves itself, so do it here: the course id is in this file's address
+  // (/content/enforced/12345-…) or in the D2L page around it.
+  function orgUnit() {
+    var m = location.pathname.match(/\/content\/enforced\/(\d+)-/);
+    if (m) return m[1];
+    try { m = top.location.pathname.match(/\/d2l\/(?:le|lms|home)\/(?:content\/)?(\d+)/) || top.location.pathname.match(/\/(\d{4,})\//); if (m) return m[1]; } catch (e) {}
+    return '';
+  }
+  fetch(url, { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); }).then(function (html) {
+    var ou = orgUnit();
+    if (ou) html = html.split('{orgUnitId}').join(ou);
+    var doc = new DOMParser().parseFromString(html, 'text/html');
+    // links: same-page tabs (#…) stay; D2L links (/d2l/…) open D2L itself; everything else opens in a new tab
+    Array.prototype.forEach.call(doc.querySelectorAll('[href],[src]'), function (el) {
+      ['href', 'src'].forEach(function (a) {
+        var v = el.getAttribute(a);
+        if (!v || v.charAt(0) === '#' || /^(data:|mailto:|tel:|javascript:)/i.test(v)) return;
+        if (v.indexOf('/d2l/') === 0) { el.setAttribute(a, location.origin + v); if (el.tagName === 'A') el.setAttribute('target', '_top'); return; }
+        try { el.setAttribute(a, new URL(v, url).href); } catch (e) {}
+      });
+      if (el.tagName === 'A') {
+        var h = el.getAttribute('href') || '';
+        if (h.charAt(0) !== '#' && el.getAttribute('target') !== '_top') { el.setAttribute('target', '_blank'); el.setAttribute('rel', 'noopener'); }
+      }
+    });
+    // the page tells this frame its height (it can't reach D2L itself from the sandbox)
+    var s = doc.createElement('script');
+    s.textContent = "(function(){function h(){parent.postMessage({labPageHeight:Math.ceil(Math.max(document.documentElement.scrollHeight,document.body?document.body.scrollHeight:0))},'*');}"
+      + "addEventListener('load',h);addEventListener('resize',h);document.addEventListener('click',function(){setTimeout(h,60);});"
+      + "if(window.ResizeObserver)new ResizeObserver(h).observe(document.documentElement);h();})();";
+    doc.body.appendChild(s);
+    var f = document.createElement('iframe');
+    f.id = 'f';
+    f.title = (doc.title || 'Language Lab page');
+    f.setAttribute('sandbox', 'allow-scripts allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation');
+    f.srcdoc = '<!DOCTYPE html>' + doc.documentElement.outerHTML;
+    document.title = doc.title || document.title;
+    msg.remove();
+    document.getElementById('m').appendChild(f);
+    window.addEventListener('message', function (e) {
+      if (e.source !== f.contentWindow || !e.data || typeof e.data.labPageHeight !== 'number') return;
+      var px = Math.max(200, Math.min(e.data.labPageHeight, 40000)) + 'px';
+      if (f.style.height !== px) f.style.height = px;
+      try { if (window.frameElement) window.frameElement.style.height = (document.documentElement.scrollHeight) + 'px'; } catch (err) {}
+    });
+  }).catch(fallback);
+})();
+</script>
+</body>
+</html>

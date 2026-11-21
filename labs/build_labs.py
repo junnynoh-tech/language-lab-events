@@ -199,6 +199,8 @@ def build():
     man = {"_about": "Written by labs/build_labs.py. The console's Student view reads it.", "built": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
            "semester": load(LABS / "shared" / "lab-due-dates.json").get("semester_label", ""), "courses": {}, "warnings": []}
     OUT.mkdir(exist_ok=True)
+    (OUT / "d2l").mkdir(exist_ok=True)   # the one file coordinators upload to D2L (labs/d2l/lab-page.html)
+    shutil.copy(LABS / "d2l" / "lab-page.html", OUT / "d2l" / "lab-page.html")
     for code, reg in R["courses"].items():
         if reg.get("status") != "approved" or not (LABS / "courses" / code / "course.json").exists(): continue
         warn = []

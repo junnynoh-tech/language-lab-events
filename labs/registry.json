@@ -1,5 +1,9 @@
 {
  "_about": "Every course with Language Lab labs: its language, lab type, status, theme and due day and time. The console's Student view reads this; theme and status can be changed there or in the website editor › Lab courses. status: approved = built from labs/courses/<code> and live under instructions/<code>/; proposal = still with faculty (link only); planned = a slot for the future.",
+ "d2l": {
+  "loader": "lab-page.html",
+  "_note": "Where the D2L loader (instructions/d2l/lab-page.html) was uploaded in D2L, as the iframe code should point at it. lab-page.html = the top of each course's files. With a Shared Files folder, e.g. /shared/LanguageLab/lab-page.html."
+ },
  "languages": [
   {
    "code": "SPAN",

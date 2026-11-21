@@ -122,6 +122,26 @@ table.t th { font-size: 13px; letter-spacing: .04em; text-transform: uppercase; 
 .tw { overflow-x: auto; }
 .toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 10px; z-index: 30; max-width: 90vw; }
 .loading, .empty { color: var(--sub); }
+.form { display: grid; gap: 14px; max-width: 900px; }
+.fld { display: grid; gap: 4px; }
+.fld > label, .grp > legend { font-weight: 600; }
+.fld input[type=text], .fld input[type=number], .fld textarea, .fld select, .items input, .items textarea { width: 100%; min-height: 40px; padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); font: inherit; }
+.fld textarea, .items textarea { resize: vertical; line-height: 1.45; }
+.fld [readonly], .fld [disabled] { background: var(--chip); color: var(--sub); }
+.fld.chk { grid-template-columns: auto 1fr; align-items: center; column-gap: 8px; } .fld.chk .hint { grid-column: 2; }
+.hint { margin: 0; font-size: 14px; color: var(--sub); }
+.err { margin: 0; font-size: 14px; font-weight: 600; color: var(--bad); }
+.grp { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin: 0; display: grid; gap: 12px; min-width: 0; }
+.items { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.items > li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: start; }
+.items.objs > li { display: block; }
+.items details { border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+.items summary { cursor: pointer; padding: 10px 12px; font-weight: 600; }
+.objbody { padding: 4px 12px 12px; display: grid; gap: 12px; }
+.tools { display: inline-flex; gap: 4px; flex-wrap: wrap; }
+.savebar { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; background: var(--bg); padding: 10px 0; margin: 0 0 6px; border-bottom: 1px solid var(--line); }
+.savebar #edState { margin-right: auto; font-weight: 600; }
+pre.code { white-space: pre-wrap; overflow-wrap: anywhere; background: var(--chip); padding: 10px 12px; border-radius: 8px; font-size: 14px; margin: 0; }
 @media (max-width: 1100px) { .d2l { grid-template-columns: 1fr; } .pv iframe { height: 720px; } }
 @media (max-width: 860px) {
   .shell { grid-template-columns: 1fr; }
@@ -177,9 +197,9 @@ async function getJSON(path) {
 }
 async function load() {
   try { const r = await fetch(`${API}/commits/${BRANCH}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} }); if (r.ok) S.head = (await r.json()).sha; } catch (e) {}
-  const [reg, types, themes, man, dd] = await Promise.all(['labs/registry.json', 'labs/types.json', 'labs/themes.json', 'instructions/manifest.json', 'labs/shared/lab-due-dates.json'].map(getJSON));
+  const [reg, types, themes, man, dd, forms] = await Promise.all(['labs/registry.json', 'labs/types.json', 'labs/themes.json', 'instructions/manifest.json', 'labs/shared/lab-due-dates.json', 'labs/forms.json'].map(getJSON));
   if (!reg) { $('main').innerHTML = '<div class="empty" role="alert"><b>The course list could not be read.</b> Reload in a minute.</div>'; return; }
-  Object.assign(S, { reg, types: types?.types || {}, themes: themes?.themes || {}, man: man || { courses: {}, warnings: [] }, dd });
+  Object.assign(S, { reg, types: types?.types || {}, themes: themes?.themes || {}, man: man || { courses: {}, warnings: [] }, dd, forms });
   connUI(); nav(); show(location.hash.slice(1) || 'overview', false);
 }
 
@@ -209,14 +229,16 @@ const warnings = code => (S.man.warnings || []).filter(w => !code || w.course ==
 function nav() {
   const L = S.reg.languages.map(l => `<h2>${esc(l.name)}</h2><ul>${l.courses.filter(c => C(c)).map(c => `<li><button type="button" data-go="${c}"><span>${esc(C(c).course)}</span><span class="st">${C(c).status === 'approved' ? 'Live' : C(c).status === 'proposal' ? 'Proposal' : 'Planned'}</span></button></li>`).join('')}</ul>`).join('');
   $('nav').innerHTML = `<h2>Student view</h2><ul><li><button type="button" data-go="overview">Overview</button></li></ul>${L}`
-    + `<h2>Setup</h2><ul><li><button type="button" data-go="types">Lab types</button></li><li><button type="button" data-go="themes">Themes</button></li><li><button type="button" data-go="dates">Due dates</button></li></ul>`;
+    + `<h2>Setup</h2><ul><li><button type="button" data-go="types">Lab types</button></li><li><button type="button" data-go="themes">Themes</button></li><li><button type="button" data-go="dates">Due dates</button></li><li><button type="button" data-go="d2l">D2L setup</button></li></ul>`;
   $('nav').querySelectorAll('[data-go]').forEach(b => b.onclick = () => show(b.dataset.go));
 }
 function show(v, focus = true) {
-  if (v !== 'overview' && v !== 'types' && v !== 'themes' && v !== 'dates' && !S.reg.courses[v]) v = 'overview';
+  if (dirty() && v !== S.view && !confirm('Leave without saving your changes?')) return;
+  if (v !== S.view) S.edit = null;
+  if (!['overview', 'types', 'themes', 'dates', 'd2l'].includes(v) && !S.reg.courses[v]) v = 'overview';
   S.view = v; history.replaceState(null, '', '#' + v);
   $('nav').querySelectorAll('[data-go]').forEach(b => b.dataset.go === v ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'));
-  $('main').innerHTML = v === 'overview' ? overview() : v === 'types' ? typesView() : v === 'themes' ? themesView() : v === 'dates' ? datesView() : courseView(v);
+  $('main').innerHTML = v === 'overview' ? overview() : v === 'types' ? typesView() : v === 'themes' ? themesView() : v === 'dates' ? datesView() : v === 'd2l' ? d2lSetup() : courseView(v);
   wire(v);
   if (focus) { const h = $('main').querySelector('h1'); if (h) { h.tabIndex = -1; h.focus(); } }
 }
@@ -282,26 +304,189 @@ function d2lTab(code) {
     + its.map(x => x.grp ? `<li class="grp" aria-hidden="true">${esc(x.grp)}</li>` : `<li><button type="button" data-item="${x.id}"${x.id === cur?.id ? ' aria-current="true"' : ''}><span class="ic" style="background:${x.color}" aria-hidden="true">${esc(x.ic)}</span><span><span class="t">${esc(x.t)}</span><span class="s">${esc(x.s)}</span></span></button></li>`).join('')
     + `</ul></nav>${cur ? preview(code, cur) : '<p class="empty">No pages for this section type yet.</p>'}</div>`;
 }
+const loaderPath = () => S.reg.d2l?.loader || 'lab-page.html';
+const iframeCode = (code, x) => `<iframe src="${loaderPath()}?p=${code}/${x.f}" width="100%" height="900" style="border:none;" title="${x.t.replace(/"/g, '&quot;')}"></iframe>`;
 function preview(code, x) {
   const url = `instructions/${code}/${x.f}`, live = SITE + url;
   return `<div class="pv"><div class="bar"><span class="where">${esc(x.t)}</span>
 <a class="btn sm" href="../${esc(url)}" target="_blank" rel="noopener">Open (new tab)</a>
-<button class="btn sm" type="button" data-copy="${esc(live)}">Copy link for D2L</button>
-<a class="btn sm" href="${CMS}/file/${x.edit === 'policy' && !S.man.courses[code].has_policy ? 'lab-policy' : `lab-${code}-${x.edit}`}" target="_blank" rel="noopener">Edit this part</a></div>
+<button class="btn sm" type="button" data-copy="${esc(iframeCode(code, x))}">Copy iframe code for D2L</button>
+<button class="btn sm" type="button" data-edit="${x.edit === 'policy' && !S.man.courses[code].has_policy ? 'lab-policy' : `lab-${code}-${x.edit}`}">Edit this part</button></div>
 <iframe id="pvf" title="${esc(x.t)}: what students see" src="../${esc(url)}" loading="lazy"></iframe></div>`;
 }
 
-/* Edit: one form per part of the instructions */
+/* Edit (2026-11-21, Daniel: coordinators edit here; GitHub saves it; D2L shows it). The forms come from labs/forms.json,
+   the same definitions the website editor uses. Save writes only the part that was edited, in one commit. */
+const PARTS = [['requirements', 'Requirements', 'The Requirements tab students read first: video rules, allowed help, what to put in an email to the Lab.'],
+  ['labs', 'Labs', 'Each lab: title, summary, task (questions or parts), tips, checklist, slide rules, word list and top picture.'],
+  ['sections', 'Section types', 'In person, online, summer…: names, D2L links, tutoring, and anything a section type changes in a lab.'],
+  ['settings', 'Course settings', 'Course name, credit line, help links and D2L links.'],
+  ['policy', 'Policy for this course', 'Overrides the shared Lab policy for this course only (Lab 0, the rubric, what happens with no face or audio).']];
+const entry = name => (S.forms?.entries || []).find(e => e.name === name);
 function editTab(code) {
-  const r = C(code), parts = [['requirements', 'Requirements', 'The Requirements tab students read first: video rules, allowed help, what to put in an email to the Lab.'],
-    ['labs', 'Labs', 'Each lab: title, summary, task (questions or parts), tips, checklist, slide rules, word list and top picture.'],
-    ['sections', 'Section types', 'In person, online, summer…: names, D2L links, tutoring, and anything a section type changes in a lab.'],
-    ['settings', 'Course settings', 'Course name, credit line, help links and D2L links.']];
-  if (S.man.courses[code].has_policy) parts.push(['policy', 'Policy for this course', 'Overrides the shared Lab policy for this course only (Lab 0, the rubric, what happens with no face or audio).']);
-  return `<p class="lede">Each button opens one form in the website editor (new tab). Save there; the pages rebuild by themselves in about two minutes. Words in the target language go between *asterisks* to show in italics.</p>
-<div class="grid">${parts.map(([k, l, d]) => `<div class="card"><h2 class="h3">${l}</h2><p>${d}</p><a class="btn pri" href="${CMS}/file/lab-${code}-${k}" target="_blank" rel="noopener">Edit ${l.toLowerCase()}</a></div>`).join('')}
-<div class="card"><h2 class="h3">Shared by every course</h2><p>The Language Lab policy (Lab 0, rubric, excused absences, accommodations) and each course's due day, type and theme.</p><div class="row"><a class="btn" href="${CMS}/file/lab-policy" target="_blank" rel="noopener">Edit the shared policy</a><a class="btn" href="${CMS}/file/lab-courses" target="_blank" rel="noopener">Edit course settings</a></div></div></div>
-<p class="note"><b>Due day and time</b> (${esc(due(r))}) and points were approved by the faculty. Change them only after checking with the coordinator.</p>`;
+  if (S.edit && S.edit.code === code) return '<div id="editor"></div>';
+  const parts = PARTS.filter(([k]) => entry(`lab-${code}-${k}`));
+  return `<p class="lede">Pick a part to edit. Saving puts it on GitHub, and the pages in D2L and on the site update about two minutes later. Words in the target language go between *asterisks* to show in italics.</p>
+${token ? '' : '<p class="alert"><b>Viewing only.</b> To save, connect your GitHub key once in Events › Settings, then come back.</p>'}
+<div class="grid">${parts.map(([k, l, d]) => `<div class="card"><h2 class="h3">${l}</h2><p>${d}</p><button class="btn pri" type="button" data-edit="lab-${code}-${k}">Edit ${l.toLowerCase()}</button></div>`).join('')}
+<div class="card"><h2 class="h3">Shared by every course</h2><p>The Language Lab policy (Lab 0, rubric, excused absences, accommodations), and each course's due day, type and theme.</p><div class="row"><button class="btn" type="button" data-edit="lab-policy">Edit the shared policy</button><button class="btn" type="button" data-edit="lab-courses">Edit course settings</button></div></div></div>
+<p class="note"><b>Due day and time</b> (${esc(due(C(code)))}) and points were approved by the faculty. Change them only after checking with the coordinator.</p>`;
+}
+const b64dec = c => decodeURIComponent(escape(atob(c.replace(/\n/g, ''))));
+async function ghGet(path) {
+  const r = await fetch(API + path, { headers: { Accept: 'application/vnd.github+json', ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
+  if (!r.ok) throw new Error(r.status === 401 ? 'GitHub didn’t accept the saved key. Reconnect it in Events › Settings.' : r.statusText); return r.json();
+}
+async function openEditor(code, name) {
+  const e = entry(name); if (!e) return toast('That form isn’t available yet.');
+  S.pick.tab = 'edit'; S.edit = null; show(code, false);
+  $('tp').innerHTML = '<p class="loading">Loading the current text…</p>';
+  let data = null;
+  try { data = token ? JSON.parse(b64dec((await ghGet(`/contents/${e.path}?ref=${BRANCH}`)).content)) : null; } catch (err) {}
+  if (!data) data = await getJSON(e.path);
+  if (!data) { $('tp').innerHTML = '<p class="alert">The file couldn’t be read. Reload and try again.</p>'; return; }
+  const part = Object.fromEntries(e.fields.map(f => f.name).filter(k => k in data).map(k => [k, data[k]]));
+  S.edit = { code, name, e, data: JSON.parse(JSON.stringify(part)), orig: JSON.stringify(part), bad: new Set() };
+  show(code, false); renderEditor(); $('edHead')?.focus();
+}
+function renderEditor() {
+  const ed = S.edit, box = $('editor'); if (!box) return;
+  box.innerHTML = `<p class="eyebrow">Editing</p><h2 id="edHead" tabindex="-1" style="margin:0 0 4px">${esc(ed.e.label)}</h2><p class="lede">${esc(ed.e.description || '')}</p>
+<div class="savebar" role="region" aria-label="Save"><span id="edState" role="status">No changes yet.</span><button class="btn" type="button" id="edBack">Back to all parts</button><button class="btn" type="button" id="edUndo" disabled>Discard changes</button><button class="btn pri" type="button" id="edSave" disabled>Save</button></div>
+<p id="build" class="lede" role="status"></p><div id="edBody" class="form"></div>`;
+  const body = $('edBody'); ed.e.fields.forEach(f => body.appendChild(field(f, ed.data, f.name)));
+  $('edBack').onclick = () => { if (dirty() && !confirm('Leave without saving your changes?')) return; S.edit = null; show(S.view, false); };
+  $('edUndo').onclick = () => { if (!confirm('Discard every change since you opened this part?')) return; ed.data = JSON.parse(ed.orig); ed.bad.clear(); renderEditor(); };
+  $('edSave').onclick = saveEdit; changed();
+}
+const dirty = () => !!S.edit && JSON.stringify(S.edit.data) !== S.edit.orig;
+window.addEventListener('beforeunload', e => { if (dirty()) { e.preventDefault(); e.returnValue = ''; } });
+function changed() {
+  if (!$('edState')) return;
+  const d = dirty(), bad = S.edit.bad.size;
+  $('edState').textContent = bad ? `${bad} field${bad > 1 ? 's need' : ' needs'} fixing before you can save.` : d ? 'Unsaved changes.' : 'No changes yet.';
+  if (!token) $('edState').textContent += ' Connect your GitHub key in Events › Settings to save.';
+  $('edSave').disabled = !d || !!bad || !token; $('edUndo').disabled = !d;
+}
+let UID = 0;
+/* one field. obj[key] is read and written in place; lists re-render themselves */
+function field(f, obj, key) {
+  const id = 'f' + (++UID), wrap = document.createElement('div'); wrap.className = 'fld';
+  const hint = f.description ? `<p class="hint" id="${id}-h">${esc(f.description)}</p>` : '';
+  const describe = f.description ? ` aria-describedby="${id}-h"` : '';
+  if (f.type === 'object' && f.list) return objList(f, obj, key);
+  if (f.list) return scalarList(f, obj, key);
+  if (f.type === 'object') {
+    const fs = document.createElement('fieldset'); fs.className = 'grp';
+    fs.innerHTML = `<legend>${esc(f.label)}</legend>${hint}`;
+    const o = obj[key] && typeof obj[key] === 'object' ? obj[key] : {};   // a missing object is attached only once it's used
+    const attach = () => { if (obj[key] !== o) { obj[key] = o; changed(); } };
+    ['input', 'change', 'click'].forEach(t => fs.addEventListener(t, attach));
+    (f.fields || []).forEach(sf => fs.appendChild(field(sf, o, sf.name)));
+    return fs;
+  }
+  const v = obj[key], ro = f.readonly ? ' readonly' : '';
+  if (f.type === 'boolean') {
+    wrap.className = 'fld chk'; wrap.innerHTML = `<input type="checkbox" id="${id}"${v ? ' checked' : ''}${f.readonly ? ' disabled' : ''}${describe}><label for="${id}">${esc(f.label)}</label>${hint}`;
+    wrap.querySelector('input').onchange = ev => { obj[key] = ev.target.checked; changed(); }; return wrap;
+  }
+  if (f.type === 'select') {
+    const opts = (f.options?.values || []).map(o => typeof o === 'object' ? o : { name: o, label: o });
+    wrap.innerHTML = `<label for="${id}">${esc(f.label)}</label>${hint}<select id="${id}"${f.readonly ? ' disabled' : ''}${describe}>${opts.some(o => o.name === v) ? '' : `<option value="">${esc(v || 'Pick one')}</option>`}${opts.map(o => `<option value="${esc(o.name)}"${o.name === v ? ' selected' : ''}>${esc(o.label)}</option>`).join('')}</select>`;
+    wrap.querySelector('select').onchange = ev => { obj[key] = ev.target.value; changed(); }; return wrap;
+  }
+  const long = f.type === 'text';
+  wrap.innerHTML = `<label for="${id}">${esc(f.label)}</label>${hint}` + (long ? `<textarea id="${id}" rows="${Math.min(8, Math.max(2, Math.ceil(String(v ?? '').length / 80)))}"${ro}${describe}></textarea>` : `<input id="${id}" type="${f.type === 'number' ? 'number' : 'text'}"${ro}${describe}>`) + `<p class="err" id="${id}-e" hidden></p>`;
+  const inp = wrap.querySelector('input,textarea'); inp.value = v ?? '';
+  inp.oninput = () => {
+    const raw = inp.value; obj[key] = f.type === 'number' ? (raw === '' ? null : Number(raw)) : raw;
+    const pat = f.pattern?.regex, bad = !!pat && raw !== '' && !new RegExp(pat).test(raw), err = wrap.querySelector('.err');
+    err.hidden = !bad; err.textContent = bad ? (f.pattern.message || 'Check this value.') : ''; inp.setAttribute('aria-invalid', bad ? 'true' : 'false');
+    bad ? S.edit.bad.add(id) : S.edit.bad.delete(id); changed();
+  };
+  return wrap;
+}
+function rowTools(arr, i, redraw, what) {
+  const t = document.createElement('span'); t.className = 'tools';
+  [['↑', 'Move up', () => i > 0 && arr.splice(i - 1, 0, arr.splice(i, 1)[0])], ['↓', 'Move down', () => i < arr.length - 1 && arr.splice(i + 1, 0, arr.splice(i, 1)[0])],
+   ['Remove', 'Remove', () => { if (confirm(`Remove ${what}?`)) arr.splice(i, 1); }]].forEach(([txt, lab, fn]) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'btn sm'; b.textContent = txt; b.setAttribute('aria-label', `${lab}: ${what}`);
+    b.onclick = () => { fn(); redraw(); changed(); }; t.appendChild(b); });
+  return t;
+}
+function scalarList(f, obj, key) {
+  const fs = document.createElement('fieldset'); fs.className = 'grp';
+  const draw = () => {
+    const arr = Array.isArray(obj[key]) ? obj[key] : [];
+    fs.innerHTML = `<legend>${esc(f.label)}</legend>${f.description ? `<p class="hint">${esc(f.description)}</p>` : ''}`;
+    const ol = document.createElement('ol'); ol.className = 'items';
+    arr.forEach((v, i) => { const li = document.createElement('li'), id = 'f' + (++UID);
+      li.innerHTML = `<label class="sr" for="${id}">${esc(f.label)} ${i + 1}</label>`;
+      const inp = document.createElement(String(v).length > 70 ? 'textarea' : 'input'); inp.id = id;
+      if (inp.tagName === 'INPUT') inp.type = f.type === 'number' ? 'number' : 'text'; else inp.rows = 2;
+      inp.value = v ?? ''; inp.readOnly = !!f.readonly; inp.oninput = () => { arr[i] = f.type === 'number' ? Number(inp.value) : inp.value; changed(); };
+      li.appendChild(inp); if (!f.readonly) li.appendChild(rowTools(arr, i, draw, `${f.label} ${i + 1}`)); ol.appendChild(li); });
+    fs.appendChild(ol);
+    if (!f.readonly) { const add = document.createElement('button'); add.type = 'button'; add.className = 'btn sm'; add.textContent = `Add to ${f.label.toLowerCase()}`;
+      add.onclick = () => { if (!Array.isArray(obj[key])) obj[key] = []; obj[key].push(f.type === 'number' ? 0 : ''); draw(); changed(); fs.querySelector('ol li:last-child input, ol li:last-child textarea')?.focus(); };
+      fs.appendChild(add); }
+  };
+  draw(); return fs;
+}
+const SUMKEYS = ['title', 'label', 'name', 'question', 'key', 'lab', 'id', 'word'];
+function summaryOf(it, i, f) { const k = SUMKEYS.find(k => it && typeof it[k] === 'string' && it[k]); return `${i + 1}. ${k ? String(it[k]).replace(/\*/g, '') : f.label}`; }
+function objList(f, obj, key) {
+  const fs = document.createElement('fieldset'); fs.className = 'grp';
+  const draw = openIdx => {
+    const arr = Array.isArray(obj[key]) ? obj[key] : [];
+    const was = new Set([...fs.querySelectorAll(':scope > .items > li > details[open]')].map(d => +d.dataset.i));
+    fs.innerHTML = `<legend>${esc(f.label)}</legend>${f.description ? `<p class="hint">${esc(f.description)}</p>` : ''}`;
+    const ol = document.createElement('ol'); ol.className = 'items objs';
+    arr.forEach((it, i) => { const li = document.createElement('li'), d = document.createElement('details'); d.dataset.i = i;
+      if (was.has(i) || openIdx === i) d.open = true;
+      const sm = document.createElement('summary'); sm.textContent = summaryOf(it, i, f); d.appendChild(sm);
+      const inner = document.createElement('div'); inner.className = 'objbody';
+      (f.fields || []).forEach(sf => inner.appendChild(field(sf, it, sf.name)));
+      if (!f.readonly) inner.appendChild(rowTools(arr, i, () => draw(), summaryOf(it, i, f)));
+      inner.addEventListener('input', () => { sm.textContent = summaryOf(it, i, f); });
+      d.appendChild(inner); li.appendChild(d); ol.appendChild(li); });
+    fs.appendChild(ol);
+    if (!f.readonly) { const add = document.createElement('button'); add.type = 'button'; add.className = 'btn sm'; add.textContent = `Add to ${f.label.toLowerCase()}`;
+      add.onclick = () => { if (!Array.isArray(obj[key])) obj[key] = []; obj[key].push({}); draw(obj[key].length - 1); changed(); fs.querySelector(':scope > .items > li:last-child summary')?.focus(); };
+      fs.appendChild(add); }
+  };
+  draw(); return fs;
+}
+async function saveEdit() {
+  const ed = S.edit, btn = $('edSave'); btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    const cur = await ghGet(`/contents/${ed.e.path}?ref=${BRANCH}`), remote = JSON.parse(b64dec(cur.content)), orig = JSON.parse(ed.orig);
+    const clash = [...new Set(Object.keys(orig).concat(Object.keys(ed.data)))].filter(k => JSON.stringify(remote[k]) !== JSON.stringify(orig[k]));
+    if (clash.length) throw new Error('Someone else saved this part since you opened it. Copy anything you need, press Back to all parts, and open it again.');
+    ed.e.fields.forEach(f => { if (f.name in ed.data) remote[f.name] = ed.data[f.name]; });
+    const r = await fetch(`${API}/contents/${ed.e.path}`, { method: 'PUT', headers: { Accept: 'application/vnd.github+json', Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: `${ed.e.label}: edited in the Lab console`, branch: BRANCH, sha: cur.sha, content: btoa(unescape(encodeURIComponent(JSON.stringify(remote, null, 1) + '\n'))) }) });
+    if (!r.ok) { const j = await r.json().catch(() => ({})); throw new Error(r.status === 409 ? 'Someone else saved at the same moment. Open the part again.' : (j.message || r.statusText)); }
+    const commitSha = (await r.json()).commit?.sha;
+    ed.orig = JSON.stringify(ed.data); if (ed.name === 'lab-courses' && ed.data.courses) S.reg.courses = JSON.parse(JSON.stringify(ed.data.courses));
+    btn.textContent = 'Save'; changed(); toast('Saved to GitHub. The pages are rebuilding.'); watchBuild(commitSha);
+  } catch (err) { btn.textContent = 'Save'; changed(); toast(err.message, 8000); }
+}
+/* after a save: follow the GitHub build until the change is live (about two minutes) */
+async function watchBuild(sha) {
+  if (!sha) return; const t0 = Date.now(), say = h => { if ($('build')) $('build').innerHTML = h; };
+  say('Saved. Building the pages on GitHub…');
+  for (;;) {
+    await new Promise(r => setTimeout(r, 10000));
+    let run = null; try { run = (await ghGet(`/actions/runs?head_sha=${sha}&per_page=5`)).workflow_runs?.find(w => /lab instructions/i.test(w.name)); } catch (e) {}
+    if (run?.status === 'completed') {
+      if (run.conclusion === 'success') { say('<b>Live.</b> D2L and the site show your change now. A page already open in D2L needs a refresh.'); S.man = await getJSON('instructions/manifest.json') || S.man; }
+      else say(`<b>The build didn’t finish.</b> Your text is saved, and the pages kept their last version. <a href="${esc(run.html_url)}" target="_blank" rel="noopener">See what went wrong</a>, or tell Daniel.`);
+      return;
+    }
+    if (Date.now() - t0 > 6 * 60000) { say('Still building. Check back in a few minutes; the Overview shows when the pages last built.'); return; }
+    say(`Saved. Building the pages on GitHub… ${run ? '(running)' : '(waiting to start)'}`);
+  }
 }
 
 /* Theme: like the event Backgrounds, pick one and see it */
@@ -331,6 +516,18 @@ function themeCSS(t) {   // the same rules as labs/build_labs.py theme_css(), fo
 }
 
 /* ---------- setup views ---------- */
+function d2lSetup() {
+  const ex = Object.entries(S.man.courses)[0], code = ex?.[0], f = ex ? ex[1].files.find(x => x.includes('lab-folder-')) : '';
+  return `<p class="eyebrow">Setup</p><h1>D2L setup</h1><p class="lede">One small file in D2L shows the live pages. Coordinators edit here, GitHub saves it, and every D2L section shows the change about two minutes later. Students get no “external content” prompt, because D2L embeds its own file.</p>
+<div class="card"><h2 class="h3">Once</h2><ol class="steps">
+<li><span><a class="btn sm" href="../instructions/d2l/lab-page.html" download="lab-page.html">Download lab-page.html</a> It never changes, so this is the only upload.</span></li>
+<li><span>In D2L, open <b>Course Admin › Manage Files</b> and upload it to the top folder. With a Shared Files folder from the D2L admins, upload it there once for every course instead, and set its path below.</span></li>
+<li><span>Open a course here, go to <b>D2L section</b>, pick an item, and press <b>Copy iframe code for D2L</b>. Paste it into the D2L description or HTML topic, in the editor's source (&lt;/&gt;) view.</span></li></ol></div>
+<div class="card" style="margin-top:14px"><h2 class="h3">Where the file is in D2L</h2><div class="ctl" style="margin:8px 0 0"><label>Path the iframes use<input id="ldPath" type="text" value="${esc(loaderPath())}" style="min-height:40px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);min-width:320px"></label><button class="btn" type="button" id="ldSave"${token ? '' : ' disabled'}>Save</button></div>
+<p class="hint">lab-page.html = the top of each course's files. Shared Files, for example: /shared/LanguageLab/lab-page.html</p>
+${code ? `<p class="eyebrow" style="margin-top:12px">Example</p><pre class="code">${esc(iframeCode(code, { f, t: 'LAB folder description' }))}</pre>` : ''}</div>
+<div class="card" style="margin-top:14px"><h2 class="h3">What the file does</h2><ul><li>It shows the page from the Lab's site inside a sealed frame: the page can't reach D2L or the student's account.</li><li>It fills in the course's D2L links (quick links to the Guidelines Quiz and the LAB folder), and opens other links in a new tab.</li><li>If the site can't be reached, it offers “Open it in a new tab”.</li></ul></div>`;
+}
 function typesView() {
   const used = k => Object.entries(S.reg.courses).filter(([, r]) => r.type === k).map(([, r]) => r.course);
   return `<p class="eyebrow">Setup</p><h1>Lab types</h1><p class="lede">What students do in each lab. Each course picks a type, so a new kind of lab, like the Global Passport, can be added beside the others without changing them.</p>
@@ -357,14 +554,19 @@ function datesView() {
 /* ---------- wiring ---------- */
 function wire(v) {
   $('main').querySelectorAll('[data-go]').forEach(b => b.onclick = () => show(b.dataset.go));
+  $('main').querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openEditor(v, b.dataset.edit));
+  if (S.edit && S.edit.code === v && $('editor')) renderEditor();
+  const lp = $('ldSave'); if (lp) lp.onclick = async () => { const val = $('ldPath').value.trim(); if (!/^[\w./-]+\.html$/.test(val)) return toast('Use a file path ending in .html.');
+    const reg = JSON.parse(JSON.stringify(S.reg)); reg.d2l = { ...(reg.d2l || {}), loader: val };
+    try { await saveFile('labs/registry.json', dump(reg), `D2L loader path: ${val}`); S.reg = reg; toast('Saved. New iframe codes use this path.'); show('d2l', false); } catch (e) { toast(e.message, 7000); } };
   const tabs = [...$('main').querySelectorAll('[role=tab]')];
-  tabs.forEach((b, i) => { b.onclick = () => { S.pick.tab = b.dataset.tab; show(v, false); $('tb-' + b.dataset.tab).focus(); };
+  tabs.forEach((b, i) => { b.onclick = () => { if (b.dataset.tab !== 'edit' && dirty() && !confirm('Leave without saving your changes?')) return; if (b.dataset.tab !== 'edit') S.edit = null; S.pick.tab = b.dataset.tab; show(v, false); $('tb-' + b.dataset.tab).focus(); };
     b.onkeydown = e => { const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0; if (d) { e.preventDefault(); tabs[(i + d + tabs.length) % tabs.length].click(); } }; });
   const sv = $('selV'), sc = $('selC');
   if (sv) sv.onchange = () => { S.pick.v = sv.value; show(v, false); $('selV').focus(); };
   if (sc) sc.onchange = () => { S.pick.c = sc.value; show(v, false); $('selC').focus(); };
   $('main').querySelectorAll('[data-item]').forEach(b => b.onclick = () => { S.pick.item = b.dataset.item; show(v, false); $('main').querySelector(`[data-item="${b.dataset.item}"]`).focus(); });
-  $('main').querySelectorAll('[data-copy]').forEach(b => b.onclick = async () => { try { await navigator.clipboard.writeText(b.dataset.copy); toast('Link copied. Paste it into the D2L item.'); } catch (e) { prompt('Copy this link:', b.dataset.copy); } });
+  $('main').querySelectorAll('[data-copy]').forEach(b => b.onclick = async () => { try { await navigator.clipboard.writeText(b.dataset.copy); toast('Iframe code copied. Paste it in the D2L editor’s source view (</>).'); } catch (e) { prompt('Copy this iframe code:', b.dataset.copy); } });
   $('main').querySelectorAll('[data-try]').forEach(b => b.onclick = () => { S.pick.try = b.dataset.try; S.pick.tab = 'd2l'; show(v, false); toast(`Showing “${themeOf(b.dataset.try).label}” on this page only. Nothing is saved.`); });
   const f = $('pvf');
   if (f && S.pick.try) f.addEventListener('load', () => { try { const st = f.contentDocument.createElement('style'); st.textContent = themeCSS(themeOf(S.pick.try)); f.contentDocument.head.appendChild(st); } catch (e) {} }, { once: true });
