@@ -1563,7 +1563,7 @@ VIEWS.rooms = () => {
       + `<td><div class="seg" role="group" aria-label="Room for ${esc(c.SUBJ + ' ' + c.CRSE + '.' + c.SEC)}">${ROOMS.map(([v, l]) => `<button type="button" data-room="${esc(c.CRN)}" data-v="${v}" aria-pressed="${r === v}" title="${esc(l)}">${v}</button>`).join('')}</div></td><td>${fin}</td></tr>`;
   }).join('');
   return head(semLabel(s), 'Room scheduling', 'Classes Banner lists in Nesbitt 4201 go to the larger 4201A or the smaller 4207. Final exam times come from UNG\'s final exam schedule.',
-    (prev ? `<button class="btn" type="button" data-act="copyRooms" data-arg="${esc(prev.id)}">Copy rooms from ${esc(semLabel(prev))}</button>` : '') + ROOMS.map(([v]) => `<button class="btn" type="button" data-act="printRoom" data-arg="${v}">Print ${v}</button>`).join(''))
+    (prev ? `<button class="btn" type="button" data-act="copyRooms" data-arg="${esc(prev.id)}">Copy rooms from ${esc(semLabel(prev))}</button>` : '') + `<a class="btn" href="#rm-share">Print and share ↓</a>`)
     + `<div class="stats" role="status">${statPill(all.length, 'classes in Nesbitt 4201')}${statPill(done, 'with a room', done === all.length ? 'ok' : '')}${all.length - done ? statPill(all.length - done, 'still need a room', 'warn') : ''}${clash.size ? statPill(clash.size, 'double-booked', 'bad') : ''}${noFinal ? statPill(noFinal, 'final exam times to enter', 'warn') : ''}</div>`
     + `<div class="toolbar" role="search" aria-label="Filter the classes"><div class="f"><span class="lbl" id="rr-l">Room</span><div class="seg" role="group" aria-labelledby="rr-l">${[['', 'All'], ...ROOMS.map(([v]) => [v, v]), ['none', 'No room yet']].map(([v, l]) => `<button type="button" data-rf="${v}" aria-pressed="${RF.room === v}">${l}</button>`).join('')}</div></div>`
     + `<div class="f"><span class="lbl" id="rl-l">Level</span><div class="seg" role="group" aria-labelledby="rl-l"><button type="button" data-rl="first" aria-pressed="${RF.level === 'first'}">1001–1002</button><button type="button" data-rl="all" aria-pressed="${RF.level === 'all'}">All levels</button></div></div>`
@@ -1573,8 +1573,21 @@ VIEWS.rooms = () => {
     + `<div class="tw"><table class="t compact"><caption>${list.length} class${list.length === 1 ? '' : 'es'} shown. Select a column heading to sort; shaded rows still need a room.</caption><thead><tr><th scope="col" class="pick"><input type="checkbox" id="rpick-all" ${list.length && list.every(c => RPICK.has(c.CRN)) ? 'checked' : ''} aria-label="Select all ${list.length} classes shown"></th>${[['COURSE', 'Course'], ['DAYS', 'Days'], ['TIME_FROM', 'Time'], ['MAXENR', 'Max', 'num'], ['INSTRUCTOR', 'Instructor'], ['ROOM', 'Room'], ['FINAL', 'Final exam']].map(th).join('')}</tr></thead><tbody>${rows || '<tr><td colspan="8" class="muted">No classes match these filters.</td></tr>'}</tbody></table></div>`
     + (() => { [...RPICK].forEach(k => { if (!all.some(c => c.CRN === k)) RPICK.delete(k); }); const hid = [...RPICK].filter(k => !list.some(c => c.CRN === k)).length;
       return `<div class="selbar float${RPICK.size ? ' on' : ''}" role="status">${RPICK.size ? `<b>${RPICK.size} class${RPICK.size === 1 ? '' : 'es'} selected</b>${hid ? `<span class="muted small">(${hid} hidden by the filters)</span>` : ''}${ROOMS.map(([v]) => `<button class="btn sm" type="button" data-rset="${v}">Put in ${v}</button>`).join('')}<button class="btn sm" type="button" data-rset="">No room</button><button class="btn sm" type="button" data-act="rUnpick">Clear selection</button><button class="btn sm danger" type="button" data-act="rDel">Delete selected…</button>` : ''}</div>`; })()
+    + roomShareHTML(all, done, clash, noFinal)
     + `<div class="card" style="margin-top:16px"><h2>The week</h2><p class="lede">${RF.room && RF.room !== 'none' ? `Room ${esc(RF.room)} only.` : 'Both rooms.'} Each block is a class (color = language); overlapping blocks in one room are outlined in red. The table above lists the same classes.</p>${weekGrid(list.filter(c => A[c.CRN]), clash)}</div>`;
 };
+/* print and share: what's ready, the printouts, and room-schedule.json for the Lab Hub */
+function roomShareHTML(all, done, clash, noFinal) {
+  const left = all.length - done, ok = !left && !clash.size && !noFinal;
+  return `<div class="card" id="rm-share" style="margin-top:16px"><h2>Print and share</h2>`
+    + `<p class="lede">${ok ? 'Every class has a room and a final exam time, with no double-bookings.' : `Before you share: ${[left ? `${left} class${left === 1 ? '' : 'es'} still need a room` : '', clash.size ? `${clash.size} double-booked` : '', noFinal ? `${noFinal} final exam time${noFinal === 1 ? '' : 's'} to enter` : ''].filter(Boolean).join(', ')}.`}</p>`
+    + `<div class="tw"><table class="t compact"><thead><tr><th scope="col">What</th><th scope="col">For</th><th scope="col"><span class="sr">Get it</span></th></tr></thead><tbody>`
+    + ROOMS.map(([r, l]) => `<tr><th scope="row">Nesbitt ${esc(l)}: week and final exams</th><td class="small">Print and post by the door (landscape)</td><td><button class="btn sm" type="button" data-act="printRoom" data-arg="${r}">Download</button></td></tr>`).join('')
+    + `<tr><th scope="row">Both rooms, one document</th><td class="small">One printout, a page per room</td><td><button class="btn sm" type="button" data-act="printRoom" data-arg="both">Download</button></td></tr>`
+    + `<tr${ok ? '' : ' class="todo"'}><th scope="row"><code>room-schedule.json</code></th><td class="small">The Lab Hub's room schedule page (upload to <code>current/data/</code>)</td><td class="row" style="gap:6px"><button class="btn sm" type="button" data-act="dlOut" data-arg="room-schedule.json">Download</button><button class="btn sm" type="button" data-act="previewOut" data-arg="room-schedule.json">Preview</button></td></tr>`
+    + `</tbody></table></div></div>`;
+}
+ACTS.previewOut = n => previewOut(n);
 /* booked hours per weekday and room: shows which day is full before anything is double-booked */
 function roomUseHTML(all) {
   const A = roomsOf().assign, hrs = (room, d) => all.filter(c => A[c.CRN] === room && parseDays(c.DAYS).includes(d)).reduce((a, c) => a + Math.max(0, mins(c.TIME_TO) - mins(c.TIME_FROM)), 0) / 60;
@@ -1631,7 +1644,17 @@ function roomScheduleOut(s = sem()) {
     return { CRN: c.CRN, SUBJ: c.SUBJ, CRSE: c.CRSE, SEC: c.SEC, INSTRUCTOR: c.INSTRUCTOR, DAYS: normDays(c.DAYS), TIME_FROM: toHHMM(c.TIME_FROM), TIME_TO: toHHMM(c.TIME_TO), MAXENR: c.MAXENR, ROOM: A[c.CRN] || null,
       IS_LANGUAGE: il, LANG: il ? l : null, START: c.START, END: c.END, FINALS_DAY: f.examDay, FINALS_START: f.examStart, FINALS_END: f.examEnd, FINALS_SOURCE: f.source, FINALS_NOTE: f.note }; }) };
 }
-ACTS.printRoom = room => { const s = sem(), list = courses().filter(c => inNesbitt4201(c) && roomsOf().assign[c.CRN] === room); download(`room-${room}-${s.id}.html`, docPage(`Room ${room}: ${semLabel(s)}`, `<h1>Room ${room}, ${esc(semLabel(s))}</h1><p class="sub">Weekly pattern, ${list.length} classes · made ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>${weekGrid(list)}`), 'text/html'); };
+/* printable room schedules: the week, then every class with its final exam (one room, or both with a page break) */
+function roomDocSection(room) {
+  const s = sem(), A = roomsOf().assign, list = courses().filter(c => inNesbitt4201(c) && A[c.CRN] === room)
+    .sort((a, b) => WD.findIndex(d => parseDays(a.DAYS)[0] === d) - WD.findIndex(d => parseDays(b.DAYS)[0] === d) || mins(a.TIME_FROM) - mins(b.TIME_FROM));
+  const label = (ROOMS.find(r => r[0] === room) || [room, room])[1];
+  const rows = list.map(c => { const f = finalsFor(c); return `<tr><th scope="row">${esc(c.SUBJ)} ${esc(c.CRSE)}.${esc(c.SEC)}</th><td>${esc(normDays(c.DAYS))}</td><td>${esc(fmt12(c.TIME_FROM))}–${esc(fmt12(c.TIME_TO))}</td><td>${esc(c.INSTRUCTOR)}</td><td class="num">${c.MAXENR ?? ''}</td><td>${f.examDay ? `${esc(f.examDay)} ${esc(fmt12(f.examStart))}–${esc(fmt12(f.examEnd))}` : `<i>${esc(f.note || 'to be set')}</i>`}</td></tr>`; }).join('');
+  return `<section class="room"><h1>Nesbitt ${esc(label)}, ${esc(semLabel(s))}</h1><p class="sub">${list.length} class${list.length === 1 ? '' : 'es'} · weekly pattern${s.start ? `, classes ${esc(fmtMD(s.start))}–${esc(fmtMD(s.end))}` : ''}${s.finalsStart ? `, finals ${esc(fmtMD(s.finalsStart))}–${esc(fmtMD(s.finalsEnd))}` : ''} · made ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>`
+    + weekGrid(list) + `<table><caption>Classes and final exams</caption><thead><tr><th scope="col">Class</th><th scope="col">Days</th><th scope="col">Time</th><th scope="col">Instructor</th><th scope="col">Max</th><th scope="col">Final exam</th></tr></thead><tbody>${rows || '<tr><td colspan="6">No classes in this room yet.</td></tr>'}</tbody></table></section>`;
+}
+ACTS.printRoom = room => { const s = sem(), rooms = room === 'both' ? ROOMS.map(r => r[0]) : [room];
+  download(`room-${room === 'both' ? '4201A-and-4207' : room}-${s.id}.html`, docPage(`Nesbitt ${rooms.join(' and ')}: ${semLabel(s)}`, rooms.map(roomDocSection).join('')), 'text/html'); };
 
 /* ---------- lab calendar ---------- */
 VIEWS.labs = () => {
@@ -1866,7 +1889,8 @@ h1{font:700 26px/1.2 Georgia,serif;margin:0 0 4px}h2{font:700 20px Georgia,serif
 table{border-collapse:collapse;width:100%;margin-top:14px;background:var(--surface);font-size:13px}caption{text-align:left;font-weight:700;padding:6px 0}th,td{border:1px solid var(--line);padding:5px 7px;vertical-align:top;text-align:left}thead th{background:var(--chip)}small{color:var(--sub)}
 td.holiday{background:var(--bad-bg)}td.break{background:var(--warn-bg)}td.finals{background:var(--chip)}ul{margin:4px 0 0}
 ${wk}
-@page{size:landscape;margin:.4in}@media print{body{padding:0;background:#fff}}</style></head><body><main>${body}</main></body></html>`;
+td.num{text-align:right}section.room+section.room{margin-top:36px}
+@page{size:landscape;margin:.4in}@media print{body{padding:0;background:#fff}section.room+section.room{break-before:page;margin-top:0}}</style></head><body><main>${body}</main></body></html>`;
 }
 
 /* ---------- outputs for D2L ---------- */
