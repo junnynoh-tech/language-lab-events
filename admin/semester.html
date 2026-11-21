@@ -1685,7 +1685,7 @@ VIEWS.labs = () => {
     + loadChartHTML(s)
     + `<div class="tray" aria-label="Labs and workshops">${lc.labTypes.map(l => `<span class="pill" draggable="true" data-drag="${esc(l.id)}" style="background:${esc(l.color)}">${esc(l.label)}<button class="x" type="button" data-act="rmType" data-arg="${esc(l.id)}" aria-label="Remove ${esc(l.label)}">✕</button></span>`).join('')}`
     + `<button class="btn sm" type="button" data-act="addType">+ Lab or workshop</button><span style="flex:1"></span><button class="btn sm" type="button" data-act="autoFill">Auto-fill</button><button class="btn sm danger" type="button" data-act="clearGrid">Clear</button></div>${gridHTML(s)}</div>`
-    + `<div class="card" id="lc-4"><h2><span class="step">4</span>Share</h2><p class="lede">The proposal is a document for instructors (week table and one list per language). lab-due-dates.json goes to D2L with the other outputs.</p><div class="row"><button class="btn primary" type="button" data-act="proposal">Download the proposal</button><button class="btn" type="button" data-act="dlOut" data-arg="lab-due-dates.json">lab-due-dates.json</button></div></div>`;
+    + labShareHTML(s);
 };
 const LF = { lang: '', level: '' };
 const offShown = s => offered(s).filter(c => (!LF.lang || c.code === LF.lang) && (!LF.level || c.level === LF.level));
@@ -1868,8 +1868,8 @@ function repHTML(r, preview) {
     + r.moved.map(t => li('warn', 'Moved: ' + t)).join('') + r.flagged.map(t => li('bad', 'On a day with no classes: ' + t)).join('')
     + r.dropped.map(t => li('bad', 'Not placed: ' + t)).join('') + (r.skipped.length ? li('', `Skipped (class not chosen): ${r.skipped.join(', ')}`) : '') + '</ul>';
 }
-function proposalHTML(s) {
-  const lc = labCal(s), off = offered(s), weeks = weeksOf(s), pl = placedLabs(s).filter(p => p.cls && !p.outside), langs = [...new Set(off.map(c => c.code))];
+function proposalHTML(s, only) {
+  const lc = labCal(s), off = offered(s).filter(c => !only || only.includes(c.code)), weeks = weeksOf(s), pl = placedLabs(s).filter(p => p.cls && !p.outside), langs = [...new Set(off.map(c => c.code))];
   const at = (w, k) => pl.filter(p => p.week === w && p.classKey === k);
   const weekTable = `<table><caption>Due dates by week</caption><thead><tr><th scope="col">Week</th>${off.map(c => `<th scope="col">${esc(c.name)}<br><small>${esc(lc.dueDayTimes[c.key]?.day || '')} ${esc(lc.dueDayTimes[c.key]?.time || '')}</small></th>`).join('')}</tr></thead><tbody>`
     + weeks.map(w => `<tr><th scope="row">${w.idx}<br><small>${fmtMD(w.start)}–${fmtMD(w.end)}</small></th>${off.map(c => { const b = blocked(s, dueInWeek(s, w, c.key)); return `<td${b ? ` class="${b.kind}"` : ''}>${at(w.idx, c.key).map(p => `<b>${esc(p.lab.label)}</b><br>${esc(fmtWMD(p.date))}`).join('<br>') || (b ? `<small>${esc(b.name)}</small>` : '')}</td>`; }).join('')}</tr>`).join('') + '</tbody></table>';
@@ -1877,7 +1877,42 @@ function proposalHTML(s) {
   const hol = [...(s.holidays || []).map(h => `${fmtWMD(h.date)}: ${h.name}`), ...(s.breaks || []).map(b => `${fmtMD(b.start)}–${fmtMD(b.end)}: ${b.name}`), s.finalsStart ? `${fmtMD(s.finalsStart)}–${fmtMD(s.finalsEnd)}: Finals` : ''].filter(Boolean);
   return docPage(`Lab due dates: ${semLabel(s)}`, `<h1>Lab due dates, ${esc(semLabel(s))}</h1><p class="sub">Proposal from the Language Lab · ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} · classes ${esc(fmtMD(s.start))}–${esc(fmtMD(s.end))}</p><p class="sub">No classes: ${esc(hol.join(' · '))}</p>${weekTable}${perLang}`);
 }
-ACTS.proposal = () => { const s = sem(); if (!offered(s).length) return toast('Choose classes first.'); download(`lab-due-dates-proposal-${s.id}.html`, proposalHTML(s), 'text/html'); };
+ACTS.proposal = code => { const s = sem(); if (!offered(s).length) return toast('Choose classes first.'); const only = code && code !== 'all' ? [code] : null;
+  download(`lab-due-dates-proposal-${only ? only[0].toLowerCase() + '-' : ''}${s.id}.html`, proposalHTML(s, only), 'text/html'); };
+/* every due date as rows, for a spreadsheet or a quick check */
+function labDueCSV(s) {
+  const lc = labCal(s), cell = v => { v = v == null ? '' : String(v); return /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v; };
+  const rows = placedLabs(s).filter(p => p.cls && !p.outside).sort((a, b) => a.cls.name.localeCompare(b.cls.name) || a.date.localeCompare(b.date));
+  return [['Class', 'Lab', 'Week', 'Due date', 'Day', 'Due time', 'Note'].join(','), ...rows.map(p => [p.cls.name, p.lab.label, p.week, p.date, dayName(p.date), lc.dueDayTimes[p.classKey]?.time || '', p.block ? `${p.block.name}: no classes` : ''].map(cell).join(','))].join('\r\n');
+}
+/* a due date on a holiday, break or finals: move that lab to the class's next week with classes */
+ACTS.moveBlocked = () => { const s = sem(), lc = labCal(s), weeks = weeksOf(s), moved = [];
+  placedLabs(s).filter(p => p.cls && !p.outside && p.block).forEach(p => {
+    const open = (j, free) => { if (!inWindow(s, weeks[j - 1], p.cls.session)) return null; const dd = dueInWeek(s, weeks[j - 1], p.classKey); if (!dd || blocked(s, dd)) return null; if (free && (lc.placements[`${j}_${p.classKey}`] || []).length) return null; return dd; };
+    let j = p.week + 1, d; while (j <= weeks.length && !(d = open(j, true))) j++; // first choice: a week with no other lab for this class
+    if (j > weeks.length) { j = p.week + 1; while (j <= weeks.length && !(d = open(j, false))) j++; }
+    if (j > weeks.length) return;
+    lc.placements[p.key] = (lc.placements[p.key] || []).filter(x => x !== p.lab.id); if (!lc.placements[p.key].length) delete lc.placements[p.key];
+    const to = `${j}_${p.classKey}`; (lc.placements[to] ||= []); if (!lc.placements[to].includes(p.lab.id)) lc.placements[to].push(p.lab.id);
+    moved.push(`${p.cls.name} ${p.lab.label} → ${fmtWMD(d)}`); });
+  changed(); toast(moved.length ? `Moved: ${moved.join('; ')}.` : 'No open week after it in this term. Move it by hand in step 3.', 7000); };
+ACTS.labCSV = () => { const s = sem(); download(`lab-due-dates-${s.id}.csv`, labDueCSV(s), 'text/csv'); };
+/* step 4: what's ready, the instructors' proposal (all or one language), the list, and lab-due-dates.json */
+function labShareHTML(s) {
+  const off = offered(s), pl = placedLabs(s).filter(p => p.cls && !p.outside), bad = pl.filter(p => p.block), empty = off.filter(c => !pl.some(p => p.classKey === c.key)), langs = [...new Set(off.map(c => c.code))];
+  const ok = off.length && pl.length && !bad.length && !empty.length;
+  const issuesTxt = [!off.length ? 'choose classes (step 1)' : '', off.length && !pl.length ? 'place labs in the weeks (step 3)' : '', empty.length ? `${empty.map(c => c.name).join(', ')} ${empty.length === 1 ? 'has' : 'have'} no labs yet` : '', bad.length ? `${bad.map(p => `${p.cls.name} ${p.lab.label} (${fmtWMD(p.date)}, ${p.block.name})`).join('; ')} ${bad.length === 1 ? 'falls' : 'fall'} on a day with no classes` : ''].filter(Boolean);
+  const row = (what, forWho, btns, warn) => `<tr${warn ? ' class="todo"' : ''}><th scope="row">${what}</th><td class="small">${forWho}</td><td><span class="row" style="gap:6px">${btns}</span></td></tr>`;
+  return `<div class="card" id="lc-4"><h2><span class="step">4</span>Print and share</h2>`
+    + `<p class="lede">${ok ? `Ready: ${off.length} classes, ${pl.length} due dates, none on a day without classes.` : `Before you share: ${esc(issuesTxt.join('; '))}.`}${bad.length ? ` <button class="btn sm" type="button" data-act="moveBlocked">Move ${bad.length === 1 ? 'it' : 'them'} to the next open week</button>` : ''}</p>`
+    + `<div class="tw"><table class="t compact"><thead><tr><th scope="col">What</th><th scope="col">For</th><th scope="col"><span class="sr">Get it</span></th></tr></thead><tbody>`
+    + row('Lab due date proposal: all languages', 'Instructors and the department: the weeks table, then a list per language', `<button class="btn sm" type="button" data-act="proposal" data-arg="all">Download</button>`, !ok)
+    + langs.map(code => row(`Proposal: ${esc(LAB_LANGS.find(l => l[0] === code)[1])} only`, `${esc(off.filter(c => c.code === code).map(c => c.name).join(', '))} instructors`, `<button class="btn sm" type="button" data-act="proposal" data-arg="${code}">Download</button>`)).join('')
+    + row('Due dates list (CSV)', 'A spreadsheet of every due date: class, lab, week, date, day and time', `<button class="btn sm" type="button" data-act="labCSV">Download</button>`)
+    + row('<code>lab-due-dates.json</code>', 'The Lab Hub\'s grade due dates page (upload to <code>current/data/</code>)', `<button class="btn sm" type="button" data-act="dlOut" data-arg="lab-due-dates.json">Download</button><button class="btn sm" type="button" data-act="previewOut" data-arg="lab-due-dates.json">Preview</button>`, !ok)
+    + `<tr><th scope="row">This calendar as a template</th><td class="small">Reuse it next term</td><td><button class="btn sm" type="button" data-act="templates">Templates…</button></td></tr>`
+    + `</tbody></table></div></div>`;
+}
 /* a self-contained document page (instructors' copies): same tokens, light and dark, prints cleanly */
 function docPage(title, body) {
   const wk = document.querySelector('style').textContent.match(/\.wk[\s\S]*?\.wk \.blk\.clash[^\n]*/)?.[0] || '';
