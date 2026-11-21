@@ -652,7 +652,11 @@ const planName = () => `semester-plan${sem() ? '-' + sem().id : ''}.json`;
 function fileUI() {
   const el = $('fileState'), dot = el.querySelector('.dot'), t = el.querySelector('span:last-child');
   dot.classList.toggle('on', shared() ? !F.dirty && !G.err : !!F.name && !F.dirty);
-  if (shared()) { t.textContent = G.err ? 'Shared plan: not reachable' : F.dirty ? 'Changes not saved to the shared plan' : G.sha ? `Saved in the shared plan${P.savedBy ? ' · ' + P.savedBy + ', ' + whenStr(P.savedAt) : ''}` : 'Shared plan is empty'; document.title = (F.dirty ? '• ' : '') + 'Lab Console · Semester plan'; return; }
+  if (shared()) { if ($('shareBtn')) $('shareBtn').hidden = true; t.textContent = G.err ? 'Shared plan: not reachable' : F.dirty ? 'Changes not saved to the shared plan' : G.sha ? `Saved in the shared plan${P.savedBy ? ' · ' + P.savedBy + ', ' + whenStr(P.savedAt) : ''}` : 'Shared plan is empty'; document.title = (F.dirty ? '• ' : '') + 'Lab Console · Semester plan'; return; }
+  /* not on the shared plan yet: say so where everyone looks, with the way in */
+  let sb = $('shareBtn');
+  if (!sb) { sb = document.createElement('button'); sb.id = 'shareBtn'; sb.type = 'button'; sb.className = 'btn sm'; sb.textContent = 'Share with the team…'; sb.onclick = () => show('plan'); el.after(sb); }
+  sb.hidden = shared();
   const by = P.savedBy ? ` · ${P.savedBy}, ${whenStr(P.savedAt)}` : '';
   let rb = $('reopenBtn');
   if (F.needsReopen && F.handle) { if (!rb) { rb = document.createElement('button'); rb.id = 'reopenBtn'; rb.type = 'button'; rb.className = 'btn sm primary'; rb.onclick = reopenPlan; el.after(rb); } rb.textContent = `Reopen ${F.handle.name}`; } else if (rb) rb.remove();
@@ -1979,8 +1983,8 @@ AFTER.plan = () => {
       try { localStorage.setItem(SH.passKey, v); } catch (e) {}
       const mine = P.semesters.length ? clone(P) : null, got = await pullShared();
       if (got && mine && JSON.stringify({ ...mine, savedAt: '' }) !== JSON.stringify({ ...P, savedAt: '' }) && !confirm('Connected. The shared plan is loaded.\n\nThis browser had a different plan (kept as a backup on this page). OK: use the shared plan. Cancel: keep this browser\'s version (Save then replaces the shared plan with it).')) { P = mine; F.dirty = true; }
-      if (!got) F.dirty = !!P.semesters.length;
-      render(); toast(got ? 'Connected. You\'re on the shared plan.' : 'Connected. The shared plan is empty: Save to put yours there.');
+      if (!got) { F.dirty = !!P.semesters.length; render(); if (P.semesters.length) { await pushShared(); render(); } else toast('Connected. The shared plan is empty.'); return; }
+      render(); toast('Connected. You\'re on the shared plan.');
     } catch (e) { G.pass = old; msg.textContent = e.message; }
   };
   if ($('pl-open')) $('pl-open').onchange = async e => { try { P = checkPlan(JSON.parse(await readFile(e.target.files[0]))); F.name = e.target.files[0].name; F.dirty = false; await DB.set('plan', P); render(); toast(`Opened ${F.name}`); } catch (er) { toast(er.message, 6000); } };
