@@ -224,8 +224,8 @@ table.t select { min-height: 36px; border: 1px solid var(--line); border-radius:
     </section>
 
     <section class="card" aria-labelledby="h-gh">
-      <h2 id="h-gh" class="h3">The Lab’s GitHub key</h2>
-      <p style="margin:0 0 10px">Saving events, lab instructions and the people list goes through the Lab’s Worker, which uses one GitHub key kept in Cloudflare (<code>GITHUB_TOKEN</code>). Nobody needs a GitHub key in their browser.</p>
+      <h2 id="h-gh" class="h3">The Lab’s GitHub access</h2>
+      <p style="margin:0 0 10px">Saving events, lab instructions, the people list and the shared plan goes through the Lab’s Worker in Cloudflare. Nobody needs a GitHub key in their browser.</p>
       <div id="ghStat" role="status"><p class="loading">Checking the key…</p></div>
     </section>
   </main>
@@ -317,9 +317,12 @@ load();
   const ok = b => b ? '<span class="st-on">✓ Yes</span>' : '<span class="st-off">✗ No</span>';
   const ev = s.repos['language-lab-events'] || {}, rq = s.repos['lab-event-requests'] || {};
   let exp = '';
-  if (s.expires) { const d = new Date(s.expires.replace(' UTC', 'Z').replace(' ', 'T')), days = Math.round((d - Date.now()) / 864e5);
+  if (s.mode === 'app') exp = '<p class="note" style="margin:10px 0 0"><b>GitHub App: connected.</b> The Worker signs in as the Lab’s GitHub App and gets a fresh one-hour pass when it needs one, so nothing expires and there’s nothing to renew. To cut off all access at once: GitHub › Settings › Applications › Installed GitHub Apps › Suspend.</p>';
+  else if (s.mode === 'app-error') exp = `<p class="alert" style="margin:10px 0 0"><b>The GitHub App isn’t working:</b> ${esc(s.appError)}. ${s.fallback ? 'The old GitHub key is keeping things running meanwhile. ' : ''}Check the App ID and private key in Cloudflare, and that the App is installed on both repositories (steps in labs/event-requests/SETUP.md).</p>`;
+  else if (s.expires) { const d = new Date(s.expires.replace(' UTC', 'Z').replace(' ', 'T')), days = Math.round((d - Date.now()) / 864e5);
     exp = `<p class="${days < 30 ? 'alert' : 'note'}" style="margin:10px 0 0"><b>The key expires ${esc(d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }))}</b> (${days < 0 ? 'already expired' : days === 0 ? 'today' : `in ${days} day${days === 1 ? '' : 's'}`}). ${days < 30 ? 'Renew it now: ' : 'Before then: '}GitHub › Settings › Developer settings › Fine-grained tokens › this key › <b>Regenerate</b>, then paste the new key into Cloudflare (the Worker › Settings › Variables and Secrets › <code>GITHUB_TOKEN</code>).</p>`; }
   else exp = '<p class="note" style="margin:10px 0 0">GitHub didn’t say when this key expires (a key without an end date, or a classic key).</p>';
+  if (s.mode === 'token') exp += '<p class="note" style="margin:8px 0 0">To stop worrying about expiry for good, set up the Lab’s <b>GitHub App</b> (about 10 minutes, steps in <code>labs/event-requests/SETUP.md</code>). Until then this key is used.</p>';
   const fix = !ev.write || !s.actions ? `<p class="alert" style="margin:10px 0 0">Until this is fixed, saving events and lab instructions still needs a GitHub key in your browser (Events › Settings). To fix it: GitHub › Settings › Developer settings › Fine-grained tokens › the Worker’s key › <b>Edit</b> › Repository access: add <b>language-lab-events</b> › Permissions: <b>Contents: Read and write</b>, <b>Actions: Read</b> › Update. No need to paste it again.</p>` : '';
   box.innerHTML = `<div class="tw" tabindex="0" role="region" aria-label="What the key can reach"><table class="t"><caption class="sr">What the Lab’s GitHub key can reach</caption><thead><tr><th scope="col">For</th><th scope="col">Can save</th></tr></thead><tbody>`
     + `<tr><th scope="row">Events and lab instructions (language-lab-events)</th><td>${ok(ev.write)}</td></tr>`
