@@ -208,6 +208,10 @@ table.t thead th { position: sticky; top: 0; background: var(--chip); font-size:
 table.t tbody tr:last-child td { border-bottom: 0; }
 table.t td.num, table.t th.num { text-align: right; font-variant-numeric: tabular-nums; }
 table.t tr.flag td { background: var(--bad-bg); }
+table.t tr.flag td:first-child { box-shadow: inset 4px 0 0 var(--bad); }
+@keyframes flagpulse { 0%, 100% { outline-color: transparent; } 50% { outline-color: var(--bad); } }
+table.pulse tr.flag td { outline: 2px solid transparent; outline-offset: -2px; animation: flagpulse 1s ease-in-out 3; }
+@media (prefers-reduced-motion: reduce) { table.pulse tr.flag td { animation: none; } }
 table.t tfoot td { font-weight: 700; background: var(--chip); }
 table.t select, table.t input { min-height: 36px; padding: 4px 8px; }
 .lang { display: inline-block; font: 700 12px/1 "DM Sans", sans-serif; letter-spacing: .04em; color: #fff; padding: 4px 7px; border-radius: 6px; margin-right: 6px; vertical-align: 1px; }
@@ -490,6 +494,10 @@ const LANG = { ARAB: ['Arabic', '#3d4ec4'], CHIN: ['Chinese', '#8a3f7e'], FREN: 
 const LANG_ORDER = ['ARAB', 'CHIN', 'FREN', 'GRMN', 'ITAL', 'JAPN', 'KREN', 'PORT', 'RUSS', 'SPAN'];
 const langColor = s => (LANG[String(s || '').toUpperCase()] || ['', '#52606d'])[1];
 const isLang = s => !!LANG[String(s || '').toUpperCase()];
+/* 2026-11-23: only 1001–1002 sections need a campus (the lab fee budget and Lab tutors). Banner exports carry every level,
+   so upper-level sections without one are listed but never flagged. */
+const isFirst = c => ['1001', '1002'].includes(String(c.CRSE).trim());
+const needsCampus = c => isLang(c.SUBJ) && isFirst(c) && !c.LOCATION;
 const LOCATIONS = ['Gainesville Campus', 'Dahlonega Campus', 'Oconee Campus', 'Cumming Campus', 'Blue Ridge Campus'];
 const PIVOTS = [['DAH', 'Dahlonega'], ['GVL', 'Gainesville'], ['OCN', 'Oconee']];
 const ROOMS = [['4201A', '4201A (larger)'], ['4207', '4207 (smaller)']];
@@ -1050,8 +1058,8 @@ function issues() {
   const cs = courses();
   if (!cs.length) add('warn', 'No courses imported for this semester.', 'courses');
   else {
-    const noCampus = cs.filter(c => isLang(c.SUBJ) && !c.LOCATION).length;
-    if (noCampus) add('warn', `${noCampus} language section${noCampus > 1 ? 's need' : ' needs'} a campus (online or off-campus sections count toward one campus's budget and tutors).`, 'courses');
+    const noCampus = cs.filter(needsCampus).length;
+    if (noCampus) add('warn', `${noCampus} first-year (1001–1002) section${noCampus > 1 ? 's need' : ' needs'} a campus (online or off-campus sections count toward one campus's budget and tutors).`, 'courses', 'needCampus');
     const n4201 = cs.filter(inNesbitt4201), A = roomsOf().assign, un = n4201.filter(c => !A[c.CRN]).length, clash = roomClashes().size;
     if (un) add('warn', `${un} class${un > 1 ? 'es' : ''} in Nesbitt 4201 without a room (4201A or 4207).`, 'rooms');
     if (clash) add('bad', `${clash} classes are double-booked in the same room.`, 'rooms');
@@ -1070,11 +1078,17 @@ function issues() {
   else if (F.dirty) add('warn', F.name ? `Changes are not saved to ${F.name} yet.` : 'This plan is only in this browser. Save it as a plan file in the shared folder so the other coordinators can open it.', null, 'save');
   return out;
 }
-const issueList = list => list.length ? `<ul class="issues">${list.map(i => `<li><span class="tag ${i.level}">${i.level === 'bad' ? 'Fix' : 'Check'}</span><span>${esc(i.text)}</span>${i.view ? `<button class="btn sm" type="button" data-view="${i.view}">Open</button>` : i.act ? `<button class="btn sm primary" type="button" data-act="${i.act}">Save plan</button>` : '<span></span>'}</li>`).join('')}</ul>`
+const issueList = list => list.length ? `<ul class="issues">${list.map(i => `<li><span class="tag ${i.level}">${i.level === 'bad' ? 'Fix' : 'Check'}</span><span>${esc(i.text)}</span>${i.act && i.act !== 'save' ? `<button class="btn sm" type="button" data-act="${i.act}">Show them</button>` : i.view ? `<button class="btn sm" type="button" data-view="${i.view}">Open</button>` : i.act ? `<button class="btn sm primary" type="button" data-act="${i.act}">Save plan</button>` : '<span></span>'}</li>`).join('')}</ul>`
   : '<div class="empty">Nothing needs a look.</div>';
 
 const VIEWS = {}, AFTER = {}, ACTS = {};
 ACTS.save = () => savePlan();
+/* from a "needs a campus" warning: Language courses with only those sections showing, highlighted, the first one's Campus box focused */
+ACTS.needCampus = () => {
+  Object.assign(CF, { q: '', subj: '', loc: '', days: '', level: 'first', all: false, need: true }); CLOCK = null; show('courses', false);
+  const t = document.querySelector('.tw table'); t?.classList.add('pulse');
+  const first = document.querySelector('tr.flag select[data-loc]'); first?.closest('tr')?.scrollIntoView({ block: 'center' }); first?.focus({ preventScroll: true });
+};
 
 /* ---------- overview (redesigned 2026-11-20): where each part of the plan stands, what's coming up, what needs a look ---------- */
 let OF = '';
@@ -1084,16 +1098,16 @@ VIEWS.overview = () => {
   const cs = courses(), lang = cs.filter(c => isLang(c.SUBJ)), fy = lang.filter(c => ['1001', '1002'].includes(c.CRSE)), n4201 = cs.filter(inNesbitt4201), A = roomsOf().assign;
   const pl = placedLabs(s).filter(p => p.cls && !p.outside), off = offered(s), iss = issues(), wk = weeksOf(s);
   const today = iso(new Date()), cur = wk.find(w => w.days.includes(today));
-  const noCampus = lang.filter(c => !c.LOCATION).length, outBud = fy.filter(c => c.LOCATION && !pivotOf(c.LOCATION)).length;
+  const noCampus = fy.filter(c => !c.LOCATION).length, outBud = fy.filter(c => c.LOCATION && !pivotOf(c.LOCATION)).length;
   const profs = new Set(lang.filter(c => c.INSTRUCTOR).map(c => profKey(c.INSTRUCTOR))), dflt = profDefaults(), map = P.instructorCampus || {}, hid = P.hiddenProfs || {};
-  const onlineNoHome = [...new Set(lang.filter(c => !AUTO_LOCATION[c.CMP] && !c.LOCATION_SET && !c.LOCATION).map(c => profKey(c.INSTRUCTOR)))].filter(k => k && !hid[k] && !map[k] && !dflt[k]).length;
+  const onlineNoHome = [...new Set(fy.filter(c => !AUTO_LOCATION[c.CMP] && !c.LOCATION_SET && !c.LOCATION).map(c => profKey(c.INSTRUCTOR)))].filter(k => k && !hid[k] && !map[k] && !dflt[k]).length;
   const outs = OUTPUTS.map(([n, , , f]) => f()), outReady = outs.filter(x => !x).length;
   /* one card per part of the plan: status, the key facts, a way in */
   const card = (view, title, state, facts) => `<article class="ovcard ${state}"><div class="ovhead"><h2>${esc(title)}</h2><span class="tag ${state === 'done' ? 'ok' : state === 'todo' ? '' : state === 'bad' ? 'bad' : 'warn'}">${{ done: 'Done', warn: 'Needs a look', bad: 'Fix', todo: 'Not started' }[state]}</span></div><ul>${facts.filter(Boolean).map(f => `<li>${f}</li>`).join('')}</ul><button class="btn sm" type="button" data-view="${view}">Open ${esc(title)}</button></article>`;
   const has = v => iss.some(i => i.view === v && i.level === 'bad') ? 'bad' : iss.some(i => i.view === v) ? 'warn' : '';
   const cards = [
     card('calendar', 'Academic calendar', !s.start ? 'todo' : has('calendar') || 'done', [s.start ? `Classes ${esc(fmtMD(s.start))} – ${esc(fmtMD(s.end))}` : 'No dates yet', s.finalsStart ? `Finals ${esc(fmtMD(s.finalsStart))} – ${esc(fmtMD(s.finalsEnd))}` : '', `${(s.holidays || []).length} holidays, ${(s.breaks || []).length} break${(s.breaks || []).length === 1 ? '' : 's'}`]),
-    card('courses', 'Language courses', !cs.length ? 'todo' : noCampus ? 'warn' : outBud ? 'warn' : 'done', cs.length ? [`<b>${fy.length}</b> first-year (1001–1002) of ${lang.length} language sections`, noCampus ? `<b>${noCampus}</b> need a campus` : 'Every section has a campus', outBud ? `${outBud} at Cumming or Blue Ridge, not in the budget` : ''] : ['Add the two Banner files (COM1430, COM775)']),
+    card('courses', 'Language courses', !cs.length ? 'todo' : noCampus ? 'warn' : outBud ? 'warn' : 'done', cs.length ? [`<b>${fy.length}</b> first-year (1001–1002) of ${lang.length} language sections`, noCampus ? `<b>${noCampus}</b> need a campus <button class="btn sm" type="button" data-act="needCampus">Show them</button>` : 'Every 1001–1002 section has a campus', outBud ? `${outBud} at Cumming or Blue Ridge, not in the budget` : ''] : ['Add the two Banner files (COM1430, COM775)']),
     card('profs', 'Professors\' campuses', !profs.size ? 'todo' : onlineNoHome ? 'warn' : 'done', profs.size ? [`<b>${profs.size}</b> professors teaching language sections`, onlineNoHome ? `<b>${onlineNoHome}</b> teaching online without a home campus` : 'Online sections all have a campus'] : ['Comes from the Banner files']),
     card('rooms', 'Room scheduling', !n4201.length ? 'todo' : has('rooms') || 'done', n4201.length ? [`<b>${n4201.filter(c => A[c.CRN]).length}</b> of ${n4201.length} Nesbitt 4201 classes have a room`, roomClashes().size ? `<b>${roomClashes().size}</b> double-booked` : 'No double-bookings'] : ['No classes in Nesbitt 4201 yet']),
     card('labs', 'Lab calendar', !off.length ? 'todo' : has('labs') || (pl.length ? 'done' : 'warn'), off.length ? [`<b>${off.length}</b> classes with labs`, `<b>${pl.length}</b> due dates placed`, (P.labTemplates || []).length ? `${P.labTemplates.length} template${P.labTemplates.length === 1 ? '' : 's'} saved` : ''] : ['Import the Automatic Calendar or start from a template']),
@@ -1265,7 +1279,7 @@ function editSem(id) {
 
 /* ---------- language courses (redesigned 2026-11-20): Banner files on top, 1001–1002 filter, sortable columns (same as
    the Lab Hub Generator's table), charts that follow the filters ---------- */
-const CF = { q: '', subj: '', loc: '', days: '', level: 'first', all: false, sort: 'LOCATION', dir: 1 };
+const CF = { q: '', subj: '', loc: '', days: '', level: 'first', all: false, need: false, sort: 'LOCATION', dir: 1 };
 const PICKED = new Set(); // CRNs selected (this page only)
 let CLOCK = null; // row order held while campuses are being changed, so a row doesn't jump away; any filter or sort releases it
 function setCampus(crns, loc) { if (!CLOCK) CLOCK = coursesShown().map(c => c.CRN); const k = new Set(crns); courses().forEach(c => { if (k.has(c.CRN)) { c.LOCATION = loc; c.LOCATION_SET = true; delete c.LOCATION_FROM; } }); changed(false); }
@@ -1290,13 +1304,13 @@ VIEWS.courses = () => {
   if (!cs.length) return head(semLabel(s), 'Language courses', 'Start with the two Banner reports for this semester.') + imp;
   const pool = cs.filter(c => CF.all || isLang(c.SUBJ));
   const subjects = [...new Set(pool.map(c => c.SUBJ))].sort(), pats = [...new Set(pool.map(c => normDays(c.DAYS)).filter(Boolean))].sort();
-  const shown = coursesShown(), needs = shown.filter(c => isLang(c.SUBJ) && !c.LOCATION).length, outBudget = shown.filter(c => isLang(c.SUBJ) && ['1001', '1002'].includes(c.CRSE) && c.LOCATION && !pivotOf(c.LOCATION));
+  const shown = coursesShown(), needs = shown.filter(needsCampus).length, needAll = cs.filter(needsCampus).length, outBudget = shown.filter(c => isLang(c.SUBJ) && ['1001', '1002'].includes(c.CRSE) && c.LOCATION && !pivotOf(c.LOCATION));
   const lvl = `<div class="f"><span class="lbl" id="lvl-l">Level</span><div class="seg" role="group" aria-labelledby="lvl-l">${[['first', '1001–1002'], ['1001', '1001'], ['1002', '1002'], ['all', 'All levels']].map(([v, l]) => `<button type="button" data-lvl="${v}" aria-pressed="${CF.level === v}">${l}</button>`).join('')}</div></div>`;
   const th = ([k, l]) => `<th scope="col" aria-sort="${CF.sort === k ? (CF.dir > 0 ? 'ascending' : 'descending') : 'none'}"><button type="button" class="sorter" data-sort="${k}">${l}<span aria-hidden="true">${CF.sort === k ? (CF.dir > 0 ? ' ▲' : ' ▼') : ''}</span></button></th>`;
   [...PICKED].forEach(k => { if (!cs.some(c => c.CRN === k)) PICKED.delete(k); });
   const pickedShown = shown.filter(c => PICKED.has(c.CRN)).length, allPicked = shown.length && pickedShown === shown.length;
   const rows = shown.map(c => {
-    const flag = isLang(c.SUBJ) && !c.LOCATION, name = `${c.SUBJ} ${c.CRSE}.${c.SEC}`, on = PICKED.has(c.CRN);
+    const flag = needsCampus(c), name = `${c.SUBJ} ${c.CRSE}.${c.SEC}`, on = PICKED.has(c.CRN);
     return `<tr class="${flag ? 'flag' : campusCls(c.LOCATION)}${on ? ' picked' : ''}" data-crn="${esc(c.CRN)}"><td class="pick"><span class="pickwrap"><input type="checkbox" data-pick="${esc(c.CRN)}" ${on ? 'checked' : ''} aria-label="Select ${esc(name)}, CRN ${esc(c.CRN)}"><button type="button" class="rowbtn" data-cmenu="${esc(c.CRN)}" aria-haspopup="menu" aria-label="Actions for ${esc(name)}" title="Actions (or right-click the row)">⋯</button></span></td><td>${esc(c.CRN)}</td><td class="nowrap">${isLang(c.SUBJ) ? langTag(c.SUBJ) : esc(c.SUBJ)}</td><td>${esc(c.CRSE)}</td><td>${esc(c.SEC)}</td>`
       + `<td>${esc(BANNER_CMP[c.CMP] || c.CMP || '')}</td><td class="num">${esc(c.CRED)}</td><td>${esc(c.TITLE)}</td><td class="nowrap">${esc(c.DAYS || 'TBA')}</td>`
       + `<td class="nowrap">${c.TIME_FROM ? esc(fmt12(c.TIME_FROM) + '–' + fmt12(c.TIME_TO)) : 'TBA'}</td><td>${esc(c.INSTRUCTOR)}</td><td>${esc(c.BUILDING)}</td><td>${esc(c.ROOM)}</td>`
@@ -1310,7 +1324,8 @@ VIEWS.courses = () => {
     + `<div class="f"><label for="c-loc">Campus</label>${sel('c-loc', CF.loc, CAMPUS_ORDER.map(x => [x, x]), 'All')}</div><div class="f"><label for="c-days">Days</label>${sel('c-days', CF.days, pats.map(x => [x, x]), 'All')}</div>`
     + `<div class="f grow"><label for="c-q">Search</label><input type="search" id="c-q" value="${esc(CF.q)}" placeholder="CRN, title or instructor"></div>`
     + `<label class="switch" style="margin:0 0 6px"><input type="checkbox" role="switch" id="c-all" ${CF.all ? 'checked' : ''}>Other subjects too</label></div>`
-    + (needs ? `<p class="note warn" role="status">${needs} section${needs > 1 ? 's need' : ' needs'} a campus (shaded). Choose one in the Campus column, or set the professor's home campus in <button class="btn sm" type="button" data-view="profs">Professors' campuses</button>.</p>` : '')
+    + (CF.need ? `<p class="note warn" role="status">${needAll ? `Showing only the <b>${needAll}</b> section${needAll > 1 ? 's' : ''} (1001–1002) that still need${needAll > 1 ? '' : 's'} a campus. A row turns white once it has one (set it in the Campus column, or the professor's home campus in <button class="btn sm" type="button" data-view="profs">Professors' campuses</button>).` : '<b>Done:</b> every 1001–1002 section has a campus.'} <button class="btn sm" type="button" id="c-needoff">Show all sections</button></p>`
+      : needAll ? `<p class="note warn" role="status">${needAll} 1001–1002 section${needAll > 1 ? 's need' : ' needs'} a campus${needs < needAll ? ` (${needs ? `${needs} shaded here, the rest hidden by the filters` : 'hidden by the filters'})` : ' (shaded)'}. <button class="btn sm" type="button" data-act="needCampus">Show only those</button></p>` : '')
     + (outBudget.length ? `<p class="note warn" role="status">${outBudget.length} 1001–1002 section${outBudget.length > 1 ? 's are' : ' is'} at ${esc([...new Set(outBudget.map(c => campusName(c.LOCATION)))].join(', '))}, which isn't a budget campus, so ${outBudget.length > 1 ? 'they aren\'t' : 'it isn\'t'} in the budget numbers. Move ${outBudget.length > 1 ? 'them' : 'it'} to Dahlonega, Gainesville or Oconee if ${outBudget.length > 1 ? 'they' : 'it'} should count (select them, then right-click or use the bar).</p>` : '')
     + chartsHTML(shown)
     + (PICKED.size ? '' : `<p class="small muted" style="margin:0 0 8px">Tick classes, or use ⋯ or right-click on a row, to delete them (for example cancelled sections or ones the Lab doesn't serve).</p>`)
@@ -1411,7 +1426,7 @@ function coursesShown() {
   const key = c => k === 'LOCATION' ? String(CAMPUS_ORDER.indexOf(campusName(c.LOCATION))) : k === 'TIME_FROM' ? String(mins(c.TIME_FROM) + 10000) : String(c[k] ?? '');
   const lock = CLOCK ? new Map(CLOCK.map((k, i) => [k, i])) : null;
   const out = courses().filter(c => (CF.all || isLang(c.SUBJ)) && (CF.level === 'all' || (CF.level === 'first' ? ['1001', '1002'].includes(c.CRSE) : c.CRSE === CF.level)) && (!CF.subj || c.SUBJ === CF.subj)
-    && (!CF.days || normDays(c.DAYS) === CF.days) && (!CF.loc || campusName(c.LOCATION) === CF.loc || lock?.has(c.CRN))
+    && (!CF.days || normDays(c.DAYS) === CF.days) && (!CF.need || needsCampus(c) || lock?.has(c.CRN)) && (!CF.loc || campusName(c.LOCATION) === CF.loc || lock?.has(c.CRN))
     && (!q || `${c.CRN} ${c.SUBJ} ${c.CRSE}.${c.SEC} ${c.SUBJ}${c.CRSE} ${c.TITLE} ${c.INSTRUCTOR}`.toLowerCase().includes(q)))
     .sort((a, b) => CF.dir * key(a).localeCompare(key(b), undefined, { numeric: true }) || `${a.SUBJ}${a.CRSE}${a.SEC}`.localeCompare(`${b.SUBJ}${b.CRSE}${b.SEC}`, undefined, { numeric: true }));
   return lock ? out.sort((a, b) => (lock.get(a.CRN) ?? 1e9) - (lock.get(b.CRN) ?? 1e9)) : out;
@@ -1492,6 +1507,7 @@ AFTER.courses = () => {
   const refilter = () => { CLOCK = null; const pos = $('c-q')?.selectionStart; CF.q = val('c-q'); CF.subj = val('c-subj'); CF.loc = val('c-loc'); CF.days = val('c-days'); CF.all = val('c-all'); keep(refilter.from === 'q' ? '#c-q' : '#' + refilter.from); const q = $('c-q'); if (q && refilter.from === 'q' && pos != null) q.setSelectionRange(pos, pos); };
   if ($('c-q')) { $('c-q').oninput = () => { refilter.from = 'q'; clearTimeout(refilter.t); refilter.t = setTimeout(refilter, 250); }; ['c-subj', 'c-loc', 'c-days', 'c-all'].forEach(id => $(id).onchange = () => { refilter.from = id; refilter(); }); }
   document.querySelectorAll('[data-lvl]').forEach(b => b.onclick = () => { CLOCK = null; CF.level = b.dataset.lvl; keep(`[data-lvl="${CF.level}"]`); });
+  if ($('c-needoff')) $('c-needoff').onclick = () => { CF.need = false; CLOCK = null; keep('#c-q'); };
   document.querySelectorAll('[data-sort]').forEach(b => b.onclick = () => { CLOCK = null; const k = b.dataset.sort; CF.dir = CF.sort === k ? -CF.dir : 1; CF.sort = k; keep(`[data-sort="${k}"]`); });
   const redraw = sel => { const y = window.scrollY; show('courses', false); window.scrollTo(0, y); document.querySelector(sel)?.focus({ preventScroll: true }); };
   const cItems = crn => { const c = courses().find(y => y.CRN === crn), n = c ? `${c.SUBJ} ${c.CRSE}.${c.SEC}` : crn; return [
