@@ -728,7 +728,7 @@ const VIEW_MSG = 'View only: your passcode opens the shared plan but can\'t save
 try { G.pass = localStorage.getItem(SH.passKey) || ''; } catch (e) {}
 const shared = () => !!G.pass;
 async function wk(method = 'GET', body, q = '') {
-  let r; try { r = await fetch(SH.worker + '/plan' + q, { method, cache: 'no-store', headers: { 'X-Lab-Pass': G.pass, 'X-Lab-Email': (() => { try { return localStorage.getItem('labConsoleEmail') || ''; } catch (e) { return ''; } })(), ...(body ? { 'Content-Type': 'application/json' } : {}) }, body: body ? JSON.stringify(body) : undefined }); }
+  let r; try { r = await fetch(SH.worker + '/plan' + q, { method, cache: 'no-store', headers: { 'X-Lab-Pass': G.pass, ...((e => e ? { 'X-Lab-Email': e } : {})((() => { try { return localStorage.getItem('labConsoleEmail') || ''; } catch (e) { return ''; } })())), ...(body ? { 'Content-Type': 'application/json' } : {}) }, body: body ? JSON.stringify(body) : undefined }); }
   catch (e) { throw new Error('The shared plan couldn\'t be reached (offline?). Your work stays in this browser; Save again later.'); }
   const d = await r.json().catch(() => ({}));
   if (r.ok && method === 'GET') G.role = d.role || 'edit';

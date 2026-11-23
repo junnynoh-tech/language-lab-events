@@ -126,7 +126,8 @@ html.lab-gated body > :not(#labGate) { visibility: hidden; }`;
   // the name comes from the Worker: a person's own passcode is who they are (Settings › People). Nobody types a name.
   const state = { pass: get(K.pass), role: get(K.role), name: get(K.name), email: get(K.email) };
   // every call to the Worker sends both: a person locked to their email needs it with the passcode (Settings › People)
-  window.labHeaders = () => ({ 'X-Lab-Pass': get(K.pass), 'X-Lab-Email': get(K.email) });
+  // (the email header only when there is one: a Worker without the email lock would refuse the request otherwise)
+  window.labHeaders = () => ({ 'X-Lab-Pass': get(K.pass), ...(get(K.email) ? { 'X-Lab-Email': get(K.email) } : {}) });
   // before anything shows: hide the page until signed in, and send faculty straight to their page
   if (!OPTIONAL && (!state.pass || (state.role === 'faculty' && !FACULTY_PAGE) || (SETTINGS_PAGE && state.role !== 'edit'))) document.documentElement.classList.add('lab-gated');
   if (OPTIONAL) document.documentElement.classList.remove('lab-gated');
@@ -135,8 +136,8 @@ html.lab-gated body > :not(#labGate) { visibility: hidden; }`;
 
   async function check(pass, email = state.email) {   // → 'edit' | 'view'; throws with a message people can act on
     let r;
-    try { r = await fetch(WORKER, { cache: 'no-store', headers: { 'X-Lab-Pass': pass, 'X-Lab-Email': email } }); }
-    catch (e) { throw new Error('The sign-in check couldn’t be reached. Check the internet connection and try again.'); }
+    try { r = await fetch(WORKER, { cache: 'no-store', headers: { 'X-Lab-Pass': pass, ...(email ? { 'X-Lab-Email': email } : {}) } }); }
+    catch (e) { throw new Error(email ? 'Signing in with an email isn’t switched on yet (the Lab’s Worker needs its update). Leave the email empty if you have a shared passcode, or tell Daniel.' : 'The sign-in check couldn’t be reached. Check the internet connection and try again.'); }
     if (r.status === 401) throw new Error('That email or username and passcode didn’t work together. Check both and try again.');
     if (r.status === 404 || r.status === 503) throw new Error('Sign-in isn’t switched on yet. Tell Daniel.');
     if (!r.ok) throw new Error(`The sign-in check didn’t answer (${r.status}). Try again in a minute.`);
