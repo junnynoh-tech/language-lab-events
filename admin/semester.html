@@ -208,6 +208,10 @@ table.t thead th { position: sticky; top: 0; background: var(--chip); font-size:
 table.t tbody tr:last-child td { border-bottom: 0; }
 table.t td.num, table.t th.num { text-align: right; font-variant-numeric: tabular-nums; }
 table.t tr.flag td { background: var(--bad-bg); }
+.bklist { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.bklist li { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; justify-content: space-between; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; }
+.bklist li > div { display: grid; gap: 2px; min-width: 0; }
+.bklist .mono { font-family: ui-monospace, Consolas, monospace; overflow-wrap: anywhere; }
 table.t tr.flag td:first-child { box-shadow: inset 4px 0 0 var(--bad); }
 @keyframes flagpulse { 0%, 100% { outline-color: transparent; } 50% { outline-color: var(--bad); } }
 table.pulse tr.flag td { outline: 2px solid transparent; outline-offset: -2px; animation: flagpulse 1s ease-in-out 3; }
@@ -604,7 +608,18 @@ const meName = () => { try { return localStorage.getItem('labConsoleMe') || ''; 
 function askMe() { let n = meName(); if (n) return n; n = (prompt('Your name, so the other coordinators see who saved the plan (asked once on this computer):', '') || '').trim(); if (n) try { localStorage.setItem('labConsoleMe', n); } catch (e) {} return n; }
 const whenStr = t => t ? new Date(t).toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit' }) : '';
 async function filePerm(h, ask) { const o = { mode: 'readwrite' }; if (!h?.queryPermission) return true; if ((await h.queryPermission(o)) === 'granted') return true; return ask && h.requestPermission ? (await h.requestPermission(o)) === 'granted' : false; }
-async function backupLocal(why) { if (P.semesters.length) await DB.set('planBackup', { at: new Date().toISOString(), why, plan: clone(P) }); }
+/* earlier copies (2026-11-23, Daniel: named with what and when): the last 10, newest first, each with its date, time,
+   semester and why it was kept. Older single copy ('planBackup') is read once and folded in. */
+const BACKUPS_KEPT = 10;
+async function backups() { let l = await DB.get('planBackups'); if (!l) { const o = await DB.get('planBackup'); l = o ? [o] : []; } return l; }
+async function backupLocal(why) { if (!P.semesters.length) return; const l = await backups(); l.unshift({ at: new Date().toISOString(), why, by: meName(), plan: clone(P) }); await DB.set('planBackups', l.slice(0, BACKUPS_KEPT)); }
+const pad2 = n => String(n).padStart(2, '0');
+const stamp = t => { const d = new Date(t); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}_${pad2(d.getHours())}${pad2(d.getMinutes())}`; };
+const whenFull = t => t ? new Date(t).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }) : '';
+const fileSlug = t => String(t || '').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40);
+const planSem = plan => semLabel(plan.semesters.find(x => x.id === plan.activeSemesterId) || plan.semesters[0]);
+/* e.g. Language-Lab-semester-plan_Spring-2027_2026-11-23_0942_before-loading-the-shared-plan.json */
+const planFileName = (plan, t, why) => `Language-Lab-semester-plan_${fileSlug(planSem(plan)) || 'no-semester'}_${stamp(t)}${why ? '_' + fileSlug(why) : ''}.json`;
 async function loadHandle(h, why) {
   const f = await h.getFile(), o = checkPlan(JSON.parse(await f.text()));
   if (JSON.stringify({ ...P, savedAt: '' }) !== JSON.stringify({ ...o, savedAt: '' })) await backupLocal('before loading ' + f.name);
@@ -650,7 +665,7 @@ async function savePlan(as = false) {
   let text;
   try {
     /* file permission first, while the click still counts: a question box (the name) before it would make the browser refuse */
-    if (!F.handle || as) { F.handle = await showSaveFilePicker({ ...PICK, suggestedName: F.name || planName() }); await DB.set('handle', F.handle); }
+    if (!F.handle || as) { F.handle = await showSaveFilePicker({ ...PICK, suggestedName: as ? planName() : (F.name || planName()) }); await DB.set('handle', F.handle); }
     else if (F.handle.requestPermission && (await F.handle.requestPermission({ mode: 'readwrite' })) !== 'granted') throw new Error('Saving needs permission to change the file. Click Save plan and choose Allow.');
     P.savedAt = new Date().toISOString(); P.savedBy = askMe(); text = JSON.stringify(P, null, 2);
     const cur = await F.handle.getFile();
@@ -664,7 +679,7 @@ async function savePlan(as = false) {
   } catch (e) { if (e.name === 'AbortError') return; if (e.name === 'NotAllowedError' || e.name === 'SecurityError') { F.needsReopen = true; fileUI(); toast('The browser needs one more click to allow saving into the file: click Save plan again.', 7000); return; } toast(e.message, 6000); }
 }
 const storeMeta = () => DB.set('fileMeta', { name: F.name, lastModified: F.lastModified, dirty: F.dirty });
-const planName = () => `semester-plan${sem() ? '-' + sem().id : ''}.json`;
+const planName = () => planFileName(P, Date.now());
 function fileUI() {
   const el = $('fileState'), dot = el.querySelector('.dot'), t = el.querySelector('span:last-child');
   dot.classList.toggle('on', shared() ? !F.dirty && !G.err : !!F.name && !F.dirty);
@@ -2023,9 +2038,13 @@ function teamsCard() {
     + `<p class="hint">${F.name ? `This browser uses <b>${esc(F.name)}</b>${P.savedBy ? `, last saved by ${esc(P.savedBy)} (${esc(whenStr(P.savedAt))})` : ''}.` : 'No plan file opened in this browser yet.'} Works in Edge and Chrome.</p></div>`;
 }
 function backupCard() {
-  return `<div class="card" id="bk-card" hidden><h2>This browser's earlier copy</h2><p class="lede" id="bk-text"></p><button class="btn" type="button" data-act="restore">Restore it here</button></div>`;
+  return `<div class="card" id="bk-card" hidden><h2>Earlier copies in this browser</h2><p class="lede">Kept by themselves before anything that replaces the plan here (loading the shared plan, restoring, deleting, filling the lab calendar). The last ${BACKUPS_KEPT}, newest first. If something you entered went missing, it may be in one of these.</p><ul class="bklist" id="bk-list"></ul></div>`;
 }
-ACTS.restore = async () => { const b = await DB.get('planBackup'); if (!b) return; if (!confirm('Put the earlier copy back in this page? Then Save to share it.')) return; const cur = clone(P); P = checkPlan(b.plan); await DB.set('planBackup', { at: new Date().toISOString(), why: 'before restoring', plan: cur }); F.dirty = true; await DB.set('plan', P); storeMeta(); render(); toast('Restored. Press Save to share it.'); };
+ACTS.restore = async i => { const l = await backups(), b = l[+i]; if (!b) return;
+  if (!confirm(`Put back the copy from ${whenFull(b.at)} (${b.why})?\n\nWhat's here now is kept as another earlier copy. Then Save to share it.`)) return;
+  const cur = clone(P); P = checkPlan(clone(b.plan)); l.unshift({ at: new Date().toISOString(), why: `before restoring the copy from ${whenFull(b.at)}`, by: meName(), plan: cur });
+  await DB.set('planBackups', l.slice(0, BACKUPS_KEPT)); F.dirty = true; await DB.set('plan', P); storeMeta(); render(); toast('Restored. Press Save to share it.'); };
+ACTS.dlBackup = async i => { const b = (await backups())[+i]; if (b) download(planFileName(b.plan, b.at, b.why), JSON.stringify(b.plan, null, 2)); };
 function sharedCard() {
   if (shared()) return `<div class="card"><h2>Shared plan <span class="tag ${G.err ? 'bad' : 'ok'}">${G.err ? 'Not reachable' : 'Connected'}</span></h2>`
     + `<p class="lede">${G.err ? esc(G.err) : G.sha ? `Everyone connected sees the plan saved here.${F.dirty ? ' <b>Your changes are not saved yet.</b>' : ''}` : 'Nothing is saved yet. Save puts this browser\'s plan there.'} Coming back to this page picks up a teammate's save by itself.</p>`
@@ -2053,8 +2072,11 @@ AFTER.plan = () => {
     changed(false); semPicker();
   };
   if (drop) { $('imp-file').onchange = e => take([...e.target.files]); ['dragenter', 'dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); })); ['dragleave', 'drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); })); drop.addEventListener('drop', e => take([...e.dataTransfer.files])); }
-  DB.get('planBackup').then(b => { const c = $('bk-card'); if (!b || !c) return; const n = Object.values(b.plan.courseLists || {}).reduce((a, l) => a + (l.rows || []).length, 0);
-    $('bk-text').textContent = `Saved ${whenStr(b.at)} (${b.why}): ${b.plan.semesters.length} semester${b.plan.semesters.length === 1 ? '' : 's'}, ${n} course${n === 1 ? '' : 's'}. If something you entered went missing, it may be here.`; c.hidden = false; });
+  backups().then(l => { const c = $('bk-card'); if (!l.length || !c) return;
+    $('bk-list').innerHTML = l.map((b, i) => { const n = Object.values(b.plan.courseLists || {}).reduce((a, x) => a + (x.rows || []).length, 0), ns = b.plan.semesters.length;
+      return `<li><div><b>${esc(planSem(b.plan) || 'No semester')} · ${esc(whenFull(b.at))}</b><span class="small muted">Kept ${esc(b.why)}${b.by ? ` · ${esc(b.by)}` : ''} · ${ns} semester${ns === 1 ? '' : 's'}, ${n} course${n === 1 ? '' : 's'}</span><span class="small muted mono">${esc(planFileName(b.plan, b.at, b.why))}</span></div>`
+        + `<span class="row" style="gap:6px"><button class="btn sm" type="button" data-act="dlBackup" data-arg="${i}" aria-label="Download the copy from ${esc(whenFull(b.at))}">Download</button><button class="btn sm" type="button" data-act="restore" data-arg="${i}" aria-label="Restore the copy from ${esc(whenFull(b.at))}">Restore</button></span></li>`; }).join('');
+    c.hidden = false; });
   if ($('sh-connect')) $('sh-connect').onclick = async () => {
     const v = $('sh-tok').value.trim(), msg = $('sh-msg'); if (!v) { msg.textContent = 'Type the passcode first.'; return; }
     const old = G.pass; G.pass = v; msg.textContent = 'Checking…';
