@@ -157,6 +157,8 @@ pre.code { white-space: pre-wrap; overflow-wrap: anywhere; background: var(--chi
 .areas a:last-child:nth-child(odd) { grid-column: 1 / -1; }
 main .card { min-width: 0; } fieldset.levels { min-width: 0; } .tw { max-width: 100%; position: relative; }   /* keeps the hidden caption inside the scroll box */
 table.t tbody th { text-transform: none; letter-spacing: 0; font-size: 15px; color: var(--text); }
+.chk { display: flex; gap: 8px; align-items: start; } .chk input { width: 18px; height: 18px; margin: 3px 0 0; flex: none; }
+.lockcell { white-space: nowrap; } .lockcell input { width: 18px; height: 18px; vertical-align: middle; margin-right: 4px; }
 .form-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
 .f { display: grid; gap: 4px; }
 .f > label, .f > .lbl { font-weight: 600; }
@@ -187,7 +189,7 @@ table.t select { min-height: 36px; border: 1px solid var(--line); border-radius:
   <main id="main" tabindex="-1">
     <p class="eyebrow">Settings · Editors only</p>
     <h1>People and access</h1>
-    <p class="lede">Everyone signs in with their own passcode. Add a person, pick their level, and give them the passcode this page makes. You can change a level, make a new passcode, pause or remove someone at any time; it takes effect within half a minute.</p>
+    <p class="lede">Everyone signs in with their own passcode, locked to their UNG email unless you turn the lock off. Add a person, pick their level, and give them the passcode this page makes. After they sign in, they can pick their own username and use it instead of their email. You can change a level, make a new passcode, pause or remove someone at any time; it takes effect within half a minute.</p>
 
     <section class="card" aria-labelledby="h-add" style="margin-bottom:16px">
       <h2 id="h-add" class="h3">Add someone</h2>
@@ -196,6 +198,7 @@ table.t select { min-height: 36px; border: 1px solid var(--line); border-radius:
           <div class="f"><label for="aName">Name</label><input id="aName" autocomplete="off" required></div>
           <div class="f"><label for="aEmail">UNG email</label><input id="aEmail" type="email" autocomplete="off" placeholder="name@ung.edu"></div>
         </div>
+        <label class="chk" style="margin-top:10px"><input type="checkbox" id="aLock" checked> <span><b>Lock to this email</b>: they sign in with their UNG email <i>and</i> the passcode. The passcode alone won't work.</span></label>
         <fieldset class="levels" style="margin-top:12px"><legend class="lbl" style="font-weight:600;margin-bottom:6px">Level</legend>
           <label><b><input type="radio" name="lvl" value="view" checked>Viewer</b><span>Coordinators: see everything, try things, download the documents. Can't save.</span></label>
           <label><b><input type="radio" name="lvl" value="faculty">Faculty</b><span>Professors: the Faculty page only (labs, due dates, proposals).</span></label>
@@ -241,7 +244,7 @@ $('modeBtn').onclick = () => setMode(document.documentElement.dataset.mode === '
 const when = t => t ? new Date(t).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
 
 async function api(method, body) {
-  let r; try { r = await fetch(WORKER + '/people', { method, cache: 'no-store', headers: { 'X-Lab-Pass': pass, ...(body ? { 'Content-Type': 'application/json' } : {}) }, body: body ? JSON.stringify(body) : undefined }); }
+  let r; try { r = await fetch(WORKER + '/people', { method, cache: 'no-store', headers: { ...window.labHeaders(), ...(body ? { 'Content-Type': 'application/json' } : {}) }, body: body ? JSON.stringify(body) : undefined }); }
   catch (e) { throw new Error('The people list couldn’t be reached. Check the connection and try again.'); }
   const d = await r.json().catch(() => ({}));
   if (r.status === 404 && !d.error) throw new Error('The Worker in Cloudflare needs its update (paste the current worker.js) before people can be added.');
@@ -257,15 +260,17 @@ function render() {
   if (!PEOPLE.length) { $('list').innerHTML = '<p class="empty">Nobody has a personal passcode yet. Add someone above.</p>'; return; }
   const order = { edit: 0, view: 1, faculty: 2 };
   const rows = [...PEOPLE].sort((a, b) => order[a.level] - order[b.level] || a.name.localeCompare(b.name)).map(p => `<tr data-id="${esc(p.id)}">
-<th scope="row">${esc(p.name)}</th><td>${p.email ? `<a href="mailto:${esc(p.email)}">${esc(p.email)}</a>` : '<span class="muted">none</span>'}</td>
+<th scope="row">${esc(p.name)}</th><td>${p.email ? `<a href="mailto:${esc(p.email)}">${esc(p.email)}</a>` : '<span class="muted">none</span>'}</td><td>${p.username ? esc(p.username) : '<span class="muted">not set</span>'}</td>
 <td><select data-level aria-label="Level for ${esc(p.name)}">${Object.entries(LEVEL).map(([k, l]) => `<option value="${k}"${k === p.level ? ' selected' : ''}>${l}</option>`).join('')}</select></td>
+<td class="lockcell"><label><input type="checkbox" data-lock${p.lock ? ' checked' : ''}${p.email ? '' : ' disabled'}>${p.email ? (p.lock ? 'Locked' : 'Off') : 'No email'}</label></td>
 <td>${p.active ? '<span class="st-on">Active</span>' : '<span class="st-off">Paused</span>'}</td><td class="small">${esc(when(p.passcodeSet))}</td>
 <td><div class="acts"><button class="btn sm" type="button" data-reset>New passcode</button><button class="btn sm" type="button" data-pause>${p.active ? 'Pause' : 'Resume'}</button><button class="btn sm danger" type="button" data-remove>Remove</button></div></td></tr>`).join('');
-  $('list').innerHTML = `<div class="tw" tabindex="0" role="region" aria-label="People, scrolls sideways"><table class="t"><caption class="sr">${PEOPLE.length} people with their own passcode</caption><thead><tr><th scope="col">Name</th><th scope="col">UNG email</th><th scope="col">Level</th><th scope="col">Status</th><th scope="col">Passcode made</th><th scope="col"><span class="sr">Actions</span></th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  $('list').innerHTML = `<div class="tw" tabindex="0" role="region" aria-label="People, scrolls sideways"><table class="t"><caption class="sr">${PEOPLE.length} people with their own passcode</caption><thead><tr><th scope="col">Name</th><th scope="col">UNG email</th><th scope="col">Username</th><th scope="col">Level</th><th scope="col">Email lock</th><th scope="col">Status</th><th scope="col">Passcode made</th><th scope="col"><span class="sr">Actions</span></th></tr></thead><tbody>${rows}</tbody></table></div>`;
   $('list').querySelectorAll('tr[data-id]').forEach(tr => {
     const p = PEOPLE.find(x => x.id === tr.dataset.id), busy = b => tr.querySelectorAll('button, select').forEach(x => x.disabled = b);
     const run = async (body, okMsg) => { busy(true); try { const d = await api('POST', { id: p.id, ...body }); if (d.person) Object.assign(p, d.person); if (body.action === 'remove') PEOPLE = PEOPLE.filter(x => x !== p); render(); if (d.passcode) showMade(p, d.passcode, true); else toast(okMsg); } catch (e) { busy(false); toast(e.message, 7000); render(); } };
     tr.querySelector('[data-level]').onchange = e => { const v = e.target.value; if (v === 'edit' && !confirm(`Make ${p.name} an Editor? Editors save for everyone and can manage this list.`)) { e.target.value = p.level; return; } run({ action: 'update', level: v }, `${p.name} is now ${LEVEL[v]}.`); };
+    tr.querySelector('[data-lock]').onchange = e => run({ action: 'update', lock: e.target.checked }, e.target.checked ? `${p.name} now signs in with their email and passcode.` : `${p.name} can sign in with the passcode alone.`);
     tr.querySelector('[data-pause]').onclick = () => run({ action: 'update', active: !p.active }, p.active ? `${p.name} is paused: their passcode stops working within half a minute.` : `${p.name} can sign in again.`);
     tr.querySelector('[data-reset]').onclick = () => { if (confirm(`Make a new passcode for ${p.name}? Their old one stops working.`)) run({ action: 'reset' }); };
     tr.querySelector('[data-remove]').onclick = () => { if (confirm(`Remove ${p.name}? Their passcode stops working, and they leave this list.`)) run({ action: 'remove' }, `${p.name} was removed.`); };
@@ -275,8 +280,8 @@ function render() {
 function emailHTML(p) {
   const fac = p.level === 'faculty', link = `<a href="${LINKS[p.level]}">${fac ? 'faculty page' : 'Lab console'}</a>`;
   return fac
-    ? `<p>Dear ${esc(p.name.split(' ')[0])},</p><p>The Language Lab has a page just for faculty: the labs in your courses at a glance, when they are due, how they are graded, the Lab policy, and proposals still in review.</p><p><b>Getting in (once per computer)</b></p><ol><li>Open the Language Lab ${link} in Edge or Chrome, and bookmark it.</li><li>Type your passcode. I'm sending it separately.</li><li>Click <b>Sign in</b>. Your computer remembers you until you click <b>Sign out</b> at the top left.</li></ol><p>The page is for reference only. If something should change for your course, reply to this email.</p><p>Thank you,<br>Daniel</p>`
-    : `<p>Hi ${esc(p.name.split(' ')[0])},</p><p>Here's how to get into the Language Lab console: the semester plan, the Lab's events, and what students see in D2L.</p><ol><li>Open the ${link} in Edge or Chrome, and bookmark it.</li><li>Type your passcode. I'm sending it separately.</li><li>Click <b>Sign in</b>. Your computer remembers you until you click <b>Sign out</b> at the top left. On a shared computer, sign out when you're done.</li></ol><p>The top left shows your level, <b>${LEVEL[p.level]}</b>. ${p.level === 'edit' ? 'You can save changes for everyone.' : 'You can open everything and try things out, but your changes aren\'t saved for anyone else. Send me anything that needs to change.'}</p><p>Thanks,<br>Daniel</p>`;
+    ? `<p>Dear ${esc(p.name.split(' ')[0])},</p><p>The Language Lab has a page just for faculty: the labs in your courses at a glance, when they are due, how they are graded, the Lab policy, and proposals still in review.</p><p><b>Getting in (once per computer)</b></p><ol><li>Open the Language Lab ${link} in Edge or Chrome, and bookmark it.</li><li>Type your UNG email and your passcode. I'm sending the passcode separately. Once you're in, you can set a username under your name and sign in with that next time.</li><li>Click <b>Sign in</b>. Your computer remembers you until you click <b>Sign out</b> at the top left.</li></ol><p>The page is for reference only. If something should change for your course, reply to this email.</p><p>Thank you,<br>Daniel</p>`
+    : `<p>Hi ${esc(p.name.split(' ')[0])},</p><p>Here's how to get into the Language Lab console: the semester plan, the Lab's events, and what students see in D2L.</p><ol><li>Open the ${link} in Edge or Chrome, and bookmark it.</li><li>Type your UNG email and your passcode. I'm sending the passcode separately. Once you're in, you can set a username under your name and sign in with that next time.</li><li>Click <b>Sign in</b>. Your computer remembers you until you click <b>Sign out</b> at the top left. On a shared computer, sign out when you're done.</li></ol><p>The top left shows your level, <b>${LEVEL[p.level]}</b>. ${p.level === 'edit' ? 'You can save changes for everyone.' : 'You can open everything and try things out, but your changes aren\'t saved for anyone else. Send me anything that needs to change.'}</p><p>Thanks,<br>Daniel</p>`;
 }
 function showMade(p, code, reset) {
   const m = $('made'); m.hidden = false; m.className = 'card made'; m.style.marginTop = '14px';
@@ -292,12 +297,13 @@ function showMade(p, code, reset) {
 }
 $('addForm').onsubmit = async e => {
   e.preventDefault();
-  const name = $('aName').value.trim(), email = $('aEmail').value.trim(), level = document.querySelector('input[name=lvl]:checked').value, msg = $('addMsg');
+  const name = $('aName').value.trim(), email = $('aEmail').value.trim(), lock = $('aLock').checked && !!email, level = document.querySelector('input[name=lvl]:checked').value, msg = $('addMsg');
   if (!name) { msg.textContent = 'Type their name.'; $('aName').focus(); return; }
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { msg.textContent = 'That email doesn’t look right.'; $('aEmail').focus(); return; }
+  if ($('aLock').checked && !email) { msg.textContent = 'Type their UNG email to lock the passcode to it, or untick the lock.'; $('aEmail').focus(); return; }
   if (level === 'edit' && !confirm(`Make ${name} an Editor? Editors save for everyone and can manage this list.`)) return;
   $('addBtn').disabled = true; msg.textContent = 'Adding…';
-  try { const d = await api('POST', { action: 'add', name, email, level }); PEOPLE.push(d.person); render(); msg.textContent = ''; $('addForm').reset(); showMade(d.person, d.passcode, false); }
+  try { const d = await api('POST', { action: 'add', name, email, level, lock }); PEOPLE.push(d.person); render(); msg.textContent = ''; $('addForm').reset(); showMade(d.person, d.passcode, false); }
   catch (err) { msg.textContent = err.message; }
   $('addBtn').disabled = false;
 };

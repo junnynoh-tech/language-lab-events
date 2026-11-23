@@ -15,7 +15,7 @@
 (() => {
   'use strict';
   const WORKER = 'https://lab-requests.junnynoh.workers.dev/plan?meta=1';
-  const K = { pass: 'labConsolePass', role: 'labConsoleRole', name: 'labConsoleMe', token: 'labConsoleToken' };
+  const K = { pass: 'labConsolePass', role: 'labConsoleRole', name: 'labConsoleMe', token: 'labConsoleToken', email: 'labConsoleEmail', personal: 'labConsolePersonal', username: 'labConsoleUser' };
   const get = k => { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } };
   const set = (k, v) => { try { v ? localStorage.setItem(k, v) : localStorage.removeItem(k); } catch (e) {} };
   const ICON = {   // drawn, so they show on every computer (an emoji can turn into an empty box)
@@ -65,21 +65,23 @@ html.lab-gated body > :not(#labGate) { visibility: hidden; }`;
   document.head.appendChild(css);
 
   // the name comes from the Worker: a person's own passcode is who they are (Settings › People). Nobody types a name.
-  const state = { pass: get(K.pass), role: get(K.role), name: get(K.name) };
+  const state = { pass: get(K.pass), role: get(K.role), name: get(K.name), email: get(K.email) };
+  // every call to the Worker sends both: a person locked to their email needs it with the passcode (Settings › People)
+  window.labHeaders = () => ({ 'X-Lab-Pass': get(K.pass), 'X-Lab-Email': get(K.email) });
   // before anything shows: hide the page until signed in, and send faculty straight to their page
   if (!state.pass || (state.role === 'faculty' && !FACULTY_PAGE) || (SETTINGS_PAGE && state.role !== 'edit')) document.documentElement.classList.add('lab-gated');
   if (state.pass && state.role === 'faculty' && !FACULTY_PAGE) location.replace('faculty.html');
   const apply = () => { document.documentElement.dataset.level = state.pass ? (state.role || 'edit') : 'none'; window.LAB_AUTH = { ...state }; };
 
-  async function check(pass) {   // → 'edit' | 'view'; throws with a message people can act on
+  async function check(pass, email = state.email) {   // → 'edit' | 'view'; throws with a message people can act on
     let r;
-    try { r = await fetch(WORKER, { cache: 'no-store', headers: { 'X-Lab-Pass': pass } }); }
+    try { r = await fetch(WORKER, { cache: 'no-store', headers: { 'X-Lab-Pass': pass, 'X-Lab-Email': email } }); }
     catch (e) { throw new Error('The sign-in check couldn’t be reached. Check the internet connection and try again.'); }
-    if (r.status === 401) throw new Error('That passcode didn’t work. Check it (capitals count) and try again.');
+    if (r.status === 401) throw new Error('That email or username and passcode didn’t work together. Check both and try again.');
     if (r.status === 404 || r.status === 503) throw new Error('Sign-in isn’t switched on yet. Tell Daniel.');
     if (!r.ok) throw new Error(`The sign-in check didn’t answer (${r.status}). Try again in a minute.`);
     const d = await r.json().catch(() => ({}));
-    return { role: lvl(d.role), name: String(d.name || '').slice(0, 80) };
+    return { role: lvl(d.role), name: String(d.name || '').slice(0, 80), personal: !!d.personal, username: String(d.username || '') };
   }
 
   function badge() {
@@ -88,8 +90,32 @@ html.lab-gated body > :not(#labGate) { visibility: hidden; }`;
     if (!box) { box = document.createElement('section'); box.id = 'labAcct'; box.className = 'lab-acct'; box.setAttribute('aria-label', 'Signed in'); (rail.querySelector('.brand') || rail.firstChild).after(box); }
     const L = LEVEL[state.role] || LEVEL.edit;
     box.innerHTML = `<div class="who">${pill(lvl(state.role))}<b title="${esc(state.name)}">${esc(state.name || 'Signed in')}</b></div>`
-      + `<p class="lab-note">${L.note}</p><div class="row"><button type="button" id="labSignOut">Sign out</button></div>`;
+      + `<p class="lab-note">${L.note}</p>`
+      + (get(K.personal) ? `<p class="lab-note">${get(K.username) ? `Username: <b>${esc(get(K.username))}</b>` : 'No username yet.'}</p>` : '')
+      + `<div class="row">${get(K.personal) ? `<button type="button" id="labUser">${get(K.username) ? 'Change username' : 'Set a username'}</button>` : ''}<button type="button" id="labSignOut">Sign out</button></div><form id="labUserForm" hidden novalidate></form>`;
     box.querySelector('#labSignOut').onclick = signOut;
+    const ub = box.querySelector('#labUser'); if (ub) ub.onclick = () => userForm(box);
+  }
+
+  /* pick your own username (Daniel, 2026-11-23: "easier access"): then sign in with it instead of the email */
+  function userForm(box) {
+    const f = box.querySelector('#labUserForm'); f.hidden = false;
+    f.innerHTML = `<label style="display:grid;gap:4px;font-weight:600;font-size:13px">Username<input id="labUserIn" value="${esc(get(K.username))}" autocapitalize="none" spellcheck="false" maxlength="30" style="min-height:36px;padding:6px 8px;border:1px solid var(--line,#DCDDD8);border-radius:8px;font:inherit;background:var(--bg,#F7F7F5);color:inherit"></label>`
+      + `<p class="lab-note" style="margin:4px 0">3 to 30 letters or numbers; dot, dash and underscore are fine.</p><div class="row"><button type="submit" class="pri">Save</button><button type="button" id="labUserX">Cancel</button></div><p class="lab-note" id="labUserMsg" role="status" style="font-weight:600"></p>`;
+    const inp = f.querySelector('#labUserIn'); inp.focus();
+    f.querySelector('#labUserX').onclick = () => { f.hidden = true; f.innerHTML = ''; box.querySelector('#labUser')?.focus(); };
+    f.onsubmit = async e => {
+      e.preventDefault(); const u = inp.value.trim().toLowerCase(), msg = f.querySelector('#labUserMsg');
+      if (u && !/^[a-z0-9][a-z0-9._-]{2,29}$/.test(u)) { msg.textContent = 'Use 3 to 30 letters or numbers (dot, dash, underscore).'; inp.focus(); return; }
+      msg.textContent = 'Saving…';
+      try {
+        const r = await fetch(WORKER.replace('/plan?meta=1', '/me'), { method: 'POST', headers: { ...window.labHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify({ username: u }) });
+        const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d.error || `Couldn’t save (${r.status}).`);
+        set(K.username, d.person.username); badge(); const b = document.getElementById('labUser'); if (b) b.focus();
+        const n = document.createElement('p'); n.className = 'lab-note'; n.setAttribute('role', 'status'); n.style.fontWeight = '600';
+        n.textContent = u ? `Saved. Next time, sign in with “${u}” and your passcode.` : 'Username removed. Sign in with your email.'; document.getElementById('labAcct').appendChild(n);
+      } catch (err) { msg.textContent = err.message; }
+    };
   }
 
   function gate(message) {
@@ -98,29 +124,32 @@ html.lab-gated body > :not(#labGate) { visibility: hidden; }`;
     if (!g) { g = document.createElement('div'); g.id = 'labGate'; document.body.appendChild(g); }
     g.innerHTML = `<form class="box" novalidate aria-labelledby="labGateH"><small>Language Lab</small><h1 id="labGateH">Sign in to the Lab console</h1>
 <p>Use the passcode the Language Lab sent you. This computer remembers you until you sign out.</p>
+<label>UNG email or username <input id="labGateEmail" type="text" inputmode="email" autocapitalize="none" autocomplete="username" spellcheck="false" placeholder="name@ung.edu or your username" value="${esc(state.email)}"></label>
 <label>Passcode <input id="labGatePass" type="password" autocomplete="current-password" spellcheck="false"></label>
 <button type="submit">Sign in</button><p class="msg" id="labGateMsg" role="alert">${esc(message || '')}</p>
 <div class="levels" aria-label="The two levels"><div>${pill('edit')}<span>saves changes for everyone (the Lab coordinator).</span></div>
 <div>${pill('view')}<span>sees everything and can try things; nothing is saved for others.</span></div>
 <div>${pill('faculty')}<span>a quick reference for professors: labs, due dates and proposals.</span></div></div></form>`;
     const f = g.querySelector('form'), msg = g.querySelector('#labGateMsg');
-    setTimeout(() => g.querySelector('#labGatePass').focus(), 30);
+    setTimeout(() => (state.email ? g.querySelector('#labGatePass') : g.querySelector('#labGateEmail')).focus(), 30);
     f.onsubmit = async e => {
       e.preventDefault();
-      const pass = g.querySelector('#labGatePass').value.trim();
+      const pass = g.querySelector('#labGatePass').value.trim(), email = g.querySelector('#labGateEmail').value.trim().toLowerCase();
+      if (email && (email.includes('@') ? !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) : !/^[a-z0-9][a-z0-9._-]{2,29}$/.test(email))) { msg.textContent = 'That email or username doesn’t look right.'; g.querySelector('#labGateEmail').focus(); return; }
       if (!pass) { msg.textContent = 'Type the passcode.'; g.querySelector('#labGatePass').focus(); return; }
       const btn = f.querySelector('button'); btn.disabled = true; btn.textContent = 'Checking…'; msg.textContent = '';
       try {
-        const { role, name } = await check(pass);
-        set(K.pass, pass); set(K.role, role); set(K.name, name);
+        const { role, name, personal, username } = await check(pass, email);
+        set(K.personal, personal ? '1' : ''); set(K.username, username);
+        set(K.pass, pass); set(K.role, role); set(K.name, name); set(K.email, email);
         location.reload();   // each page starts from the signed-in state (the Semester plan opens the shared plan)
       } catch (err) { msg.textContent = err.message; btn.disabled = false; btn.textContent = 'Sign in'; }
     };
   }
 
   function signOut() {
-    if (!confirm('Sign out of the Lab console on this computer?\n\nThis computer forgets your passcode (and the GitHub key, if one was saved). Sign in again with the passcode any time.')) return;
-    [K.pass, K.role, K.token].forEach(k => set(k, ''));
+    if (!confirm('Sign out of the Lab console on this computer?\n\nThis computer forgets your email and passcode (and the GitHub key, if one was saved). Sign in again with the passcode any time.')) return;
+    [K.pass, K.role, K.token, K.email, K.name, K.personal, K.username].forEach(k => set(k, ''));
     location.reload();
   }
 
@@ -136,8 +165,9 @@ html.lab-gated body > :not(#labGate) { visibility: hidden; }`;
     if (route()) return;
     document.documentElement.classList.remove('lab-gated');
     badge();
-    check(state.pass).then(({ role, name }) => {   // the level or name can change (Settings › People): keep them current
+    check(state.pass).then(({ role, name, personal, username }) => {   // the level or name can change (Settings › People): keep them current
       if (name !== state.name) { state.name = name; set(K.name, name); apply(); badge(); }
+      if (username !== get(K.username) || (personal ? '1' : '') !== get(K.personal)) { set(K.username, username); set(K.personal, personal ? '1' : ''); badge(); }
       if (role !== state.role) { state.role = role; set(K.role, role); apply(); if (route()) return; badge(); document.dispatchEvent(new CustomEvent('labauth', { detail: { ...state } })); }
     }).catch(err => { if (/didn’t work/.test(err.message)) { set(K.pass, ''); set(K.role, ''); state.pass = ''; apply(); gate('Your passcode changed. Sign in with the new one.'); } });
   };
