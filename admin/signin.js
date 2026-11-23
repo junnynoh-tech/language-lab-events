@@ -57,6 +57,7 @@ html[data-level="view"] input[type="file"], html[data-level="view"] .drop, html[
 #labGate label { display: grid; gap: 4px; font-weight: 600; margin: 0 0 12px; }
 #labGate input { min-height: 44px; padding: 8px 12px; border: 1px solid var(--line, #DCDDD8); border-radius: 8px; font: inherit; background: var(--bg, #F7F7F5); color: inherit; }
 #labGate button { width: 100%; min-height: 46px; border: 0; border-radius: 10px; background: var(--accent, #1A3A6B); color: var(--accent-ink, #fff); font-weight: 700; font-size: 16px; font-family: inherit; cursor: pointer; }
+#labGate .opt { font-weight: 400; color: var(--sub, #5A6472); font-size: 14px; }
 #labGate .msg { min-height: 1.4em; margin: 10px 0 0; font-weight: 600; color: var(--bad, #A12A2A); }
 #labGate .levels { display: grid; gap: 6px; margin: 16px 0 0; padding: 12px 0 0; border-top: 1px solid var(--line, #DCDDD8); font-size: 14px; color: var(--sub, #5A6472); }
 #labGate .levels div { display: flex; gap: 8px; align-items: baseline; }
@@ -96,18 +97,17 @@ html.lab-gated body > :not(#labGate) { visibility: hidden; }`;
     if (!g) { g = document.createElement('div'); g.id = 'labGate'; document.body.appendChild(g); }
     g.innerHTML = `<form class="box" novalidate aria-labelledby="labGateH"><small>Language Lab</small><h1 id="labGateH">Sign in to the Lab console</h1>
 <p>Use the passcode the Language Lab sent you. This computer remembers you until you sign out.</p>
-<label>Your name <input id="labGateName" autocomplete="name" value="${esc(state.name)}" placeholder="First and last name"></label>
+<label>Name or email <span class="opt">(optional: shows who saved what)</span><input id="labGateName" autocomplete="username" value="${esc(state.name)}" placeholder="Your name or UNG email"></label>
 <label>Passcode <input id="labGatePass" type="password" autocomplete="current-password" spellcheck="false"></label>
 <button type="submit">Sign in</button><p class="msg" id="labGateMsg" role="alert">${esc(message || '')}</p>
 <div class="levels" aria-label="The two levels"><div>${pill('edit')}<span>saves changes for everyone (the Lab coordinator).</span></div>
 <div>${pill('view')}<span>sees everything and can try things; nothing is saved for others.</span></div>
 <div>${pill('faculty')}<span>a quick reference for professors: labs, due dates and proposals.</span></div></div></form>`;
     const f = g.querySelector('form'), msg = g.querySelector('#labGateMsg');
-    setTimeout(() => (state.name ? g.querySelector('#labGatePass') : g.querySelector('#labGateName')).focus(), 30);
+    setTimeout(() => g.querySelector('#labGatePass').focus(), 30);
     f.onsubmit = async e => {
       e.preventDefault();
       const name = g.querySelector('#labGateName').value.trim(), pass = g.querySelector('#labGatePass').value.trim();
-      if (!name) { msg.textContent = 'Type your name: it shows who saved what.'; g.querySelector('#labGateName').focus(); return; }
       if (!pass) { msg.textContent = 'Type the passcode.'; g.querySelector('#labGatePass').focus(); return; }
       const btn = f.querySelector('button'); btn.disabled = true; btn.textContent = 'Checking…'; msg.textContent = '';
       try {

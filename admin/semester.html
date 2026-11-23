@@ -620,7 +620,7 @@ function changed(rerender = true) {
 /* ---------- the plan file (shared folder) ---------- */
 /* sharing through the coordinators-only Teams folder (synced by OneDrive), no GitHub needed (2026-11-20) */
 const meName = () => { try { return localStorage.getItem('labConsoleMe') || ''; } catch (e) { return ''; } };
-function askMe() { let n = meName(); if (n) return n; n = (prompt('Your name, so the other coordinators see who saved the plan (asked once on this computer):', '') || '').trim(); if (n) try { localStorage.setItem('labConsoleMe', n); } catch (e) {} return n; }
+function askMe() { return meName(); }   // the name typed at sign-in (optional since 2026-11-23); never asked again here
 const whenStr = t => t ? new Date(t).toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit' }) : '';
 async function filePerm(h, ask) { const o = { mode: 'readwrite' }; if (!h?.queryPermission) return true; if ((await h.queryPermission(o)) === 'granted') return true; return ask && h.requestPermission ? (await h.requestPermission(o)) === 'granted' : false; }
 /* earlier copies (2026-11-23, Daniel: named with what and when): the last 10, newest first, each with its date, time,
