@@ -209,6 +209,10 @@ table.t thead th { position: sticky; top: 0; background: var(--chip); font-size:
 table.t tbody tr:last-child td { border-bottom: 0; }
 table.t td.num, table.t th.num { text-align: right; font-variant-numeric: tabular-nums; }
 table.t tr.flag td { background: var(--bad-bg); }
+.docs { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.docs .doc { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; justify-content: space-between; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.docs .doc > div { display: grid; gap: 2px; min-width: 0; }
+.warn-t { color: var(--warn); font-weight: 600; }
 .rvall { margin: 0 0 12px; padding: 10px 12px; border-radius: 10px; background: var(--chip); }
 .rvg .hint { margin: 0 0 8px; }
 .rvl { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
@@ -1084,7 +1088,7 @@ function labDueDatesOut(s) {
    Screens. One section per screen, like the events console: overview, then the four planning sections, then the
    outputs for D2L and the plan file.
 ===================================================================================================================== */
-const SECTIONS = [['overview', 'Overview'], ['calendar', 'Academic calendar'], ['courses', 'Language courses'], ['profs', 'Professors\' campuses'], ['rooms', 'Room scheduling'], ['labs', 'Lab calendar'], ['outputs', 'Outputs for D2L'], ['plan', 'Plan file']];
+const SECTIONS = [['overview', 'Overview'], ['calendar', 'Academic calendar'], ['courses', 'Language courses'], ['profs', 'Professors\' campuses'], ['rooms', 'Room scheduling'], ['labs', 'Lab calendar'], ['docs', 'Documents'], ['outputs', 'Outputs for D2L'], ['plan', 'Plan file']];
 const fld = (id, label, input, hint = '') => `<div class="f"><label for="${id}">${esc(label)}</label>${input}${hint ? `<span class="hint">${esc(hint)}</span>` : ''}</div>`;
 const opt = (v, l, cur) => `<option value="${esc(v)}"${String(v) === String(cur ?? '') ? ' selected' : ''}>${esc(l)}</option>`;
 const sel = (id, cur, opts, empty, extra = '') => `<select id="${id}" ${extra}>${empty != null ? opt('', empty, cur) : ''}${opts.map(([v, l]) => opt(v, l, cur)).join('')}</select>`;
@@ -1096,6 +1100,7 @@ function pane(title, sub, body, foot) {
   const d = $('dlg');
   d.innerHTML = `<form class="pane" method="dialog" novalidate><header><div><p class="eyebrow">${esc(sub)}</p><h2 id="dlgTitle">${esc(title)}</h2></div><button class="x" type="button" data-close aria-label="Close">✕</button></header><div class="scroll">${body}</div><footer>${foot || '<span></span><button class="btn" type="button" data-close>Close</button>'}</footer></form>`;
   d.querySelectorAll('[data-close]').forEach(b => b.onclick = () => d.close());
+  viewerSweep(d);
   if (!d.open) d.showModal();
 }
 const head = (eyebrow, title, lede, right = '') => `<div class="head"><div><p class="eyebrow">${esc(eyebrow)}</p><h1 tabindex="-1">${esc(title)}</h1>${lede ? `<p class="lede">${lede}</p>` : ''}</div>${right ? `<div class="row">${right}</div>` : ''}</div>`;
@@ -1113,18 +1118,33 @@ $('semPick').onchange = e => {
 };
 function nav() {
   $('nav').innerHTML = `<h2>Plan</h2><ul>${SECTIONS.slice(0, 6).map(([k, l]) => `<li><button type="button" data-view="${k}" ${k === VIEW ? 'aria-current="page"' : ''}>${esc(l)}</button></li>`).join('')}</ul>`
-    + `<h2>Share</h2><ul>${SECTIONS.slice(6).map(([k, l]) => `<li><button type="button" data-view="${k}" ${k === VIEW ? 'aria-current="page"' : ''}>${esc(l)}</button></li>`).join('')}</ul>`;
+    + `<h2>Share</h2><ul>${SECTIONS.slice(6).filter(([k]) => !(VIEWER() && k === 'outputs')).map(([k, l]) => `<li><button type="button" data-view="${k}" ${k === VIEW ? 'aria-current="page"' : ''}>${esc(l)}</button></li>`).join('')}</ul>`;
+}
+/* Viewers (2026-11-23, Daniel): look, try, and download the HTML documents. No uploads or imports, no data files
+   (JSON, CSV), and no Outputs for D2L at all. Their buttons are taken out of every screen and dialog, and the actions
+   refuse too. Editors (and a Worker without levels) see everything. */
+const VIEWER = () => G.role === 'view';
+const EDITOR_ONLY = ['dlOut', 'zip', 'zipPicked', 'previewOut', 'dlDist', 'labCSV', 'saveAs', 'openPlan', 'dlBackup', 'importExcel', 'templates', 'oUnpick'];
+function viewerSweep(root) {
+  if (!VIEWER() || !root) return;
+  root.querySelectorAll('#imp-drop, [data-act="saveAs"], [data-act="openPlan"], #pl-open').forEach(e => e.closest('.card')?.remove());
+  root.querySelectorAll(EDITOR_ONLY.map(a => `[data-act="${a}"]`).join(',') + ', #c-drop, [data-tdl], input[type="file"]').forEach(e => {
+    const row = e.closest('tr'); e.remove(); if (row && !row.querySelector('button, a')) row.remove(); });
+  root.querySelectorAll('.ovcard').forEach(c => { if (c.querySelector('[data-view="outputs"]')) c.remove(); });
 }
 function show(v, focus = true) {
+  if (v === 'outputs' && VIEWER()) v = 'docs';
   VIEW = v; nav();
   try { history.replaceState(null, '', '#' + v); } catch (e) {}
   $('main').innerHTML = `<div class="view">${(VIEWS[v] || VIEWS.overview)()}</div>`;
   (AFTER[v] || (() => {}))();
+  viewerSweep($('main'));
   if (focus) { $('main').querySelector('h1')?.focus(); window.scrollTo(0, 0); }
 }
 document.addEventListener('click', e => {
   const t = e.target.closest('[data-view],[data-act]'); if (!t) return;
   if (t.dataset.view) { if ($('dlg').open) $('dlg').close(); show(t.dataset.view); }
+  else if (VIEWER() && EDITOR_ONLY.includes(t.dataset.act)) toast(VIEWER_NO, 6000);
   else ACTS[t.dataset.act]?.(t.dataset.arg, t);
 });
 document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); savePlan(); } });
@@ -1171,6 +1191,7 @@ const issueList = list => list.length ? `<ul class="issues">${list.map(i => `<li
   : '<div class="empty">Nothing needs a look.</div>';
 
 const VIEWS = {}, AFTER = {}, ACTS = {};
+const VIEWER_NO = 'Viewers can look and download the documents, but not upload or download data files. Ask the Lab coordinator.';
 ACTS.save = () => savePlan();
 /* from a "needs a campus" warning: Language courses with only those sections showing, highlighted, the first one's Campus box focused */
 ACTS.needCampus = () => {
@@ -1979,14 +2000,78 @@ function repHTML(r, preview) {
     + r.moved.map(t => li('warn', 'Moved: ' + t)).join('') + r.flagged.map(t => li('bad', 'On a day with no classes: ' + t)).join('')
     + r.dropped.map(t => li('bad', 'Not placed: ' + t)).join('') + (r.skipped.length ? li('', `Skipped (class not chosen): ${r.skipped.join(', ')}`) : '') + '</ul>';
 }
+/* Lab due date proposal (2026-11-23, Daniel: the generator's version was better). One HTML file with three views,
+   switched by buttons at the top: Table (weeks × classes, like the Lab calendar grid), Calendar (month grids with every
+   due date) and Due dates (a plain list per language and class). Ported from la-hub-generator.html labcalBuildHTML(). */
 function proposalHTML(s, only) {
-  const lc = labCal(s), off = offered(s).filter(c => !only || only.includes(c.code)), weeks = weeksOf(s), pl = placedLabs(s).filter(p => p.cls && !p.outside), langs = [...new Set(off.map(c => c.code))];
-  const at = (w, k) => pl.filter(p => p.week === w && p.classKey === k);
-  const weekTable = `<table><caption>Due dates by week</caption><thead><tr><th scope="col">Week</th>${off.map(c => `<th scope="col">${esc(c.name)}<br><small>${esc(lc.dueDayTimes[c.key]?.day || '')} ${esc(lc.dueDayTimes[c.key]?.time || '')}</small></th>`).join('')}</tr></thead><tbody>`
-    + weeks.map(w => `<tr><th scope="row">${w.idx}<br><small>${fmtMD(w.start)}–${fmtMD(w.end)}</small></th>${off.map(c => { const b = blocked(s, dueInWeek(s, w, c.key)); return `<td${b ? ` class="${b.kind}"` : ''}>${at(w.idx, c.key).map(p => `<b>${esc(p.lab.label)}</b><br>${esc(fmtWMD(p.date))}`).join('<br>') || (b ? `<small>${esc(b.name)}</small>` : '')}</td>`; }).join('')}</tr>`).join('') + '</tbody></table>';
-  const perLang = langs.map(code => { const cs = off.filter(c => c.code === code); return `<section><h2>${esc(LAB_LANGS.find(l => l[0] === code)[1])}</h2>${cs.map(c => `<h3>${esc(c.name)}: due ${esc(lc.dueDayTimes[c.key]?.day || '')}s, ${esc(lc.dueDayTimes[c.key]?.time || '')}</h3><ul>${pl.filter(p => p.classKey === c.key).map(p => `<li><b>${esc(p.lab.label)}</b>: ${esc(fmtLong(p.date))}</li>`).join('') || '<li>No labs placed.</li>'}</ul>`).join('')}</section>`; }).join('');
-  const hol = [...(s.holidays || []).map(h => `${fmtWMD(h.date)}: ${h.name}`), ...(s.breaks || []).map(b => `${fmtMD(b.start)}–${fmtMD(b.end)}: ${b.name}`), s.finalsStart ? `${fmtMD(s.finalsStart)}–${fmtMD(s.finalsEnd)}: Finals` : ''].filter(Boolean);
-  return docPage(`Lab due dates: ${semLabel(s)}`, `<h1>Lab due dates, ${esc(semLabel(s))}</h1><p class="sub">Proposal from the Language Lab · ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} · classes ${esc(fmtMD(s.start))}–${esc(fmtMD(s.end))}</p><p class="sub">No classes: ${esc(hol.join(' · '))}</p>${weekTable}${perLang}`);
+  const lc = labCal(s), off = offered(s).filter(c => !only || only.includes(c.code)), weeks = weeksOf(s);
+  const pl = placedLabs(s).filter(p => p.cls && !p.outside && off.some(c => c.key === p.classKey)), langs = [...new Set(off.map(c => c.code))];
+  const due = c => { const d = lc.dueDayTimes[c.key]; return d ? `${d.day}s, ${d.time}` : 'Due day not set'; };
+  const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  /* 1. Table */
+  let table = `<div class="tw" tabindex="0" role="region" aria-label="Due dates by week, scrolls sideways"><table class="grid"><caption>Lab due dates by week, ${esc(semLabel(s))}</caption><thead><tr><th scope="col" class="wk">Week</th>`
+    + off.map(c => `<th scope="col"><span class="code" style="background:${c.color}">${esc(c.name)}</span><span class="cdue">${esc(due(c))}</span></th>`).join('') + '</tr></thead><tbody>';
+  weeks.forEach(w => {
+    table += `<tr><th scope="row" class="wk">Week ${w.idx}<span>${esc(fmtMD(w.start))}–${esc(fmtMD(w.end))}</span></th>`;
+    off.forEach(c => { const d = dueInWeek(s, w, c.key), b = blocked(s, d), here = pl.filter(p => p.week === w.idx && p.classKey === c.key);
+      table += `<td${b ? ` class="${b.kind}"` : ''}>` + here.map(p => `<span class="pill" style="background:${p.lab.color || c.color}">${esc(p.lab.label)}<small>${esc(fmtWMD(p.date))}</small></span>`).join('') + (b ? `<span class="blk">${esc(b.name)}</span>` : '') + '</td>'; });
+    table += '</tr>';
+  });
+  table += `</tbody></table></div><p class="legend"><span><i class="holiday"></i>Holiday</span><span><i class="break"></i>Break</span><span><i class="finals"></i>Finals</span><span>A shaded cell: the class's usual due day that week has no classes.</span></p>`;
+  /* 2. Calendar */
+  const ev = {}; off.forEach(c => pl.filter(p => p.classKey === c.key).forEach(p => (ev[p.date] ||= []).push({ c, p })));
+  let cal = '';
+  const a0 = weeks[0]?.start || s.start, a1 = weeks[weeks.length - 1]?.end || s.end;
+  if (a0 && a1) for (let m = new Date(pd(a0).getFullYear(), pd(a0).getMonth(), 1); m <= pd(a1); m = new Date(m.getFullYear(), m.getMonth() + 1, 1)) {
+    cal += `<table class="month"><caption>${m.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</caption><thead><tr>${['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => `<th scope="col">${d}</th>`).join('')}</tr></thead><tbody><tr>`;
+    const lead = m.getDay(), n = new Date(m.getFullYear(), m.getMonth() + 1, 0).getDate();
+    cal += '<td class="out"></td>'.repeat(lead);
+    for (let d = 1; d <= n; d++) {
+      if (d > 1 && (lead + d - 1) % 7 === 0) cal += '</tr><tr>';
+      const ds = iso(new Date(m.getFullYear(), m.getMonth(), d)), b = blocked(s, ds);
+      cal += `<td${b ? ` class="${b.kind}"` : ''}><span class="dnum">${d}</span>${b ? `<span class="blk">${esc(b.name)}</span>` : ''}`
+        + (ev[ds] || []).map(({ c, p }) => `<span class="ev" style="border-left-color:${c.color}"><b>${esc(c.name)}</b> ${esc(p.lab.label)}<small>${esc(lc.dueDayTimes[c.key]?.time || '')}</small></span>`).join('') + '</td>';
+    }
+    cal += '<td class="out"></td>'.repeat((7 - ((lead + n) % 7)) % 7) + '</tr></tbody></table>';
+  }
+  cal += `<p class="legend">${langs.map(code => { const L = LAB_LANGS.find(l => l[0] === code); return `<span><i style="background:${L[2]}"></i>${esc(L[1])}</span>`; }).join('')}<span><i class="holiday"></i>Holiday</span><span><i class="break"></i>Break</span><span><i class="finals"></i>Finals</span></p>`;
+  /* 3. Due dates, listed */
+  const list = langs.map(code => { const L = LAB_LANGS.find(l => l[0] === code);
+    return `<section class="lang"><h2 style="background:${L[2]}">${esc(L[1])}</h2>` + off.filter(c => c.code === code).map(c => { const mine = pl.filter(p => p.classKey === c.key).sort((x, y) => x.date.localeCompare(y.date));
+      return `<div class="cls"><h3>${esc(c.name)} <span>Due ${esc(due(c))}</span></h3>` + (mine.length ? `<table class="list"><caption class="sr">${esc(c.name)} lab due dates</caption><thead><tr><th scope="col">Lab</th><th scope="col">Week</th><th scope="col">Due date</th></tr></thead><tbody>`
+        + mine.map(p => `<tr><td>${esc(p.lab.label)}</td><td>${p.week}</td><td>${esc(fmtLong(p.date))}${p.block ? ` <b class="flag">(${esc(p.block.name)})</b>` : ''}</td></tr>`).join('') + '</tbody></table>' : '<p class="muted">No labs placed yet.</p>') + '</div>'; }).join('') + '</section>'; }).join('');
+  const off2 = [...(s.holidays || []).map(h => `${fmtWMD(h.date)}: ${h.name}`), ...(s.breaks || []).map(b => `${fmtMD(b.start)}–${fmtMD(b.end)}: ${b.name}`), s.finalsStart ? `${fmtMD(s.finalsStart)}–${fmtMD(s.finalsEnd)}: Finals` : ''].filter(Boolean);
+  const title = `Lab due date proposal: ${semLabel(s)}${only ? ' · ' + only.map(c => LAB_LANGS.find(l => l[0] === c)?.[1] || c).join(', ') : ''}`;
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(title)}</title><style>
+:root{--accent:#1A3A6B;--accent-bg:#E8EDF8;--sub:#5A6472;--line:#DCDDD8;--text:#1F2937;--bg:#F7F7F5;--surface:#fff;--holiday:#F9E3E3;--break:#FBEEDB;--finals:#EEF0F3;--out:#F1F2F4;--flag:#A12A2A;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--accent:#C9D6F0;--accent-bg:#1C3864;--sub:#C9CFD8;--line:#2B4670;--text:#F7F7F5;--bg:#0E1F3A;--surface:#132C52;--holiday:#4A1E26;--break:#4A3415;--finals:#1C3864;--out:#0B1830;--flag:#F4A3A3;color-scheme:dark}}
+*{box-sizing:border-box}body{margin:0;padding:24px 16px 40px;font:15px/1.5 "DM Sans","Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--text)}main,header{max-width:1300px;margin:0 auto}
+h1{font:700 28px/1.2 Georgia,serif;margin:0 0 4px;color:var(--accent)}.sub{color:var(--sub);margin:0 0 4px}
+.views{display:inline-flex;margin:16px 0 18px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.views button{font:inherit;font-weight:600;padding:9px 18px;border:0;background:none;color:var(--text);cursor:pointer;min-height:40px}.views button+button{border-left:1px solid var(--line)}
+.views button[aria-pressed="true"]{background:var(--accent);color:var(--surface)}.views button:focus-visible{outline:3px solid #B08D3F;outline-offset:-3px}
+.view[hidden]{display:none}caption{font-weight:700;text-align:left;padding:6px 0;color:var(--accent)}.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}.muted{color:var(--sub)}
+.tw{overflow-x:auto}.tw:focus-visible{outline:3px solid #B08D3F}
+table{border-collapse:collapse;background:var(--surface)}th,td{border:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:left}
+.grid{width:100%;font-size:13px}.grid thead th{background:var(--accent-bg);text-align:center;white-space:nowrap}
+.code{display:inline-block;font-weight:700;color:#fff;padding:1px 8px;border-radius:5px}.cdue{display:block;font-weight:400;color:var(--sub);font-size:12px}
+.grid th.wk{background:var(--surface);white-space:nowrap;position:sticky;left:0;z-index:1}.grid th.wk span{display:block;font-weight:400;color:var(--sub);font-size:12px}.grid td{min-width:96px}
+.pill{display:block;padding:3px 9px;border-radius:10px;color:#fff;font-weight:700;font-size:13px;line-height:1.25;margin-bottom:3px;white-space:nowrap}.pill small{display:block;font-weight:400;font-size:12px}
+.blk{display:block;font-size:12px;color:var(--sub);font-style:italic}td.holiday{background:var(--holiday)}td.break{background:var(--break)}td.finals{background:var(--finals)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--sub);margin:10px 0 24px}.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:13px;height:13px;border-radius:3px;border:1px solid var(--line);display:inline-block}.legend i.holiday{background:var(--holiday)}.legend i.break{background:var(--break)}.legend i.finals{background:var(--finals)}
+.month{width:100%;table-layout:fixed;margin-bottom:22px;font-size:12px}.month caption{font:700 20px Georgia,serif}.month th{background:var(--accent-bg);text-align:center}
+.month td{height:92px;padding:3px 4px}.month td.out{background:var(--out)}.dnum{display:block;font-weight:700;color:var(--sub)}
+.ev{display:block;border-left:4px solid;background:var(--bg);padding:2px 5px;margin-top:3px;border-radius:3px;line-height:1.3;overflow-wrap:anywhere}.ev small{display:block;color:var(--sub)}
+.lang{margin-bottom:26px}.lang h2{font:700 19px Georgia,serif;color:#fff;padding:6px 12px;border-radius:8px;margin:0 0 12px}
+.cls{margin-bottom:16px}.cls h3{margin:0 0 6px;font-size:17px}.cls h3 span{font-size:14px;font-weight:600;color:var(--sub)}
+.list{width:100%;max-width:720px;font-size:14px}.list th{background:var(--accent-bg);font-size:13px}.flag{color:var(--flag)}
+@media print{body{background:#fff;color:#000;padding:0}.views{display:none}.view[hidden]{display:block}.view+.view{break-before:page}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style></head><body><header><h1>Lab due date proposal</h1><p class="sub">${esc(semLabel(s))}${only ? ' · ' + esc(only.map(c => LAB_LANGS.find(l => l[0] === c)?.[1] || c).join(', ')) : ''} · from the Language Lab · ${esc(today)}</p>`
+    + `<p class="sub">Classes ${esc(fmtMD(s.start))}–${esc(fmtMD(s.end))}.${off2.length ? ` No classes: ${esc(off2.join(' · '))}.` : ''}</p>`
+    + `<nav class="views" aria-label="Choose a view"><button type="button" data-v="table" aria-pressed="true">Table</button><button type="button" data-v="calendar" aria-pressed="false">Calendar</button><button type="button" data-v="list" aria-pressed="false">Due dates</button></nav></header>`
+    + `<main><section class="view" id="v-table" aria-label="Table view">${table}</section><section class="view" id="v-calendar" aria-label="Calendar view" hidden>${cal}</section><section class="view" id="v-list" aria-label="Due dates listed" hidden>${list}</section></main>`
+    + `<script>document.querySelectorAll('.views button').forEach(function(b){b.addEventListener('click',function(){document.querySelectorAll('.views button').forEach(function(x){x.setAttribute('aria-pressed',x===b?'true':'false');});document.querySelectorAll('.view').forEach(function(v){v.hidden=v.id!=='v-'+b.getAttribute('data-v');});});});<\/script></body></html>`;
 }
 ACTS.proposal = code => { const s = sem(); if (!offered(s).length) return toast('Choose classes first.'); const only = code && code !== 'all' ? [code] : null;
   download(`lab-due-dates-proposal-${only ? only[0].toLowerCase() + '-' : ''}${s.id}.html`, proposalHTML(s, only), 'text/html'); };
@@ -2017,7 +2102,7 @@ function labShareHTML(s) {
   return `<div class="card" id="lc-4"><h2><span class="step">4</span>Print and share</h2>`
     + `<p class="lede">${ok ? `Ready: ${off.length} classes, ${pl.length} due dates, none on a day without classes.` : `Before you share: ${esc(issuesTxt.join('; '))}.`}${bad.length ? ` <button class="btn sm" type="button" data-act="moveBlocked">Move ${bad.length === 1 ? 'it' : 'them'} to the next open week</button>` : ''}</p>`
     + `<div class="tw"><table class="t compact"><thead><tr><th scope="col">What</th><th scope="col">For</th><th scope="col"><span class="sr">Get it</span></th></tr></thead><tbody>`
-    + row('Lab due date proposal: all languages', 'Instructors and the department: the weeks table, then a list per language', `<button class="btn sm" type="button" data-act="proposal" data-arg="all">Download</button>`, !ok)
+    + row('Lab due date proposal: all languages', 'Instructors and the department: Table, Calendar and Due dates views in one file', `<button class="btn sm" type="button" data-act="proposal" data-arg="all">Download</button>`, !ok)
     + langs.map(code => row(`Proposal: ${esc(LAB_LANGS.find(l => l[0] === code)[1])} only`, `${esc(off.filter(c => c.code === code).map(c => c.name).join(', '))} instructors`, `<button class="btn sm" type="button" data-act="proposal" data-arg="${code}">Download</button>`)).join('')
     + row('Due dates list (CSV)', 'A spreadsheet of every due date: class, lab, week, date, day and time', `<button class="btn sm" type="button" data-act="labCSV">Download</button>`)
     + row('<code>lab-due-dates.json</code>', 'The Lab Hub\'s grade due dates page (upload to <code>current/data/</code>)', `<button class="btn sm" type="button" data-act="dlOut" data-arg="lab-due-dates.json">Download</button><button class="btn sm" type="button" data-act="previewOut" data-arg="lab-due-dates.json">Preview</button>`, !ok)
@@ -2038,6 +2123,24 @@ ${wk}
 td.num{text-align:right}section.room+section.room{margin-top:36px}
 @page{size:landscape;margin:.4in}@media print{body{padding:0;background:#fff}section.room+section.room{break-before:page;margin-top:0}}</style></head><body><main>${body}</main></body></html>`;
 }
+
+/* ---------- documents (2026-11-23): every HTML page to share or print, for everyone, in one place ---------- */
+VIEWS.docs = () => {
+  const s = sem(); if (!s) return head('Documents', 'Documents to share', '') + needSem();
+  const off = offered(s), pl = placedLabs(s).filter(p => p.cls && !p.outside), langs = [...new Set(off.map(c => c.code))], n4201 = courses().filter(inNesbitt4201), A = roomsOf().assign;
+  const doc = (title, what, btn, note) => `<li class="doc"><div><b>${title}</b><span class="small muted">${what}</span>${note ? `<span class="small warn-t">${note}</span>` : ''}</div>${btn}</li>`;
+  const dl = (act, arg, label = 'Download') => `<button class="btn sm" type="button" data-act="${act}"${arg ? ` data-arg="${esc(arg)}"` : ''}>${label}</button>`;
+  const labNote = !off.length ? 'No lab classes chosen yet (Lab calendar).' : !pl.length ? 'No due dates placed yet (Lab calendar).' : '';
+  const roomNote = !n4201.length ? 'No Nesbitt 4201 classes yet (Language courses).' : n4201.some(c => !A[c.CRN]) ? `${n4201.filter(c => !A[c.CRN]).length} classes still need a room (Room scheduling).` : '';
+  return head(semLabel(s), 'Documents', 'Pages to share with instructors or print. Each is one HTML file that opens in any browser and is made fresh from the plan when you download it.')
+    + `<section class="card"><h2>Lab due dates</h2><p class="lede">For instructors and the department. Each file has three views: <b>Table</b> (weeks by class), <b>Calendar</b> (month by month) and <b>Due dates</b> (a list per class).</p><ul class="docs">`
+    + doc('Lab due date proposal: all languages', `${off.length} classes · ${pl.length} due dates`, dl('proposal', 'all'), labNote)
+    + langs.map(code => doc(`Lab due date proposal: ${esc(LAB_LANGS.find(l => l[0] === code)[1])} only`, esc(off.filter(c => c.code === code).map(c => c.name).join(', ')), dl('proposal', code), '')).join('')
+    + `</ul></section><section class="card"><h2>Rooms</h2><p class="lede">The weekly schedule of each Nesbitt room, with final exams, to print and post by the door.</p><ul class="docs">`
+    + ROOMS.map(([r, l]) => doc(`Room ${esc(r)} weekly schedule`, esc(l), dl('printRoom', r), roomNote)).join('')
+    + doc('Both rooms in one file', '4201A and 4207, one room per page when printed', dl('printRoom', 'both'), roomNote)
+    + `</ul></section>`;
+};
 
 /* ---------- outputs for D2L ---------- */
 const OUTPUTS = [
@@ -2064,9 +2167,7 @@ VIEWS.outputs = () => {
     + `<div class="stats-row" role="status">${statPill(ready, 'of ' + OUTPUTS.length + ' files ready', ready === OUTPUTS.length ? 'ok' : '')}${OUTPUTS.length - ready ? statPill(OUTPUTS.length - ready, 'need a look first', 'warn') : ''}</div>`
     + `<div class="tw"><table class="t compact"><caption>Files for <code>current/data/</code>. Tick files, or use ⋯ or right-click, to download or preview them.</caption><thead><tr><th scope="col" class="pick"><input type="checkbox" id="opick-all" ${OPICK.size === OUTPUTS.length ? 'checked' : ''} aria-label="Select all files"></th><th scope="col">File</th><th scope="col">Read by</th><th scope="col">Status</th><th scope="col"><span class="sr">Download</span></th></tr></thead><tbody>${rows}</tbody></table></div>`
     + `<div class="selbar float${OPICK.size ? ' on' : ''}" role="status">${OPICK.size ? `<b>${OPICK.size} file${OPICK.size === 1 ? '' : 's'} selected</b><button class="btn sm primary" type="button" data-act="zipPicked">Download selected (ZIP)</button><button class="btn sm" type="button" data-act="oUnpick">Clear selection</button>` : ''}</div>`
-    + `<h2 class="sec">Documents to share</h2><div class="tw"><table class="t compact"><thead><tr><th scope="col">Document</th><th scope="col">For</th><th scope="col"><span class="sr">Download</span></th></tr></thead><tbody>`
-    + `<tr><th scope="row">Lab due date proposal</th><td class="small">Instructors: due dates by week and per language</td><td><button class="btn sm" type="button" data-act="proposal">Download</button></td></tr>`
-    + ROOMS.map(([r]) => `<tr><th scope="row">Room ${r} weekly schedule</th><td class="small">To print and post by the door</td><td><button class="btn sm" type="button" data-act="printRoom" data-arg="${r}">Download</button></td></tr>`).join('') + `</tbody></table></div>`;
+    + `<p class="note" style="margin-top:16px">The lab due date proposal and the room schedules are under <button class="btn sm" type="button" data-view="docs">Documents</button>.</p>`;
 };
 AFTER.outputs = () => {
   const keep = sel => { const y = window.scrollY; show('outputs', false); window.scrollTo(0, y); if (sel) document.querySelector(sel)?.focus({ preventScroll: true }); };

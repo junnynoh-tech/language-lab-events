@@ -47,6 +47,8 @@
 .lab-acct button { font-weight: 600; font-size: 13px; line-height: 1; font-family: inherit; padding: 7px 10px; min-height: 32px; border-radius: 8px; border: 1px solid var(--line, #DCDDD8); background: var(--bg, #F7F7F5); color: inherit; cursor: pointer; }
 .lab-acct button.pri { background: var(--accent, #1A3A6B); color: var(--accent-ink, #fff); border-color: var(--accent, #1A3A6B); }
 html[data-level="view"] [data-editor-only] { display: none !important; }
+/* Viewers never upload: every file picker and drop zone in every console area is hidden for them */
+html[data-level="view"] input[type="file"], html[data-level="view"] .drop, html[data-level="view"] label:has(> input[type="file"]), html[data-level="view"] label:has(+ input[type="file"]) { display: none !important; }
 #labGate { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; padding: 16px; background: var(--bg, #F7F7F5); overflow: auto; }
 #labGate .box { width: min(440px, 100%); background: var(--surface, #fff); color: var(--text, #1F2937); border: 1px solid var(--line, #DCDDD8); border-radius: 16px; padding: 26px 24px; box-shadow: 0 10px 40px rgba(20,30,50,.12); }
 #labGate small { display: block; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--sub, #5A6472); }
