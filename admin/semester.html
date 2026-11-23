@@ -1124,7 +1124,7 @@ function nav() {
    (JSON, CSV), and no Outputs for D2L at all. Their buttons are taken out of every screen and dialog, and the actions
    refuse too. Editors (and a Worker without levels) see everything. */
 const VIEWER = () => G.role === 'view';
-const EDITOR_ONLY = ['shareDoc', 'removeDocLink', 'dlOut', 'zip', 'zipPicked', 'previewOut', 'dlDist', 'labCSV', 'saveAs', 'openPlan', 'dlBackup', 'importExcel', 'templates', 'oUnpick'];
+const EDITOR_ONLY = ['dlOut', 'zip', 'zipPicked', 'previewOut', 'dlDist', 'labCSV', 'saveAs', 'openPlan', 'dlBackup', 'importExcel', 'templates', 'oUnpick'];
 function viewerSweep(root) {
   if (!VIEWER() || !root) return;
   root.querySelectorAll('#imp-drop, [data-act="saveAs"], [data-act="openPlan"], #pl-open').forEach(e => e.closest('.card')?.remove());
@@ -2254,7 +2254,7 @@ ACTS.copyDocLink = id => copyText(linkOf(id)).then(ok => ok && toast('Link copie
 ACTS.removeDocLink = async id => { if (!confirm('Remove this link? Anyone who has it will see “This link isn’t available”.')) return;
   try { await docsAPI({ action: 'remove', id }); toast('Link removed.'); show('docs', false); } catch (e) { toast(e.message, 7000); } };
 /* the same three choices wherever a document is offered */
-const canShare = () => document.documentElement.dataset.level === 'edit';
+const canShare = () => ['edit', 'view'].includes(document.documentElement.dataset.level);   // Editors and Viewers make links (Daniel, 2026-11-23)
 const docBtns = (kind, arg) => (kind === 'proposal'
   ? `<button class="btn sm primary" type="button" data-act="proposalZip" data-arg="${esc(arg)}" title="A ZIP with three PDFs: table, calendar, due dates">PDFs (ZIP)</button><button class="btn sm" type="button" data-act="proposal" data-arg="${esc(arg)}" title="One HTML file with the three views">HTML</button>`
   : `<button class="btn sm primary" type="button" data-act="roomPdf" data-arg="${esc(arg)}">PDF</button><button class="btn sm" type="button" data-act="printRoom" data-arg="${esc(arg)}">HTML</button>`)
@@ -2276,13 +2276,13 @@ VIEWS.docs = () => {
     + ROOMS.map(([r, l]) => doc(`Room ${esc(r)} weekly schedule`, esc(l), dl('room', r), roomNote)).join('')
     + doc('Both rooms in one file', '4201A and 4207, one room per page when printed', dl('room', 'both'), roomNote)
     + `</ul></section>`
-    + (canShare() ? `<section class="card" aria-labelledby="sl-h"><h2 id="sl-h">Shared links</h2><p class="lede">Links you've made with <b>Copy link</b>. Each one shows the document as it was when you made it, opens in any browser without signing in, and isn't listed anywhere. Remove a link to end it.</p><div id="sl-list"><p class="loading">Loading the links…</p></div></section>` : '');
+    + (canShare() ? `<section class="card" aria-labelledby="sl-h"><h2 id="sl-h">Shared links</h2><p class="lede">Links made with <b>Copy link</b>. Each one shows the document as it was when it was made, opens in any browser without signing in, and isn't listed anywhere. Remove a link to end it: your own links, or any link if you're an Editor.</p><div id="sl-list"><p class="loading">Loading the links…</p></div></section>` : '');
 };
 
 AFTER.docs = async () => {
   const box = $('sl-list'); if (!box) return;
   try { const l = (await docsAPI()).docs || [];
-    box.innerHTML = l.length ? `<ul class="docs">${l.map(d => `<li class="doc"><div><b>${esc(d.title)}</b><span class="small muted">Made ${esc(whenFull(d.created))}${d.by ? ' by ' + esc(d.by) : ''} · <span class="mono">${esc(linkOf(d.id))}</span></span></div><span class="row" style="gap:6px"><button class="btn sm" type="button" data-act="copyDocLink" data-arg="${esc(d.id)}">Copy link</button><a class="btn sm" href="${esc(linkOf(d.id))}" target="_blank" rel="noopener">Open</a><button class="btn sm danger" type="button" data-act="removeDocLink" data-arg="${esc(d.id)}">Remove</button></span></li>`).join('')}</ul>` : '<p class="empty">No shared links yet.</p>';
+    box.innerHTML = l.length ? `<ul class="docs">${l.map(d => `<li class="doc"><div><b>${esc(d.title)}</b><span class="small muted">Made ${esc(whenFull(d.created))}${d.by ? ' by ' + esc(d.by) : ''} · <span class="mono">${esc(linkOf(d.id))}</span></span></div><span class="row" style="gap:6px"><button class="btn sm" type="button" data-act="copyDocLink" data-arg="${esc(d.id)}">Copy link</button><a class="btn sm" href="${esc(linkOf(d.id))}" target="_blank" rel="noopener">Open</a>${d.canRemove === false ? '' : `<button class="btn sm danger" type="button" data-act="removeDocLink" data-arg="${esc(d.id)}">Remove</button>`}</span></li>`).join('')}</ul>` : '<p class="empty">No shared links yet.</p>';
   } catch (e) { box.innerHTML = `<p class="alert">${esc(e.message)}</p>`; }
 };
 
