@@ -1,5 +1,5 @@
 /* Lab console sign-in (2026-11-23, Daniel: "When they open the lab console they should log in", a sign-in button at the
-   top, and levels that are easy to tell apart). Loaded by console.html, semester.html and student-view.html.
+   top, and levels that are easy to tell apart). Loaded by every console page (Tutorials with data-optional).
 
    One passcode per person type, checked by the Lab's Worker (labs/event-requests/worker.js, /plan):
      Editor: Daniel's editing passcode (PLAN_EDIT_PASSCODE). Saves the shared Semester plan; with his GitHub key he
@@ -15,6 +15,12 @@
 (() => {
   'use strict';
   const WORKER = 'https://lab-requests.junnynoh.workers.dev/plan?meta=1';
+  /* Tutorials loads this with data-optional: lab assistants use it without signing in, so no sign-in screen there;
+     a signed-in coordinator still gets the same console menu. Links are built from this file's folder (admin/). */
+  const ME = document.currentScript, OPTIONAL = !!(ME && ME.hasAttribute('data-optional'));
+  const BASE = ME && ME.src ? new URL('.', ME.src).href : '';
+  const AREAS = [['console.html', 'Events', 'events'], ['semester.html', 'Semester plan', 'semester'], ['student-view.html', 'Student view', 'student'], ['faculty.html', 'Faculty view', 'faculty'], ['tutorials/index.html', 'Tutorials', 'tutorials']];
+  const here = () => { const u = location.pathname; return (AREAS.find(a => u.endsWith('/' + a[0]) || (a[0] === 'tutorials/index.html' && /\/tutorials\/(index\.html)?$/.test(u))) || [])[0] || (u.endsWith('/settings.html') ? 'settings.html' : ''); };
   const K = { pass: 'labConsolePass', role: 'labConsoleRole', name: 'labConsoleMe', token: 'labConsoleToken', email: 'labConsoleEmail', personal: 'labConsolePersonal', username: 'labConsoleUser' };
   const get = k => { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } };
   const set = (k, v) => { try { v ? localStorage.setItem(k, v) : localStorage.removeItem(k); } catch (e) {} };
@@ -22,6 +28,15 @@
     edit: '<svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M11 2.5l2.5 2.5L6 12.5H3.5V10z"/></svg>',
     faculty: '<svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M8 4C6.5 2.8 4.5 2.5 1.5 2.8v9.7c3-.3 5 0 6.5 1.2 1.5-1.2 3.5-1.5 6.5-1.2V2.8C11.5 2.5 9.5 2.8 8 4zM8 4v9.7"/></svg>',
     view: '<svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1.5 8s2.4-4.5 6.5-4.5S14.5 8 14.5 8 12.1 12.5 8 12.5 1.5 8 1.5 8z"/><circle cx="8" cy="8" r="2"/></svg>' };
+  const svg = d => `<svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+  const AICON = {
+    events: svg('<rect x="3" y="4" width="14" height="13" rx="2"/><path d="M3 8h14M7 2.5v3M13 2.5v3M10 10.5l1 2 2.2.3-1.6 1.5.4 2.2-2-1.1-2 1.1.4-2.2-1.6-1.5 2.2-.3z"/>'),
+    semester: svg('<rect x="3" y="4" width="14" height="13" rx="2"/><path d="M3 8h14M7 2.5v3M13 2.5v3M6.5 11h2M11.5 11h2M6.5 14h2"/>'),
+    student: svg('<rect x="2.5" y="3.5" width="15" height="10" rx="1.5"/><path d="M7 17h6M10 13.5V17"/>'),
+    faculty: svg('<path d="M10 5C8.2 3.6 5.8 3.3 2.5 3.6v11.2c3.3-.3 5.7 0 7.5 1.4 1.8-1.4 4.2-1.7 7.5-1.4V3.6C14.2 3.3 11.8 3.6 10 5zM10 5v11.2"/>'),
+    tutorials: svg('<circle cx="10" cy="10" r="7.5"/><path d="M7.8 7.8a2.3 2.3 0 1 1 3.2 2.1c-.6.3-1 .8-1 1.5v.4M10 14.6v.1"/>'),
+    settings: svg('<circle cx="10" cy="10" r="6.7" stroke-width="2.6" stroke-dasharray="2.1 2.11"/><circle cx="10" cy="10" r="4.4"/><circle cx="10" cy="10" r="1.6"/>'),
+    out: svg('<path d="M8 4H4.5A1.5 1.5 0 0 0 3 5.5v9A1.5 1.5 0 0 0 4.5 16H8M12.5 13.5 16 10l-3.5-3.5M16 10H7.5"/>') };
   const pill = r => `<span class="lab-lvl ${r}">${ICON[r]}${LEVEL[r].label}</span>`;
   const lvl = r => (r === 'view' || r === 'faculty') ? r : 'edit';
   /* faculty see only the Faculty page; the coordinators' areas send them there */
@@ -35,17 +50,61 @@
 
   const css = document.createElement('style');
   css.textContent = `
-.lab-acct { margin: 0 2px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line, #DCDDD8); background: var(--surface, #fff); display: grid; gap: 6px; }
-.lab-acct .who { display: flex; align-items: center; gap: 8px; min-width: 0; }
-.lab-acct .who b { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.lab-lvl { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 999px; font-weight: 700; font-size: 13px; line-height: 1.3; letter-spacing: .02em; white-space: nowrap; }
+.lab-lvl { display: inline-flex; align-items: center; gap: 5px; padding: 2px 9px; border-radius: 999px; font-weight: 700; font-size: 12.5px; line-height: 1.4; letter-spacing: .02em; white-space: nowrap; flex: none; }
 .lab-lvl.edit { background: #B08D3F; color: #1F2937; }
 .lab-lvl.faculty { background: var(--surface, #fff); color: var(--accent, #1A3A6B); border: 2px solid var(--accent, #1A3A6B); }
 .lab-lvl.view { background: var(--chip, #EEF0F3); color: var(--text, #1F2937); border: 1px dashed var(--sub, #5A6472); }
-.lab-acct .lab-note { margin: 0; font-size: 13px; color: var(--sub, #5A6472); line-height: 1.35; }
-.lab-acct .row { display: flex; gap: 6px; flex-wrap: wrap; }
-.lab-acct button { font-weight: 600; font-size: 13px; line-height: 1; font-family: inherit; padding: 7px 10px; min-height: 32px; border-radius: 8px; border: 1px solid var(--line, #DCDDD8); background: var(--bg, #F7F7F5); color: inherit; cursor: pointer; }
-.lab-acct button.pri { background: var(--accent, #1A3A6B); color: var(--accent-ink, #fff); border-color: var(--accent, #1A3A6B); }
+/* the console menu (2026-11-23, Daniel: "clean and aesthetic", no shifting between areas): the same width, title,
+   account card and area list on every page; only each area's own menu below it changes */
+html.lc .shell { grid-template-columns: 264px minmax(0, 1fr) !important; }
+html.lc .rail { padding: 18px 14px !important; gap: 14px !important; }
+html.lc .rail > .brand, html.lc .rail > nav.areas, html.lc .rail > #areas { display: none !important; }
+.lc-top { display: grid; gap: 12px; font-size: 15px; line-height: 1.4; font-family: "DM Sans", "Segoe UI", Arial, sans-serif; }
+html.lc .rail nav.lc-nav { display: block !important; margin: 0 !important; padding: 0 !important; width: auto !important; border: 0 !important; background: none !important; }
+.lc-top ul, .lc-top li, .lc-top p, .lc-top section { margin: 0; }
+.lc-brand { display: block; padding: 0 8px; text-decoration: none; color: var(--text, #1F2937); }
+.lc-brand small { display: block; line-height: 1.4; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--sub, #5A6472); }
+.lc-brand b { display: block; font: 700 22px/1.2 "Source Serif 4", Georgia, serif; }
+.lc-me { border: 1px solid var(--line, #DCDDD8); background: var(--surface, #fff); border-radius: 12px; padding: 10px; display: grid; gap: 8px; }
+.lc-me .who { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.lc-me .who b { font-size: 14px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lc-me .acts { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.lc-me .acts.one { grid-template-columns: 1fr; }
+.lc-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 34px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--line, #DCDDD8); background: var(--bg, #F7F7F5); color: var(--text, #1F2937); font-weight: 600; font-size: 13px; line-height: 1; font-family: inherit; text-decoration: none; cursor: pointer; white-space: nowrap; }
+.lc-btn:hover { border-color: var(--sub, #5A6472); }
+.lc-btn[aria-current="page"] { background: var(--accent, #1A3A6B); color: var(--accent-ink, #fff); border-color: var(--accent, #1A3A6B); }
+.lc-btn.pri { background: var(--accent, #1A3A6B); color: var(--accent-ink, #fff); border-color: var(--accent, #1A3A6B); }
+.lc-me .uname { margin: 0; font-size: 12.5px; color: var(--sub, #5A6472); display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.lc-me .uname button { border: 0; background: none; padding: 0; color: var(--text, #1F2937); text-decoration: underline; font: inherit; cursor: pointer; }
+.lc-me .lab-note { margin: 0; font-size: 12.5px; color: var(--sub, #5A6472); }
+.lc-me form { display: grid; gap: 6px; }
+.lc-me form input { min-height: 34px; padding: 6px 8px; border: 1px solid var(--line, #DCDDD8); border-radius: 8px; font: inherit; background: var(--bg, #F7F7F5); color: inherit; }
+.lc-areas { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.lc-areas a { display: flex; align-items: center; gap: 10px; height: 38px; padding: 0 10px; border-radius: 9px; text-decoration: none; color: var(--text, #1F2937); font-weight: 600; font-size: 15px; }
+.lc-areas a:hover { background: var(--chip, #EEF0F3); }
+.lc-areas a[aria-current="page"] { background: var(--accent, #1A3A6B); color: var(--accent-ink, #fff); }
+.lc-areas svg { flex: none; opacity: .85; }
+.lc-rule { height: 1px; background: var(--line, #DCDDD8); margin: 2px 4px 0; border: 0; }
+html.lc .rail-foot { display: grid !important; gap: 8px !important; padding: 0 4px !important; margin-top: auto; }
+html.lc .rail-foot > .btn, html.lc .rail-foot > a.btn, html.lc .rail-foot > button { width: 100%; justify-content: center; }
+@media (max-width: 860px) {
+  html.lc .shell { grid-template-columns: 1fr !important; }
+  html.lc .rail { position: static !important; height: auto !important; display: flex !important; flex-direction: column !important; border-right: 0 !important; border-bottom: 1px solid var(--line, #DCDDD8); padding: 12px 16px !important; gap: 10px !important; }
+  .lc-top { grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px; }
+  .lc-brand b { font-size: 19px; }
+  .lc-me { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px; }
+  .lc-me .who { flex: 1 1 140px; }
+  .lc-me .acts { display: flex; gap: 6px; }
+  .lc-me .uname { flex: 1 1 100%; order: 3; }
+  .lc-me .lab-note { display: none; }
+  .lc-me form { flex: 1 1 100%; order: 4; }
+  html.lc .rail > * { align-self: stretch; width: auto; max-width: 100%; margin-left: 0; margin-right: 0; }
+  html.lc .rail-foot { grid-template-columns: 1fr 1fr; }
+  html.lc .rail nav.lc-nav { grid-column: 1 / -1; min-width: 0; }
+  .lc-areas { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; }
+  .lc-areas a { height: 36px; border: 1px solid var(--line, #DCDDD8); white-space: nowrap; flex: none; }
+  .lc-rule { display: none; }
+}
 html[data-level="view"] [data-editor-only] { display: none !important; }
 /* Viewers never upload: every file picker and drop zone in every console area is hidden for them */
 html[data-level="view"] input[type="file"], html[data-level="view"] .drop, html[data-level="view"] label:has(> input[type="file"]), html[data-level="view"] label:has(+ input[type="file"]) { display: none !important; }
@@ -69,8 +128,9 @@ html.lab-gated body > :not(#labGate) { visibility: hidden; }`;
   // every call to the Worker sends both: a person locked to their email needs it with the passcode (Settings › People)
   window.labHeaders = () => ({ 'X-Lab-Pass': get(K.pass), 'X-Lab-Email': get(K.email) });
   // before anything shows: hide the page until signed in, and send faculty straight to their page
-  if (!state.pass || (state.role === 'faculty' && !FACULTY_PAGE) || (SETTINGS_PAGE && state.role !== 'edit')) document.documentElement.classList.add('lab-gated');
-  if (state.pass && state.role === 'faculty' && !FACULTY_PAGE) location.replace('faculty.html');
+  if (!OPTIONAL && (!state.pass || (state.role === 'faculty' && !FACULTY_PAGE) || (SETTINGS_PAGE && state.role !== 'edit'))) document.documentElement.classList.add('lab-gated');
+  if (OPTIONAL) document.documentElement.classList.remove('lab-gated');
+  if (!OPTIONAL && state.pass && state.role === 'faculty' && !FACULTY_PAGE) location.replace(BASE + 'faculty.html');
   const apply = () => { document.documentElement.dataset.level = state.pass ? (state.role || 'edit') : 'none'; window.LAB_AUTH = { ...state }; };
 
   async function check(pass, email = state.email) {   // → 'edit' | 'view'; throws with a message people can act on
@@ -84,26 +144,33 @@ html.lab-gated body > :not(#labGate) { visibility: hidden; }`;
     return { role: lvl(d.role), name: String(d.name || '').slice(0, 80), personal: !!d.personal, username: String(d.username || '') };
   }
 
+  /* the same top of the menu on every page: title, who you are (+ Settings for Editors, Sign out), the areas */
   function badge() {
     const rail = document.querySelector('.rail'); if (!rail) return;
-    let box = document.getElementById('labAcct');
-    if (!box) { box = document.createElement('section'); box.id = 'labAcct'; box.className = 'lab-acct'; box.setAttribute('aria-label', 'Signed in'); (rail.querySelector('.brand') || rail.firstChild).after(box); }
-    const L = LEVEL[state.role] || LEVEL.edit;
-    box.innerHTML = `<div class="who">${pill(lvl(state.role))}<b title="${esc(state.name)}">${esc(state.name || 'Signed in')}</b></div>`
+    document.documentElement.classList.add('lc');
+    document.getElementById('labAcct')?.remove();
+    let top = document.getElementById('lcTop');
+    if (!top) { top = document.createElement('div'); top.id = 'lcTop'; top.className = 'lc-top'; rail.prepend(top); }
+    const r = lvl(state.role), L = LEVEL[r], cur = here(), editor = r === 'edit', personal = !!get(K.personal), u = get(K.username);
+    const areas = r === 'faculty' ? [] : AREAS;
+    top.innerHTML = `<a class="lc-brand" href="${BASE}${r === 'faculty' ? 'faculty.html' : 'console.html'}"><small>Language Lab</small><b>Lab console</b></a>`
+      + `<section class="lc-me" aria-label="Signed in"><div class="who">${pill(r)}<b title="${esc(state.name)}">${esc(state.name || 'Signed in')}</b></div>`
       + `<p class="lab-note">${L.note}</p>`
-      + (get(K.personal) ? `<p class="lab-note">${get(K.username) ? `Username: <b>${esc(get(K.username))}</b>` : 'No username yet.'}</p>` : '')
-      + `<div class="row">${get(K.personal) ? `<button type="button" id="labUser">${get(K.username) ? 'Change username' : 'Set a username'}</button>` : ''}<button type="button" id="labSignOut">Sign out</button></div><form id="labUserForm" hidden novalidate></form>`;
-    box.querySelector('#labSignOut').onclick = signOut;
-    const ub = box.querySelector('#labUser'); if (ub) ub.onclick = () => userForm(box);
+      + (personal ? `<p class="uname">${u ? `Username: <b>${esc(u)}</b>` : 'No username yet.'}<button type="button" id="labUser">${u ? 'Change' : 'Set one'}</button></p>` : '')
+      + `<div class="acts${editor ? '' : ' one'}">${editor ? `<a class="lc-btn" href="${BASE}settings.html"${cur === 'settings.html' ? ' aria-current="page"' : ''}>${AICON.settings}Settings</a>` : ''}<button type="button" class="lc-btn" id="labSignOut">${AICON.out}Sign out</button></div>`
+      + `<form id="labUserForm" hidden novalidate></form></section>`
+      + (areas.length ? `<nav class="lc-nav" aria-label="Console areas"><ul class="lc-areas">${areas.map(([f, l, k]) => `<li><a href="${BASE}${f}"${cur === f ? ' aria-current="page"' : ''}>${AICON[k]}${l}</a></li>`).join('')}</ul></nav><hr class="lc-rule">` : '');
+    top.querySelector('#labSignOut').onclick = signOut;
+    const ub = top.querySelector('#labUser'); if (ub) ub.onclick = () => userForm(top.querySelector('.lc-me'));
   }
 
   /* pick your own username (Daniel, 2026-11-23: "easier access"): then sign in with it instead of the email */
   function userForm(box) {
     const f = box.querySelector('#labUserForm'); f.hidden = false;
     f.innerHTML = `<label style="display:grid;gap:4px;font-weight:600;font-size:13px">Username<input id="labUserIn" value="${esc(get(K.username))}" autocapitalize="none" spellcheck="false" maxlength="30" style="min-height:36px;padding:6px 8px;border:1px solid var(--line,#DCDDD8);border-radius:8px;font:inherit;background:var(--bg,#F7F7F5);color:inherit"></label>`
-      + `<p class="lab-note" style="margin:4px 0">3 to 30 letters or numbers; dot, dash and underscore are fine.</p><div class="row"><button type="submit" class="pri">Save</button><button type="button" id="labUserX">Cancel</button></div><p class="lab-note" id="labUserMsg" role="status" style="font-weight:600"></p>`;
+      + `<p class="lab-note" style="margin:4px 0">3 to 30 letters or numbers; dot, dash and underscore are fine.</p><div class="acts"><button type="submit" class="lc-btn pri">Save</button><button type="button" class="lc-btn" id="labUserX">Cancel</button></div><p class="lab-note" id="labUserMsg" role="status" style="font-weight:600"></p>`;
     const inp = f.querySelector('#labUserIn'); inp.focus();
-    f.querySelector('#labUserX').onclick = () => { f.hidden = true; f.innerHTML = ''; box.querySelector('#labUser')?.focus(); };
+    f.querySelector('#labUserX').onclick = () => { f.hidden = true; f.innerHTML = ''; document.getElementById('labUser')?.focus(); };
     f.onsubmit = async e => {
       e.preventDefault(); const u = inp.value.trim().toLowerCase(), msg = f.querySelector('#labUserMsg');
       if (u && !/^[a-z0-9][a-z0-9._-]{2,29}$/.test(u)) { msg.textContent = 'Use 3 to 30 letters or numbers (dot, dash, underscore).'; inp.focus(); return; }
@@ -113,7 +180,7 @@ html.lab-gated body > :not(#labGate) { visibility: hidden; }`;
         const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d.error || `Couldn’t save (${r.status}).`);
         set(K.username, d.person.username); badge(); const b = document.getElementById('labUser'); if (b) b.focus();
         const n = document.createElement('p'); n.className = 'lab-note'; n.setAttribute('role', 'status'); n.style.fontWeight = '600';
-        n.textContent = u ? `Saved. Next time, sign in with “${u}” and your passcode.` : 'Username removed. Sign in with your email.'; document.getElementById('labAcct').appendChild(n);
+        n.textContent = u ? `Saved. Next time, sign in with “${u}” and your passcode.` : 'Username removed. Sign in with your email.'; document.querySelector('#lcTop .lc-me').appendChild(n);
       } catch (err) { msg.textContent = err.message; }
     };
   }
@@ -154,14 +221,15 @@ html.lab-gated body > :not(#labGate) { visibility: hidden; }`;
   }
 
   const route = () => {   // → true when this page isn't for this level (and it's leaving)
-    if (state.role === 'faculty' && !FACULTY_PAGE) { location.replace('faculty.html'); return true; }
-    if (SETTINGS_PAGE && state.role !== 'edit') { location.replace('console.html'); return true; }
+    if (OPTIONAL) return false;
+    if (state.role === 'faculty' && !FACULTY_PAGE) { location.replace(BASE + 'faculty.html'); return true; }
+    if (SETTINGS_PAGE && state.role !== 'edit') { location.replace(BASE + 'console.html'); return true; }
     if (FACULTY_PAGE && state.role !== 'faculty') document.querySelectorAll('[data-coord-only]').forEach(e => e.hidden = false);
     return false;
   };
   const start = () => {
     apply();
-    if (!state.pass) return gate();
+    if (!state.pass) return OPTIONAL ? undefined : gate();
     if (route()) return;
     document.documentElement.classList.remove('lab-gated');
     badge();
@@ -169,7 +237,7 @@ html.lab-gated body > :not(#labGate) { visibility: hidden; }`;
       if (name !== state.name) { state.name = name; set(K.name, name); apply(); badge(); }
       if (username !== get(K.username) || (personal ? '1' : '') !== get(K.personal)) { set(K.username, username); set(K.personal, personal ? '1' : ''); badge(); }
       if (role !== state.role) { state.role = role; set(K.role, role); apply(); if (route()) return; badge(); document.dispatchEvent(new CustomEvent('labauth', { detail: { ...state } })); }
-    }).catch(err => { if (/didn’t work/.test(err.message)) { set(K.pass, ''); set(K.role, ''); state.pass = ''; apply(); gate('Your passcode changed. Sign in with the new one.'); } });
+    }).catch(err => { if (/didn’t work/.test(err.message) && !OPTIONAL) { set(K.pass, ''); set(K.role, ''); state.pass = ''; apply(); gate('Your passcode changed. Sign in with the new one.'); } });
   };
   apply();
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
