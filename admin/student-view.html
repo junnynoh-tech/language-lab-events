@@ -51,6 +51,7 @@ h1[tabindex="-1"]:focus { outline: none; }
 .areas a { text-align: center; padding: 7px 5px; border-radius: 9px; font-weight: 600; font-size: 13px; text-decoration: none; color: var(--text); }
 .areas a:hover { background: var(--surface); }
 .areas a[aria-current="page"] { background: var(--accent); color: var(--accent-ink); }
+.areas a:last-child:nth-child(odd) { grid-column: 1 / -1; }
 #nav h2 { font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--sub); margin: 0 8px 6px; }
 #nav ul { list-style: none; margin: 0 0 14px; padding: 0; }
 #nav button { width: 100%; display: flex; align-items: center; gap: 10px; padding: 8px; border: 0; background: none; border-radius: 8px; font-weight: 500; cursor: pointer; text-align: left; }
@@ -162,7 +163,7 @@ pre.code { white-space: pre-wrap; overflow-wrap: anywhere; background: var(--chi
 <div class="shell">
   <header class="rail">
     <div class="brand"><small>Language Lab</small><b>Lab console</b></div>
-    <nav class="areas" aria-label="Console areas"><a href="console.html">Events</a><a href="semester.html">Semester plan</a><a href="student-view.html" aria-current="page">Student view</a><a href="tutorials/index.html">Tutorials</a></nav>
+    <nav class="areas" aria-label="Console areas"><a href="console.html">Events</a><a href="semester.html">Semester plan</a><a href="student-view.html" aria-current="page">Student view</a><a href="tutorials/index.html">Tutorials</a><a href="faculty.html">Faculty view</a></nav>
     <nav aria-label="Student view sections" id="nav"></nav>
     <div class="rail-foot">
       <div class="conn" id="conn"><span class="dot" aria-hidden="true"></span><span>Viewing only</span></div>
