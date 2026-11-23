@@ -461,6 +461,7 @@ table.t tr.todo th { background: var(--warn-bg); }
 .strip li.now { outline: 3px solid var(--gold); outline-offset: 1px; }
 
 </style>
+<script src="signin.js"></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -714,7 +715,7 @@ function download(name, text, type = 'application/json') {
    private repo with its own key (labs/event-requests/worker.js, /plan). Coordinators type the coordinators' passcode once
    per computer; nobody needs a GitHub key. Calendar, courses, rooms, lab due dates: never students. ---------- */
 const SH = { worker: 'https://lab-requests.junnynoh.workers.dev', passKey: 'labConsolePass' };
-const G = { pass: '', sha: '', err: '', checked: 0, role: '' };
+const G = { pass: '', sha: '', err: '', checked: 0, role: (() => { try { return localStorage.getItem('labConsoleRole') || ''; } catch (e) { return ''; } })() };
 /* tiers (2026-11-23, Daniel): the Worker says which passcode this is. 'view': look and try things, never save to the
    shared plan (only the Lab coordinator's editing passcode saves). A Worker from before the tiers sends no role = edit. */
 const canSave = () => G.role !== 'view';

@@ -155,6 +155,7 @@ pre.code { white-space: pre-wrap; overflow-wrap: anywhere; background: var(--chi
   h1 { font-size: 25px; }
 }
 </style>
+<script src="signin.js"></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -166,7 +167,7 @@ pre.code { white-space: pre-wrap; overflow-wrap: anywhere; background: var(--chi
     <div class="rail-foot">
       <div class="conn" id="conn"><span class="dot" aria-hidden="true"></span><span>Viewing only</span></div>
       <button class="btn sm" type="button" id="modeBtn">Dark mode</button>
-      <a class="btn sm" href="console.html#settings">Connect (Events › Settings)</a>
+      <a class="btn sm" href="console.html#settings" data-editor-only>Connect (Events › Settings)</a>
     </div>
   </header>
   <main id="main" tabindex="-1"><p class="loading">Loading the courses…</p></main>
@@ -557,7 +558,7 @@ function pageEditor(code) {
   return `<div class="savebar" role="region" aria-label="Save"><span id="peState" role="status">Loading…</span><button class="btn" type="button" id="peUndo" disabled>Undo</button><button class="btn" type="button" id="peDiscard" disabled>Discard changes</button><button class="btn pri" type="button" id="peSave" disabled>Save</button></div>
 <p id="build" class="lede" role="status"></p>
 <p class="lede">Click any text on the page and type. Press Enter or click away to see it in place. Point at a box (a tip, a question, a rule) for <b>↑ ↓</b> to move it, <b>+</b> to add one like it and <b>✕</b> to remove it. Words between *asterisks* show in italics. Text on tabs and buttons: double-click.</p>
-${token ? '' : '<p class="alert"><b>Viewing only.</b> You can try edits here; to save them, connect your GitHub key once in Events › Settings.</p>'}
+${token ? '' : document.documentElement.dataset.level === 'view' ? '<p class="note"><b>You’re a Viewer.</b> Try any edit here to see how it would look; it isn’t saved. Send changes you’d like to the Lab coordinator.</p>' : '<p class="alert"><b>Viewing only.</b> You can try edits here; to save them, connect your GitHub key once in Events › Settings.</p>'}
 <div class="ctl"><label>Section type<select id="selV">${m.variants.map(x => `<option value="${esc(x.key)}"${x.key === vkey ? ' selected' : ''}>${esc(x.label)}</option>`).join('')}</select></label>
 <label>Campus<select id="selC">${m.campuses.map(c => `<option value="${esc(c.code)}"${c.code === camp ? ' selected' : ''}>${esc(c.name)}</option>`).join('')}</select></label>
 <button class="btn" type="button" id="peForms">All settings (forms)</button></div>

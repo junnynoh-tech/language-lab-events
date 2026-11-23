@@ -185,6 +185,7 @@ code { font: 500 14px ui-monospace, Menlo, Consolas, monospace; background: var(
 }
 @media (prefers-reduced-motion: no-preference) { .view { animation: in .18s ease-out; } @keyframes in { from { opacity: 0; transform: translateY(4px); } } }
 </style>
+<script src="signin.js"></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -450,6 +451,7 @@ function vLibrary(kind) {
       : `<p class="empty">Nothing here yet. Press New ${esc(K.one)}.</p>`);
 }
 function vSettings() {
+  if (document.documentElement.dataset.level === 'view') return header('Setup', 'Settings', 'You’re signed in as a <b>Viewer</b>: you can look through everything here. Saving events and reading organizations’ requests is for the Lab coordinator, so there’s nothing to set up.');
   return header('Setup', 'Settings', 'Looking around needs nothing. To save from this console, connect a GitHub key once on this computer.')
     + `<ol class="howto"><li><span>Open <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub → new fine-grained token ↗</a>. Name it “Lab console”.</span></li>
       <li><span><b>Repository access:</b> Only select repositories → <code>${REPO}</code> and <code>${REQ_REPO}</code> (requests). If a repository isn't offered, make a <a href="https://github.com/settings/tokens/new?scopes=repo&description=Lab%20console" target="_blank" rel="noopener">classic token ↗</a> with <b>repo</b> ticked instead.</span></li>
