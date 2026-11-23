@@ -10,8 +10,8 @@
 
    What it is and isn't: the pages are public files, so this is a front door, not a lock. What must stay private is
    locked elsewhere: the shared plan by the Worker's passcode check, event requests and saving by GitHub keys.
-   Stored in this browser only: the passcode and the level (CLAUDE.md rule 11: no data in the page). No names: nothing
-   could check them (Daniel, 2026-11-23). Sign out forgets both and the GitHub key. */
+   Stored in this browser only: the passcode and the level (CLAUDE.md rule 11: no data in the page). Names come from the
+   Worker (each person's own passcode, Settings › People), never typed in. Sign out forgets both and the GitHub key. */
 (() => {
   'use strict';
   const WORKER = 'https://lab-requests.junnynoh.workers.dev/plan?meta=1';
@@ -25,7 +25,7 @@
   const pill = r => `<span class="lab-lvl ${r}">${ICON[r]}${LEVEL[r].label}</span>`;
   const lvl = r => (r === 'view' || r === 'faculty') ? r : 'edit';
   /* faculty see only the Faculty page; the coordinators' areas send them there */
-  const FACULTY_PAGE = document.documentElement.dataset.area === 'faculty';
+  const FACULTY_PAGE = document.documentElement.dataset.area === 'faculty', SETTINGS_PAGE = document.documentElement.dataset.area === 'settings';
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const LEVEL = {
     edit: { label: 'Editor', note: 'You can save changes for everyone.' },
@@ -64,10 +64,10 @@ html[data-level="view"] input[type="file"], html[data-level="view"] .drop, html[
 html.lab-gated body > :not(#labGate) { visibility: hidden; }`;
   document.head.appendChild(css);
 
-  set(K.name, '');   // 2026-11-23: no names (nothing checked them); clear any typed before
-  const state = { pass: get(K.pass), role: get(K.role) };
+  // the name comes from the Worker: a person's own passcode is who they are (Settings › People). Nobody types a name.
+  const state = { pass: get(K.pass), role: get(K.role), name: get(K.name) };
   // before anything shows: hide the page until signed in, and send faculty straight to their page
-  if (!state.pass || (state.role === 'faculty' && !FACULTY_PAGE)) document.documentElement.classList.add('lab-gated');
+  if (!state.pass || (state.role === 'faculty' && !FACULTY_PAGE) || (SETTINGS_PAGE && state.role !== 'edit')) document.documentElement.classList.add('lab-gated');
   if (state.pass && state.role === 'faculty' && !FACULTY_PAGE) location.replace('faculty.html');
   const apply = () => { document.documentElement.dataset.level = state.pass ? (state.role || 'edit') : 'none'; window.LAB_AUTH = { ...state }; };
 
@@ -79,7 +79,7 @@ html.lab-gated body > :not(#labGate) { visibility: hidden; }`;
     if (r.status === 404 || r.status === 503) throw new Error('Sign-in isn’t switched on yet. Tell Daniel.');
     if (!r.ok) throw new Error(`The sign-in check didn’t answer (${r.status}). Try again in a minute.`);
     const d = await r.json().catch(() => ({}));
-    return lvl(d.role);
+    return { role: lvl(d.role), name: String(d.name || '').slice(0, 80) };
   }
 
   function badge() {
@@ -87,7 +87,7 @@ html.lab-gated body > :not(#labGate) { visibility: hidden; }`;
     let box = document.getElementById('labAcct');
     if (!box) { box = document.createElement('section'); box.id = 'labAcct'; box.className = 'lab-acct'; box.setAttribute('aria-label', 'Signed in'); (rail.querySelector('.brand') || rail.firstChild).after(box); }
     const L = LEVEL[state.role] || LEVEL.edit;
-    box.innerHTML = `<div class="who">${pill(lvl(state.role))}<b>Signed in</b></div>`
+    box.innerHTML = `<div class="who">${pill(lvl(state.role))}<b title="${esc(state.name)}">${esc(state.name || 'Signed in')}</b></div>`
       + `<p class="lab-note">${L.note}</p><div class="row"><button type="button" id="labSignOut">Sign out</button></div>`;
     box.querySelector('#labSignOut').onclick = signOut;
   }
@@ -111,8 +111,8 @@ html.lab-gated body > :not(#labGate) { visibility: hidden; }`;
       if (!pass) { msg.textContent = 'Type the passcode.'; g.querySelector('#labGatePass').focus(); return; }
       const btn = f.querySelector('button'); btn.disabled = true; btn.textContent = 'Checking…'; msg.textContent = '';
       try {
-        const role = await check(pass);
-        set(K.pass, pass); set(K.role, role);
+        const { role, name } = await check(pass);
+        set(K.pass, pass); set(K.role, role); set(K.name, name);
         location.reload();   // each page starts from the signed-in state (the Semester plan opens the shared plan)
       } catch (err) { msg.textContent = err.message; btn.disabled = false; btn.textContent = 'Sign in'; }
     };
@@ -126,6 +126,7 @@ html.lab-gated body > :not(#labGate) { visibility: hidden; }`;
 
   const route = () => {   // → true when this page isn't for this level (and it's leaving)
     if (state.role === 'faculty' && !FACULTY_PAGE) { location.replace('faculty.html'); return true; }
+    if (SETTINGS_PAGE && state.role !== 'edit') { location.replace('console.html'); return true; }
     if (FACULTY_PAGE && state.role !== 'faculty') document.querySelectorAll('[data-coord-only]').forEach(e => e.hidden = false);
     return false;
   };
@@ -135,7 +136,8 @@ html.lab-gated body > :not(#labGate) { visibility: hidden; }`;
     if (route()) return;
     document.documentElement.classList.remove('lab-gated');
     badge();
-    check(state.pass).then(role => {   // the level can change (e.g. once the editing passcode is set): keep it current
+    check(state.pass).then(({ role, name }) => {   // the level or name can change (Settings › People): keep them current
+      if (name !== state.name) { state.name = name; set(K.name, name); apply(); badge(); }
       if (role !== state.role) { state.role = role; set(K.role, role); apply(); if (route()) return; badge(); document.dispatchEvent(new CustomEvent('labauth', { detail: { ...state } })); }
     }).catch(err => { if (/didn’t work/.test(err.message)) { set(K.pass, ''); set(K.role, ''); state.pass = ''; apply(); gate('Your passcode changed. Sign in with the new one.'); } });
   };

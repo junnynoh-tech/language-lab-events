@@ -121,7 +121,7 @@ h3, h2.h3 { font: 700 17px/1.35 "DM Sans", sans-serif; margin: 0 0 6px; }
 table.t { border-collapse: collapse; width: 100%; font-size: 15px; }
 table.t th, table.t td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
 table.t th { font-size: 13px; letter-spacing: .04em; text-transform: uppercase; color: var(--sub); }
-.tw { overflow-x: auto; }
+.tw { overflow-x: auto; position: relative; }
 .toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 10px; z-index: 30; max-width: 90vw; }
 .loading, .empty { color: var(--sub); }
 .form { display: grid; gap: 14px; max-width: 900px; }
@@ -175,7 +175,7 @@ pre.code { white-space: pre-wrap; overflow-wrap: anywhere; background: var(--chi
 <div class="shell">
   <header class="rail">
     <div class="brand"><small>Language Lab</small><b>For faculty</b></div>
-    <nav class="areas" aria-label="Console areas" data-coord-only hidden><a href="console.html">Events</a><a href="semester.html">Semester plan</a><a href="student-view.html">Student view</a><a href="tutorials/index.html">Tutorials</a><a href="faculty.html" aria-current="page">Faculty view</a></nav>
+    <nav class="areas" aria-label="Console areas" data-coord-only hidden><a href="console.html">Events</a><a href="semester.html">Semester plan</a><a href="student-view.html">Student view</a><a href="tutorials/index.html">Tutorials</a><a href="faculty.html" aria-current="page">Faculty view</a><a href="settings.html" data-editor-only>Settings</a></nav>
     <nav aria-label="Courses" id="nav"></nav>
     <div class="rail-foot">
       <button class="btn sm" type="button" id="modeBtn">Dark mode</button>
