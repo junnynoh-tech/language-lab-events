@@ -10,8 +10,8 @@
 
    What it is and isn't: the pages are public files, so this is a front door, not a lock. What must stay private is
    locked elsewhere: the shared plan by the Worker's passcode check, event requests and saving by GitHub keys.
-   Stored in this browser only: the passcode, the level and the name typed in (CLAUDE.md rule 11: no data in the page).
-   Sign out forgets all three and the GitHub key. */
+   Stored in this browser only: the passcode and the level (CLAUDE.md rule 11: no data in the page). No names: nothing
+   could check them (Daniel, 2026-11-23). Sign out forgets both and the GitHub key. */
 (() => {
   'use strict';
   const WORKER = 'https://lab-requests.junnynoh.workers.dev/plan?meta=1';
@@ -64,7 +64,8 @@ html[data-level="view"] input[type="file"], html[data-level="view"] .drop, html[
 html.lab-gated body > :not(#labGate) { visibility: hidden; }`;
   document.head.appendChild(css);
 
-  const state = { pass: get(K.pass), role: get(K.role), name: get(K.name) };
+  set(K.name, '');   // 2026-11-23: no names (nothing checked them); clear any typed before
+  const state = { pass: get(K.pass), role: get(K.role) };
   // before anything shows: hide the page until signed in, and send faculty straight to their page
   if (!state.pass || (state.role === 'faculty' && !FACULTY_PAGE)) document.documentElement.classList.add('lab-gated');
   if (state.pass && state.role === 'faculty' && !FACULTY_PAGE) location.replace('faculty.html');
@@ -86,7 +87,7 @@ html.lab-gated body > :not(#labGate) { visibility: hidden; }`;
     let box = document.getElementById('labAcct');
     if (!box) { box = document.createElement('section'); box.id = 'labAcct'; box.className = 'lab-acct'; box.setAttribute('aria-label', 'Signed in'); (rail.querySelector('.brand') || rail.firstChild).after(box); }
     const L = LEVEL[state.role] || LEVEL.edit;
-    box.innerHTML = `<div class="who">${pill(lvl(state.role))}<b title="${esc(state.name)}">${esc(state.name || 'Signed in')}</b></div>`
+    box.innerHTML = `<div class="who">${pill(lvl(state.role))}<b>Signed in</b></div>`
       + `<p class="lab-note">${L.note}</p><div class="row"><button type="button" id="labSignOut">Sign out</button></div>`;
     box.querySelector('#labSignOut').onclick = signOut;
   }
@@ -97,7 +98,6 @@ html.lab-gated body > :not(#labGate) { visibility: hidden; }`;
     if (!g) { g = document.createElement('div'); g.id = 'labGate'; document.body.appendChild(g); }
     g.innerHTML = `<form class="box" novalidate aria-labelledby="labGateH"><small>Language Lab</small><h1 id="labGateH">Sign in to the Lab console</h1>
 <p>Use the passcode the Language Lab sent you. This computer remembers you until you sign out.</p>
-<label>Name or email <span class="opt">(optional: shows who saved what)</span><input id="labGateName" autocomplete="username" value="${esc(state.name)}" placeholder="Your name or UNG email"></label>
 <label>Passcode <input id="labGatePass" type="password" autocomplete="current-password" spellcheck="false"></label>
 <button type="submit">Sign in</button><p class="msg" id="labGateMsg" role="alert">${esc(message || '')}</p>
 <div class="levels" aria-label="The two levels"><div>${pill('edit')}<span>saves changes for everyone (the Lab coordinator).</span></div>
@@ -107,19 +107,19 @@ html.lab-gated body > :not(#labGate) { visibility: hidden; }`;
     setTimeout(() => g.querySelector('#labGatePass').focus(), 30);
     f.onsubmit = async e => {
       e.preventDefault();
-      const name = g.querySelector('#labGateName').value.trim(), pass = g.querySelector('#labGatePass').value.trim();
+      const pass = g.querySelector('#labGatePass').value.trim();
       if (!pass) { msg.textContent = 'Type the passcode.'; g.querySelector('#labGatePass').focus(); return; }
       const btn = f.querySelector('button'); btn.disabled = true; btn.textContent = 'Checking…'; msg.textContent = '';
       try {
         const role = await check(pass);
-        set(K.pass, pass); set(K.role, role); set(K.name, name);
+        set(K.pass, pass); set(K.role, role);
         location.reload();   // each page starts from the signed-in state (the Semester plan opens the shared plan)
       } catch (err) { msg.textContent = err.message; btn.disabled = false; btn.textContent = 'Sign in'; }
     };
   }
 
   function signOut() {
-    if (!confirm('Sign out of the Lab console on this computer?\n\nThis computer forgets your passcode and name (and the GitHub key, if one was saved). Sign in again with the passcode any time.')) return;
+    if (!confirm('Sign out of the Lab console on this computer?\n\nThis computer forgets your passcode (and the GitHub key, if one was saved). Sign in again with the passcode any time.')) return;
     [K.pass, K.role, K.token].forEach(k => set(k, ''));
     location.reload();
   }
