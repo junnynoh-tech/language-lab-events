@@ -208,6 +208,15 @@ table.t thead th { position: sticky; top: 0; background: var(--chip); font-size:
 table.t tbody tr:last-child td { border-bottom: 0; }
 table.t td.num, table.t th.num { text-align: right; font-variant-numeric: tabular-nums; }
 table.t tr.flag td { background: var(--bad-bg); }
+.rvall { margin: 0 0 12px; padding: 10px 12px; border-radius: 10px; background: var(--chip); }
+.rvg .hint { margin: 0 0 8px; }
+.rvl { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.rvrow { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: start; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; }
+.rvrow:has(input:checked) { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+.rvrow input, .rvg legend input, .rvall input { width: 18px; height: 18px; margin: 2px 0 0; }
+.rvch { margin: 4px 0 0; padding-left: 18px; font-size: 14px; }
+.rvch s { color: var(--sub); }
+.rvo { margin-top: 12px; } .rvo summary { cursor: pointer; padding: 8px 0; }
 .bklist { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 .bklist li { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; justify-content: space-between; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; }
 .bklist li > div { display: grid; gap: 2px; min-width: 0; }
@@ -658,7 +667,7 @@ async function openPlanFile() {
   } catch (e) { if (e.name !== 'AbortError') toast(e.message, 6000); }
 }
 async function savePlan(as = false) {
-  if (shared() && !as) return pushShared();
+  if (shared() && !as) { if (!canSave()) { toast(VIEW_MSG, 8000); return; } return pushShared(); }
   /* Save means the shared plan on the site (Daniel, 2026-11-20). Not connected yet: send them to connect, never to a local file. */
   if (!as) { show('plan'); setTimeout(() => $('sh-tok')?.focus(), 50); toast('Saving goes to the shared plan on the site. Type the coordinators\' passcode and click Connect; your plan is sent right away.', 8000); return; }
   if (!F.supported) { P.savedAt = new Date().toISOString(); P.savedBy = askMe(); download(planName(), JSON.stringify(P, null, 2), 'application/json'); F.dirty = false; F.name ||= planName(); storeMeta(); fileUI(); toast('Downloaded. Put it in the shared folder so the others get it.'); return; }
@@ -683,6 +692,8 @@ const planName = () => planFileName(P, Date.now());
 function fileUI() {
   const el = $('fileState'), dot = el.querySelector('.dot'), t = el.querySelector('span:last-child');
   dot.classList.toggle('on', shared() ? !F.dirty && !G.err : !!F.name && !F.dirty);
+  if ($('saveBtn')) { $('saveBtn').disabled = shared() && !canSave(); $('saveBtn').title = shared() && !canSave() ? 'View only: only the Lab coordinator saves the shared plan' : ''; }
+  if (shared() && !canSave()) { if ($('shareBtn')) $('shareBtn').hidden = true; dot.classList.add('on'); t.textContent = `Shared plan · view only${F.dirty ? ' (your tries stay here)' : ''}`; document.title = 'Lab Console · Semester plan'; return; }
   if (shared()) { if ($('shareBtn')) $('shareBtn').hidden = true; t.textContent = G.err ? 'Shared plan: not reachable' : F.dirty ? 'Changes not saved to the shared plan' : G.sha ? `Saved in the shared plan${P.savedBy ? ' · ' + P.savedBy + ', ' + whenStr(P.savedAt) : ''}` : 'Shared plan is empty'; document.title = (F.dirty ? '• ' : '') + 'Lab Console · Semester plan'; return; }
   /* not on the shared plan yet: say so where everyone looks, with the way in */
   let sb = $('shareBtn');
@@ -703,13 +714,19 @@ function download(name, text, type = 'application/json') {
    private repo with its own key (labs/event-requests/worker.js, /plan). Coordinators type the coordinators' passcode once
    per computer; nobody needs a GitHub key. Calendar, courses, rooms, lab due dates: never students. ---------- */
 const SH = { worker: 'https://lab-requests.junnynoh.workers.dev', passKey: 'labConsolePass' };
-const G = { pass: '', sha: '', err: '', checked: 0 };
+const G = { pass: '', sha: '', err: '', checked: 0, role: '' };
+/* tiers (2026-11-23, Daniel): the Worker says which passcode this is. 'view': look and try things, never save to the
+   shared plan (only the Lab coordinator's editing passcode saves). A Worker from before the tiers sends no role = edit. */
+const canSave = () => G.role !== 'view';
+const VIEW_MSG = 'View only: your passcode opens the shared plan but can\'t save it. Changes you try stay in this browser. Only the Lab coordinator saves the shared plan.';
 try { G.pass = localStorage.getItem(SH.passKey) || ''; } catch (e) {}
 const shared = () => !!G.pass;
 async function wk(method = 'GET', body, q = '') {
   let r; try { r = await fetch(SH.worker + '/plan' + q, { method, cache: 'no-store', headers: { 'X-Lab-Pass': G.pass, ...(body ? { 'Content-Type': 'application/json' } : {}) }, body: body ? JSON.stringify(body) : undefined }); }
   catch (e) { throw new Error('The shared plan couldn\'t be reached (offline?). Your work stays in this browser; Save again later.'); }
   const d = await r.json().catch(() => ({}));
+  if (r.ok && method === 'GET') G.role = d.role || 'edit';
+  if (r.status === 403 && d.error === 'view only') { G.role = 'view'; fileUI(); const e = new Error(VIEW_MSG); e.status = 403; throw e; }
   if (r.status === 409) { const e = new Error('conflict'); e.theirs = d; throw e; }
   if (!r.ok) { const e = new Error(r.status === 401 ? 'The passcode was not accepted. Enter it again on the Plan file page.' : r.status === 404 ? 'The shared plan isn\'t switched on yet (the Lab\'s Worker needs its update).' : d.error || `The shared plan didn't answer (${r.status}). Try again.`); e.status = r.status; throw e; }
   return d;
@@ -730,6 +747,7 @@ async function pushShared() {
     G.sha = r.sha; G.err = ''; F.name = 'the shared plan'; F.dirty = false; await DB.set('plan', P); storeMeta(); fileUI();
     toast('Saved to the shared plan. The other coordinators get it when they open or come back to this page.');
   } catch (e) {
+    if (e.status === 403) { toast(e.message, 8000); return; }
     if (e.message !== 'conflict') { G.err = e.message; fileUI(); toast(e.message, 7000); return; }
     const t = e.theirs || {};
     if (confirm(`${t.savedBy || 'Someone'} saved the shared plan${t.savedAt ? ' (' + whenStr(t.savedAt) + ')' : ''} after you opened it.\n\nOK: save mine anyway (replaces their changes).\nCancel: load theirs here (your changes are kept as a backup on the Plan file page).`)) { G.sha = t.sha || ''; return pushShared(); }
@@ -858,6 +876,59 @@ function importCourses(semId, rows1430, rows775) {
   list.importedAt = new Date().toISOString();
   applyInstructorCampus(semId);
   return list;
+}
+/* Re-importing Banner files (2026-11-23, Daniel): nothing changes until it's approved. The import runs on a copy first,
+   and what would change is listed by section (new, changed field by field, gone from the file). Tick what to take, or
+   Select all; anything left unticked keeps what's here. A first import goes straight in. */
+const DIFF_KEYS = ['SUBJ', 'CRSE', 'SEC', 'CMP', 'CRED', 'TITLE', 'DAYS', 'TIME_FROM', 'TIME_TO', 'INSTRUCTOR', 'BUILDING', 'ROOM', 'LOCATION', 'PART_OF_TERM', 'START', 'END', 'MAXENR'];
+const DIFF_LABEL = { SUBJ: 'Subject', CRSE: 'Course', SEC: 'Section', CMP: 'Banner campus', CRED: 'Credits', TITLE: 'Title', DAYS: 'Days', TIME_FROM: 'Start time', TIME_TO: 'End time',
+  INSTRUCTOR: 'Instructor', BUILDING: 'Building', ROOM: 'Room', LOCATION: 'Campus', PART_OF_TERM: 'Part of term', START: 'Starts', END: 'Ends', MAXENR: 'Max enrollment' };
+const dnorm = v => v == null ? '' : String(v).trim();
+const dshow = (k, v) => { v = dnorm(v); if (!v) return '(blank)'; if (k === 'TIME_FROM' || k === 'TIME_TO') return fmt12(v); if (k === 'LOCATION') return campusName(v); if (k === 'CMP') return BANNER_CMP[v] || v; if (k === 'START' || k === 'END') return fmtMD(v); return v; };
+const secName = c => `${c.SUBJ} ${c.CRSE}.${c.SEC}`;
+function reviewImport(semId, r1430, r775) {
+  const before = clone(P.courseLists[semId] || { rows: [], importedAt: '', files: {}, ptrm: {} });
+  importCourses(semId, r1430, r775);                       // on the live list, then put the old one back: a dry run
+  const after = clone(P.courseLists[semId]); P.courseLists[semId] = before;
+  const what = [r1430?.length ? 'COM1430' : '', r775?.length ? 'COM775' : ''].filter(Boolean).join(' and ');
+  if (!before.rows.length) { P.courseLists[semId] = after; changed(); toast(`${after.rows.length} sections imported${r775?.length ? '' : ' (add COM775 for term dates and full instructor names)'}.`, 5000); return; }
+  const O = new Map(before.rows.map(c => [c.CRN, c])), N = new Map(after.rows.map(c => [c.CRN, c])), items = [];
+  after.rows.forEach(c => { const o = O.get(c.CRN); if (!o) return items.push({ kind: 'add', crn: c.CRN, row: c });
+    const ch = DIFF_KEYS.filter(k => dnorm(o[k]) !== dnorm(c[k])).map(k => [k, o[k], c[k]]); if (ch.length) items.push({ kind: 'chg', crn: c.CRN, row: c, old: o, ch }); });
+  before.rows.forEach(o => { if (!N.has(o.CRN)) items.push({ kind: 'del', crn: o.CRN, old: o }); });
+  const record = () => { P.courseLists[semId] = { ...P.courseLists[semId], files: after.files, ptrm: after.ptrm, importedAt: after.importedAt }; };
+  if (!items.length) { record(); changed(); toast(`Nothing changed: the ${what} you added match${what.includes(' and ') ? '' : 'es'} what's here.`, 5000); return; }
+  const same = after.rows.length - items.filter(i => i.kind !== 'del').length;
+  const KIND = [['add', 'New in the file', 'Not in the plan yet (or deleted here before).'], ['chg', 'Changed', 'Old value crossed out, new value after the arrow.'], ['del', 'Not in the new file', 'Ticking removes them here. A cancelled section, or an export that left some subjects out, looks like this.']];
+  const line = (it, i) => { const c = it.row || it.old;
+    return `<li><label class="rvrow"><input type="checkbox" data-rv="${i}" data-g="${isLang(c.SUBJ) ? 'L' : 'O'}-${it.kind}"><span><b>${esc(secName(c))}</b> <span class="muted small">CRN ${esc(c.CRN)}${c.TITLE ? ' · ' + esc(c.TITLE) : ''}${c.INSTRUCTOR ? ' · ' + esc(c.INSTRUCTOR) : ''}</span>`
+      + (it.kind === 'chg' ? `<ul class="rvch">${it.ch.map(([k, a, b]) => `<li>${esc(DIFF_LABEL[k] || k)}: <s>${esc(dshow(k, a))}</s> → <b>${esc(dshow(k, b))}</b></li>`).join('')}</ul>` : '') + `</span></label></li>`; };
+  const group = (scope, [k, title, hint]) => { const list = items.map((it, i) => [it, i]).filter(([it]) => it.kind === k && (scope === 'L') === isLang((it.row || it.old).SUBJ)); if (!list.length) return '';
+    return `<fieldset class="rvg"><legend><label><input type="checkbox" data-grp="${scope}-${k}"> ${esc(title)} (${list.length})</label></legend><p class="hint">${esc(hint)}</p><ul class="rvl">${list.map(([it, i]) => line(it, i)).join('')}</ul></fieldset>`; };
+  const nO = items.filter(it => !isLang((it.row || it.old).SUBJ)).length;
+  const body = `<p class="lede">Nothing changes until you approve it. ${same} section${same === 1 ? ' is' : 's are'} the same. Tick what to take from the new file, or Select all; anything you leave unticked stays as it is here.</p>`
+    + `<p class="rvall"><label><input type="checkbox" id="rv-all"> <b>Select all ${items.length} change${items.length === 1 ? '' : 's'}</b></label></p>`
+    + `<h3>Language sections</h3>${KIND.map(x => group('L', x)).join('') || '<p class="muted">No changes to language sections.</p>'}`
+    + (nO ? `<details class="rvo"><summary><b>Other subjects</b> (${nO} change${nO === 1 ? '' : 's'}; they matter only for rooms in Nesbitt 4201)</summary>${KIND.map(x => group('O', x)).join('')}</details>` : '');
+  pane('Review the changes', `${what} · ${semLabel(semById(semId))}`, body, `<button class="btn" type="button" data-close>Cancel: keep everything as it is</button><button class="btn primary" type="button" id="rv-go" disabled>Apply 0 selected</button>`);
+  const d = $('dlg'), boxes = [...d.querySelectorAll('[data-rv]')];
+  const sync = () => { const on = boxes.filter(b => b.checked).length;
+    const tri = (el, list) => { const n = list.filter(b => b.checked).length; el.checked = n === list.length; el.indeterminate = n > 0 && n < list.length; };
+    d.querySelectorAll('[data-grp]').forEach(g => tri(g, boxes.filter(b => b.dataset.g === g.dataset.grp))); tri($('rv-all'), boxes);
+    $('rv-go').disabled = !on; $('rv-go').textContent = `Apply ${on} selected`; };
+  boxes.forEach(b => b.onchange = sync);
+  d.querySelectorAll('[data-grp]').forEach(g => g.onchange = () => { boxes.filter(b => b.dataset.g === g.dataset.grp).forEach(b => b.checked = g.checked); sync(); });
+  $('rv-all').onchange = () => { boxes.forEach(b => b.checked = $('rv-all').checked); sync(); };
+  $('rv-go').onclick = async () => {
+    const pick = new Set(boxes.filter(b => b.checked).map(b => +b.dataset.rv)); await backupLocal(`before applying ${pick.size} change${pick.size === 1 ? '' : 's'} from ${what}`);
+    const rows = new Map(before.rows.map(c => [c.CRN, c]));
+    items.forEach((it, i) => { if (!pick.has(i)) return; if (it.kind === 'del') rows.delete(it.crn); else rows.set(it.crn, it.row); });
+    const order = [...after.rows.map(c => c.CRN).filter(k => rows.has(k)), ...[...rows.keys()].filter(k => !N.has(k))];
+    P.courseLists[semId] = { ...before, files: after.files, ptrm: after.ptrm, importedAt: after.importedAt, rows: order.map(k => rows.get(k)) };
+    applyInstructorCampus(semId); d.close(); changed();
+    toast(`Applied ${pick.size} of ${items.length} change${items.length === 1 ? '' : 's'}${pick.size < items.length ? '; the rest kept what was here' : ''}. The plan before is kept as an earlier copy (Plan file page).`, 7000);
+  };
+  sync(); setTimeout(() => $('rv-all')?.focus(), 30);
 }
 /* a professor's default campus: where their in-person sections are (the most common one), from Banner or chosen by hand */
 function profDefaults(semId = P.activeSemesterId) {
@@ -1089,7 +1160,8 @@ function issues() {
     pl.filter(p => p.outside).forEach(p => add('bad', `${p.classKey.split('_')[0]} ${p.lab.label} sits in week ${p.week}, past the end of the term.`, 'labs'));
     off.forEach(c => { if (!pl.some(p => p.classKey === c.key)) add('warn', `${c.name} has no labs on the calendar yet.`, 'labs'); });   // classes have different numbers of labs on purpose: only an empty one is flagged
   }
-  if (F.dirty && shared()) add('warn', G.sha ? 'Changes are not saved to the shared plan yet.' : 'The shared plan is empty. Save to put this plan there for the other coordinators.', null, 'save');
+  if (F.dirty && shared() && !canSave()) add('warn', 'View only: the changes you made here stay in this browser and aren\'t shared. Get the latest on the Plan file page to drop them.', 'plan');
+  else if (F.dirty && shared()) add('warn', G.sha ? 'Changes are not saved to the shared plan yet.' : 'The shared plan is empty. Save to put this plan there for the other coordinators.', null, 'save');
   else if (F.dirty) add('warn', F.name ? `Changes are not saved to ${F.name} yet.` : 'This plan is only in this browser. Save it as a plan file in the shared folder so the other coordinators can open it.', null, 'save');
   return out;
 }
@@ -1515,7 +1587,7 @@ AFTER.courses = () => {
     const got = {}; for (const f of files) { const rows = parseCSV(await readFile(f)), k = kindOfCSV(rows); if (k) got[k] = rows; else toast(`${f.name} is not COM1430 or COM775 (columns not recognized).`, 5000); }
     if (!got['1430'] && !got['775']) return;
     if (!got['1430'] && !courses().length) return toast('Add COM1430 too: it has the class list.', 5000);
-    const l = importCourses(P.activeSemesterId, got['1430'], got['775']); changed(); toast(`${l.rows.length} sections imported${got['775'] ? '' : ' (add COM775 for term dates and full instructor names)'}.`, 5000);
+    reviewImport(P.activeSemesterId, got['1430'], got['775']);
   };
   if (drop) { $('c-file').onchange = e => take([...e.target.files]); ['dragenter', 'dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); })); ['dragleave', 'drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); })); drop.addEventListener('drop', e => take([...e.dataTransfer.files])); }
   const keep = sel => { const y = window.scrollY; show('courses', false); window.scrollTo(0, y); document.querySelector(sel)?.focus(); };
@@ -2046,6 +2118,10 @@ ACTS.restore = async i => { const l = await backups(), b = l[+i]; if (!b) return
   await DB.set('planBackups', l.slice(0, BACKUPS_KEPT)); F.dirty = true; await DB.set('plan', P); storeMeta(); render(); toast('Restored. Press Save to share it.'); };
 ACTS.dlBackup = async i => { const b = (await backups())[+i]; if (b) download(planFileName(b.plan, b.at, b.why), JSON.stringify(b.plan, null, 2)); };
 function sharedCard() {
+  if (shared() && !canSave()) return `<div class="card"><h2>Shared plan <span class="tag">View only</span></h2>`
+    + `<p class="lede">Your passcode opens the shared plan to look through and try things. Only the Lab coordinator's editing passcode saves it, so anything you change stays in this browser.${F.dirty ? ' <b>You have changes here that aren\'t shared.</b> Get the latest to drop them.' : ''}</p>`
+    + `<div class="row"><button class="btn" type="button" data-act="pull">Get the latest</button><button class="btn danger" type="button" data-act="disconnect">Disconnect this browser</button></div>`
+    + `<p class="hint">${P.savedBy ? `Last saved by ${esc(P.savedBy)}, ${esc(whenStr(P.savedAt))}. ` : ''}Have an editing passcode? Disconnect, then connect with it.</p></div>`;
   if (shared()) return `<div class="card"><h2>Shared plan <span class="tag ${G.err ? 'bad' : 'ok'}">${G.err ? 'Not reachable' : 'Connected'}</span></h2>`
     + `<p class="lede">${G.err ? esc(G.err) : G.sha ? `Everyone connected sees the plan saved here.${F.dirty ? ' <b>Your changes are not saved yet.</b>' : ''}` : 'Nothing is saved yet. Save puts this browser\'s plan there.'} Coming back to this page picks up a teammate's save by itself.</p>`
     + `<div class="row"><button class="btn primary" type="button" data-act="save">Save to the shared plan</button><button class="btn" type="button" data-act="pull">Get the latest</button>`
@@ -2066,6 +2142,7 @@ ACTS.reset = async () => { if (!confirm('Clear the plan from this browser? Anyth
 AFTER.plan = () => {
   const drop = $('imp-drop'), rep = $('imp-rep');
   const take = async files => {
+    await backupLocal(`before importing ${files.map(f => f.name).join(', ')}`);   // these can update semesters, rooms and due dates in place
     const items = []; for (const f of files) { try { items.push([f.name, JSON.parse(await readFile(f))]); } catch (e) { rep.insertAdjacentHTML('beforeend', `<li class="bad">${esc(f.name)}: not a JSON file.</li>`); } }
     items.sort((a, b) => rank(a[1]) - rank(b[1])); // calendar before the files that need its weeks
     for (const [n, o] of items) { try { rep.insertAdjacentHTML('beforeend', `<li class="ok">${esc(n)}: ${esc(importAny(o))}</li>`); } catch (e) { rep.insertAdjacentHTML('beforeend', `<li class="bad">${esc(n)}: ${esc(e.message)}</li>`); } }
@@ -2085,8 +2162,8 @@ AFTER.plan = () => {
       try { localStorage.setItem(SH.passKey, v); } catch (e) {}
       const mine = P.semesters.length ? clone(P) : null, got = await pullShared();
       if (got && mine && JSON.stringify({ ...mine, savedAt: '' }) !== JSON.stringify({ ...P, savedAt: '' }) && !confirm('Connected. The shared plan is loaded.\n\nThis browser had a different plan (kept as a backup on this page). OK: use the shared plan. Cancel: keep this browser\'s version (Save then replaces the shared plan with it).')) { P = mine; F.dirty = true; }
-      if (!got) { F.dirty = !!P.semesters.length; render(); if (P.semesters.length) { await pushShared(); render(); } else toast('Connected. The shared plan is empty.'); return; }
-      render(); toast('Connected. You\'re on the shared plan.');
+      if (!got) { F.dirty = !!P.semesters.length; render(); if (P.semesters.length && canSave()) { await pushShared(); render(); } else toast(canSave() ? 'Connected. The shared plan is empty.' : 'Connected, view only. The shared plan is empty.'); return; }
+      render(); toast(canSave() ? 'Connected. You\'re on the shared plan.' : 'Connected, view only. Only the Lab coordinator saves the shared plan.', 6000);
     } catch (e) { G.pass = old; msg.textContent = e.message; }
   };
   if ($('pl-open')) $('pl-open').onchange = async e => { try { P = checkPlan(JSON.parse(await readFile(e.target.files[0]))); F.name = e.target.files[0].name; F.dirty = false; await DB.set('plan', P); render(); toast(`Opened ${F.name}`); } catch (er) { toast(er.message, 6000); } };
