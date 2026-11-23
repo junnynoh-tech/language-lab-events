@@ -225,7 +225,7 @@ table.t tr.flag td { background: var(--bad-bg); }
 .bklist { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 .bklist li { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; justify-content: space-between; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; }
 .bklist li > div { display: grid; gap: 2px; min-width: 0; }
-.bklist .mono { font-family: ui-monospace, Consolas, monospace; overflow-wrap: anywhere; }
+.bklist .mono, .docs .mono { font-family: ui-monospace, Consolas, monospace; overflow-wrap: anywhere; }
 table.t tr.flag td:first-child { box-shadow: inset 4px 0 0 var(--bad); }
 @keyframes flagpulse { 0%, 100% { outline-color: transparent; } 50% { outline-color: var(--bad); } }
 table.pulse tr.flag td { outline: 2px solid transparent; outline-offset: -2px; animation: flagpulse 1s ease-in-out 3; }
@@ -1124,7 +1124,7 @@ function nav() {
    (JSON, CSV), and no Outputs for D2L at all. Their buttons are taken out of every screen and dialog, and the actions
    refuse too. Editors (and a Worker without levels) see everything. */
 const VIEWER = () => G.role === 'view';
-const EDITOR_ONLY = ['dlOut', 'zip', 'zipPicked', 'previewOut', 'dlDist', 'labCSV', 'saveAs', 'openPlan', 'dlBackup', 'importExcel', 'templates', 'oUnpick'];
+const EDITOR_ONLY = ['shareDoc', 'removeDocLink', 'dlOut', 'zip', 'zipPicked', 'previewOut', 'dlDist', 'labCSV', 'saveAs', 'openPlan', 'dlBackup', 'importExcel', 'templates', 'oUnpick'];
 function viewerSweep(root) {
   if (!VIEWER() || !root) return;
   root.querySelectorAll('#imp-drop, [data-act="saveAs"], [data-act="openPlan"], #pl-open').forEach(e => e.closest('.card')?.remove());
@@ -1714,8 +1714,8 @@ function roomShareHTML(all, done, clash, noFinal) {
   return `<div class="card" id="rm-share" style="margin-top:16px"><h2>Print and share</h2>`
     + `<p class="lede">${ok ? 'Every class has a room and a final exam time, with no double-bookings.' : `Before you share: ${[left ? `${left} class${left === 1 ? '' : 'es'} still need a room` : '', clash.size ? `${clash.size} double-booked` : '', noFinal ? `${noFinal} final exam time${noFinal === 1 ? '' : 's'} to enter` : ''].filter(Boolean).join(', ')}.`}</p>`
     + `<div class="tw"><table class="t compact"><thead><tr><th scope="col">What</th><th scope="col">For</th><th scope="col"><span class="sr">Get it</span></th></tr></thead><tbody>`
-    + ROOMS.map(([r, l]) => `<tr><th scope="row">Nesbitt ${esc(l)}: week and final exams</th><td class="small">Print and post by the door (landscape)</td><td><button class="btn sm" type="button" data-act="printRoom" data-arg="${r}">Download</button></td></tr>`).join('')
-    + `<tr><th scope="row">Both rooms, one document</th><td class="small">One printout, a page per room</td><td><button class="btn sm" type="button" data-act="printRoom" data-arg="both">Download</button></td></tr>`
+    + ROOMS.map(([r, l]) => `<tr><th scope="row">Nesbitt ${esc(l)}: week and final exams</th><td class="small">Print and post by the door (landscape)</td><td><span class="row" style="gap:6px">${docBtns('room', r)}</span></td></tr>`).join('')
+    + `<tr><th scope="row">Both rooms, one document</th><td class="small">One printout, a page per room</td><td><span class="row" style="gap:6px">${docBtns('room', 'both')}</span></td></tr>`
     + `<tr${ok ? '' : ' class="todo"'}><th scope="row"><code>room-schedule.json</code></th><td class="small">The Lab Hub's room schedule page (upload to <code>current/data/</code>)</td><td class="row" style="gap:6px"><button class="btn sm" type="button" data-act="dlOut" data-arg="room-schedule.json">Download</button><button class="btn sm" type="button" data-act="previewOut" data-arg="room-schedule.json">Preview</button></td></tr>`
     + `</tbody></table></div></div>`;
 }
@@ -2102,8 +2102,8 @@ function labShareHTML(s) {
   return `<div class="card" id="lc-4"><h2><span class="step">4</span>Print and share</h2>`
     + `<p class="lede">${ok ? `Ready: ${off.length} classes, ${pl.length} due dates, none on a day without classes.` : `Before you share: ${esc(issuesTxt.join('; '))}.`}${bad.length ? ` <button class="btn sm" type="button" data-act="moveBlocked">Move ${bad.length === 1 ? 'it' : 'them'} to the next open week</button>` : ''}</p>`
     + `<div class="tw"><table class="t compact"><thead><tr><th scope="col">What</th><th scope="col">For</th><th scope="col"><span class="sr">Get it</span></th></tr></thead><tbody>`
-    + row('Lab due date proposal: all languages', 'Instructors and the department: Table, Calendar and Due dates views in one file', `<button class="btn sm" type="button" data-act="proposal" data-arg="all">Download</button>`, !ok)
-    + langs.map(code => row(`Proposal: ${esc(LAB_LANGS.find(l => l[0] === code)[1])} only`, `${esc(off.filter(c => c.code === code).map(c => c.name).join(', '))} instructors`, `<button class="btn sm" type="button" data-act="proposal" data-arg="${code}">Download</button>`)).join('')
+    + row('Lab due date proposal: all languages', 'Instructors and the department: Table, Calendar and Due dates (PDFs in a ZIP, one HTML, or a link)', docBtns('proposal', 'all'), !ok)
+    + langs.map(code => row(`Proposal: ${esc(LAB_LANGS.find(l => l[0] === code)[1])} only`, `${esc(off.filter(c => c.code === code).map(c => c.name).join(', '))} instructors`, docBtns('proposal', code))).join('')
     + row('Due dates list (CSV)', 'A spreadsheet of every due date: class, lab, week, date, day and time', `<button class="btn sm" type="button" data-act="labCSV">Download</button>`)
     + row('<code>lab-due-dates.json</code>', 'The Lab Hub\'s grade due dates page (upload to <code>current/data/</code>)', `<button class="btn sm" type="button" data-act="dlOut" data-arg="lab-due-dates.json">Download</button><button class="btn sm" type="button" data-act="previewOut" data-arg="lab-due-dates.json">Preview</button>`, !ok)
     + `<tr><th scope="row">This calendar as a template</th><td class="small">Reuse it next term</td><td><button class="btn sm" type="button" data-act="templates">Templates…</button></td></tr>`
@@ -2124,22 +2124,166 @@ td.num{text-align:right}section.room+section.room{margin-top:36px}
 @page{size:landscape;margin:.4in}@media print{body{padding:0;background:#fff}section.room+section.room{break-before:page;margin-top:0}}</style></head><body><main>${body}</main></body></html>`;
 }
 
-/* ---------- documents (2026-11-23): every HTML page to share or print, for everyone, in one place ---------- */
+/* ---------- documents as PDF, HTML or a shareable link (2026-11-23, Daniel: "make pdfs not htmls … have options for
+   the downloads as pdf, html, and shareable link"; the proposal downloads as a ZIP of three PDFs). PDFs are real text
+   documents made in this browser with pdfmake (MIT, cdnjs); nothing leaves the browser except a link an Editor makes. */
+const PDFMAKE = 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.12/';
+const loadScript = src => new Promise((ok, no) => { const sc = document.createElement('script'); sc.src = src; sc.onload = ok; sc.onerror = () => no(new Error('The PDF maker didn’t load (offline?). Try again, or download the HTML.')); document.head.append(sc); });
+async function pdfMaker() { if (!window.pdfMake) { await loadScript(PDFMAKE + 'pdfmake.min.js'); await loadScript(PDFMAKE + 'vfs_fonts.min.js'); } return window.pdfMake; }
+async function pdfBlob(def) { const pm = await pdfMaker(); return new Promise(ok => pm.createPdf(def).getBlob(ok)); }
+async function zipLib() { if (!window.JSZip) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'); return window.JSZip; }
+function saveBlob(name, blob) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.append(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000); }
+const PC = { ink: '#1F2937', sub: '#5A6472', line: '#DCDDD8', head: '#E8EDF8', accent: '#1A3A6B', holiday: '#F9E3E3', break: '#FBEEDB', finals: '#EEF0F3', out: '#F1F2F4', flag: '#A12A2A' };
+const pdfBase = (title, orientation = 'portrait') => ({ info: { title, author: 'UNG Language Lab' }, pageSize: 'LETTER', pageOrientation: orientation, pageMargins: [32, 36, 32, 40],
+  defaultStyle: { font: 'Roboto', fontSize: 9, color: PC.ink, lineHeight: 1.15 },
+  styles: { h1: { fontSize: 18, bold: true, color: PC.accent, margin: [0, 0, 0, 2] }, sub: { fontSize: 9, color: PC.sub, margin: [0, 0, 0, 2] }, h2: { fontSize: 13, bold: true, margin: [0, 10, 0, 4] }, th: { bold: true, fontSize: 8.5, color: PC.ink } },
+  footer: (cur, n) => ({ columns: [{ text: `${title} · UNG Language Lab`, color: PC.sub, fontSize: 7.5 }, { text: `Page ${cur} of ${n}`, alignment: 'right', color: PC.sub, fontSize: 7.5 }], margin: [32, 10, 32, 0] }) });
+const thin = { hLineWidth: () => 0.6, vLineWidth: () => 0.6, hLineColor: () => PC.line, vLineColor: () => PC.line, paddingLeft: () => 4, paddingRight: () => 4, paddingTop: () => 3, paddingBottom: () => 3 };
+const swatch = (color, label) => [{ canvas: [{ type: 'rect', x: 0, y: 1.5, w: 8, h: 8, r: 1.5, color, lineColor: PC.line, lineWidth: 0.5 }], width: 11 }, { text: label, width: 'auto', margin: [0, 0, 14, 0] }];
+const legend = langs => ({ margin: [0, 8, 0, 0], fontSize: 8, color: PC.sub, columns: [...langs.flatMap(code => { const L = LAB_LANGS.find(l => l[0] === code); return swatch(L[2], L[1]); }),
+  ...swatch(PC.holiday, 'Holiday'), ...swatch(PC.break, 'Break'), ...swatch(PC.finals, 'Finals')] });
+
+/* the proposal's three views as PDF definitions (same data as proposalHTML) */
+function proposalPDFs(s, only) {
+  const lc = labCal(s), off = offered(s).filter(c => !only || only.includes(c.code)), weeks = weeksOf(s), langs = [...new Set(off.map(c => c.code))];
+  const pl = placedLabs(s).filter(p => p.cls && !p.outside && off.some(c => c.key === p.classKey));
+  const due = c => { const d = lc.dueDayTimes[c.key]; return d ? `${d.day}s, ${d.time}` : 'Due day not set'; };
+  const what = only ? ' · ' + only.map(c => LAB_LANGS.find(l => l[0] === c)?.[1] || c).join(', ') : '';
+  const title = `Lab due date proposal: ${semLabel(s)}${what}`;
+  const noClass = [...(s.holidays || []).map(h => `${fmtWMD(h.date)}: ${h.name}`), ...(s.breaks || []).map(b => `${fmtMD(b.start)}–${fmtMD(b.end)}: ${b.name}`), s.finalsStart ? `${fmtMD(s.finalsStart)}–${fmtMD(s.finalsEnd)}: Finals` : ''].filter(Boolean);
+  const top = view => [{ text: 'Lab due date proposal', style: 'h1' }, { text: `${semLabel(s)}${what} · ${view} · from the Language Lab · ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`, style: 'sub' },
+    { text: `Classes ${fmtMD(s.start)}–${fmtMD(s.end)}.${noClass.length ? ' No classes: ' + noClass.join(' · ') + '.' : ''}`, style: 'sub', margin: [0, 0, 0, 8] }];
+  /* 1. Table: weeks × classes */
+  const head = [{ text: 'Week', style: 'th', fillColor: PC.head }, ...off.map(c => ({ stack: [{ text: c.name, bold: true, color: '#fff' }, { text: due(c), fontSize: 7, color: '#fff' }], fillColor: c.color, alignment: 'center' }))];
+  const rows = weeks.map(w => [{ stack: [{ text: `Week ${w.idx}`, bold: true }, { text: `${fmtMD(w.start)}–${fmtMD(w.end)}`, fontSize: 7, color: PC.sub }] },
+    ...off.map(c => { const d = dueInWeek(s, w, c.key), b = blocked(s, d), here = pl.filter(p => p.week === w.idx && p.classKey === c.key);
+      return { stack: [...here.map(p => ({ table: { widths: ['*'], body: [[{ text: [{ text: p.lab.label, bold: true }, '\n', { text: fmtWMD(p.date), fontSize: 7 }], color: '#fff', fillColor: p.lab.color || c.color, margin: [2, 1, 2, 1] }]] }, layout: 'noBorders', margin: [0, 0, 0, 2] })),
+        ...(b ? [{ text: b.name, italics: true, fontSize: 7, color: PC.sub }] : [])], fillColor: b ? PC[b.kind] : null }; })]);
+  const table = { ...pdfBase(title + ' (table)', 'landscape'), content: [...top('Table: weeks by class'),
+    { table: { headerRows: 1, dontBreakRows: true, widths: [58, ...off.map(() => '*')], body: [head, ...rows] }, layout: thin }, legend(langs)] };
+  /* 2. Calendar: a month per page */
+  const ev = {}; pl.forEach(p => (ev[p.date] ||= []).push(p));
+  const a0 = weeks[0]?.start || s.start, a1 = weeks[weeks.length - 1]?.end || s.end, months = [];
+  if (a0 && a1) for (let m = new Date(pd(a0).getFullYear(), pd(a0).getMonth(), 1); m <= pd(a1); m = new Date(m.getFullYear(), m.getMonth() + 1, 1)) months.push(new Date(m));
+  const calContent = months.flatMap((m, i) => {
+    const lead = m.getDay(), n = new Date(m.getFullYear(), m.getMonth() + 1, 0).getDate(), cells = [];
+    for (let k = 0; k < lead; k++) cells.push({ text: '', fillColor: PC.out });
+    for (let d = 1; d <= n; d++) { const ds = iso(new Date(m.getFullYear(), m.getMonth(), d)), b = blocked(s, ds);
+      cells.push({ stack: [{ text: String(d), bold: true, color: PC.sub, fontSize: 8 }, ...(b ? [{ text: b.name, italics: true, fontSize: 6.5, color: PC.sub }] : []),
+        ...(ev[ds] || []).map(p => ({ text: [{ text: p.cls.name, bold: true, color: p.cls.color }, ` ${p.lab.label}`, { text: lc.dueDayTimes[p.classKey]?.time ? ` · ${lc.dueDayTimes[p.classKey].time}` : '', color: PC.sub }], fontSize: 7, margin: [0, 1, 0, 0] }))], fillColor: b ? PC[b.kind] : null }); }
+    while (cells.length % 7) cells.push({ text: '', fillColor: PC.out });
+    const body = [['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(t => ({ text: t, style: 'th', alignment: 'center', fillColor: PC.head }))];
+    for (let k = 0; k < cells.length; k += 7) body.push(cells.slice(k, k + 7));
+    const rowsN = body.length - 1, h = Math.max(46, Math.floor(352 / rowsN) - 7);   // a month fits one landscape page
+    return [...(i ? [{ text: '', pageBreak: 'before' }] : []), ...top('Calendar'), { text: m.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }), fontSize: 15, bold: true, margin: [0, 0, 0, 4] },
+      { table: { widths: Array(7).fill('*'), heights: r => r === 0 ? 14 : h, body }, layout: thin }, legend(langs)];
+  });
+  const calendar = { ...pdfBase(title + ' (calendar)', 'landscape'), content: calContent.length ? calContent : [...top('Calendar'), { text: 'Set the term dates first.' }] };
+  /* 3. The due dates, listed */
+  const list = { ...pdfBase(title + ' (due dates)'), content: [...top('Due dates by class'), ...langs.flatMap(code => { const L = LAB_LANGS.find(l => l[0] === code);
+    return [{ table: { widths: ['*'], body: [[{ text: L[1], bold: true, fontSize: 13, color: '#fff', fillColor: L[2], margin: [6, 3, 6, 3] }]] }, layout: 'noBorders', margin: [0, 10, 0, 6] },
+      ...off.filter(c => c.code === code).flatMap(c => { const mine = pl.filter(p => p.classKey === c.key).sort((x, y) => x.date.localeCompare(y.date));
+        return [{ text: [{ text: c.name, bold: true, fontSize: 11 }, { text: `   Due ${due(c)}`, color: PC.sub }], margin: [0, 4, 0, 3] },
+          mine.length ? { table: { headerRows: 1, widths: [70, 40, '*'], body: [[{ text: 'Lab', style: 'th', fillColor: PC.head }, { text: 'Week', style: 'th', fillColor: PC.head }, { text: 'Due date', style: 'th', fillColor: PC.head }],
+            ...mine.map(p => [p.lab.label, String(p.week), { text: [fmtLong(p.date), ...(p.block ? [{ text: `  (${p.block.name})`, color: PC.flag, bold: true }] : [])] }])] }, layout: thin, margin: [0, 0, 0, 8] }
+            : { text: 'No labs placed yet.', color: PC.sub, italics: true, margin: [0, 0, 0, 8] }]; })]; })] };
+  return { table, calendar, list };
+}
+ACTS.proposalZip = async code => {
+  const s = sem(); if (!offered(s).length) return toast('Choose classes on the Lab calendar first.');
+  const only = code && code !== 'all' ? [code] : null, base = `lab-due-dates-proposal-${only ? only[0].toLowerCase() + '-' : ''}${s.id}`;
+  toast('Making the PDFs…', 8000);
+  try { const d = proposalPDFs(s, only), Z = await zipLib(), z = new Z();
+    for (const [k, def] of [['table', d.table], ['calendar', d.calendar], ['due-dates', d.list]]) z.file(`${base}-${k}.pdf`, await pdfBlob(def));
+    saveBlob(`${base}-pdf.zip`, await z.generateAsync({ type: 'blob' })); toast('Downloaded: a ZIP with the table, calendar and due dates PDFs.');
+  } catch (e) { toast(e.message, 7000); } };
+
+/* a room's week as a PDF: a time grid (half hours, classes spanning their rows) and the classes with final exams */
+function roomPDF(s, rooms) {
+  const A = roomsOf().assign, title = `Nesbitt ${rooms.map(r => (ROOMS.find(x => x[0] === r) || [r, r])[1]).join(' and ')}: ${semLabel(s)}`;
+  const content = rooms.flatMap((room, i) => {
+    const label = (ROOMS.find(r => r[0] === room) || [room, room])[1];
+    const list = courses().filter(c => inNesbitt4201(c) && A[c.CRN] === room).sort((a, b) => WD.findIndex(d => parseDays(a.DAYS)[0] === d) - WD.findIndex(d => parseDays(b.DAYS)[0] === d) || mins(a.TIME_FROM) - mins(b.TIME_FROM));
+    const ts = list.map(c => [mins(c.TIME_FROM), mins(c.TIME_TO)]).filter(([a]) => a >= 0);
+    const T0 = Math.min(8 * 60, ...ts.map(x => Math.floor(x[0] / 60) * 60)), T1 = Math.max(T0 + 4 * 60, ...ts.map(x => Math.ceil(x[1] / 60) * 60)), N = (T1 - T0) / 30;
+    const band = r => (Math.floor(r / 2) % 2 ? '#F4F6F9' : null);   // alternate hours shaded instead of lines, so lines never cross a class
+    const grid = Array.from({ length: N }, (_, r) => [{ text: r % 2 ? '' : fmt12(`${String((T0 + r * 30) / 60 | 0).padStart(2, '0')}:00`), fontSize: 7, color: PC.sub, alignment: 'right', fillColor: band(r) }, ...WD.map(() => ({ text: '', fillColor: band(r) }))]);
+    WD.forEach((d, col) => {
+      list.filter(c => parseDays(c.DAYS).includes(d)).sort((a, b) => mins(a.TIME_FROM) - mins(b.TIME_FROM)).forEach(c => {
+        const f = mins(c.TIME_FROM), t = mins(c.TIME_TO); if (f < 0) return;
+        let r0 = Math.max(0, Math.floor((f - T0) / 30)), r1 = Math.min(N, Math.max(r0 + 1, Math.ceil((t - T0) / 30)));
+        const cell = grid[r0][col + 1], txt = [{ text: `${c.SUBJ} ${c.CRSE}.${c.SEC}`, bold: true }, `\n${fmt12(c.TIME_FROM)}–${fmt12(c.TIME_TO)}`, c.INSTRUCTOR ? `\n${c.INSTRUCTOR}` : ''];
+        if (cell._busy) { cell.text = [...[].concat(cell.text), '\n', ...txt]; cell.fillColor = PC.flag; return; }   // two classes at once: shown together, in red
+        for (let r = r0 + 1; r < r1; r++) { if (grid[r][col + 1]._busy) { r1 = r; break; } grid[r][col + 1] = { text: '', _busy: true }; }
+        grid[r0][col + 1] = { text: txt, fontSize: 7.5, color: '#fff', fillColor: langColor(c.SUBJ), rowSpan: r1 - r0, _busy: true };
+      });
+    });
+    grid.forEach(row => row.forEach(cell => delete cell._busy));
+    const fin = list.map(c => { const f = finalsFor(c); return [{ text: `${c.SUBJ} ${c.CRSE}.${c.SEC}`, bold: true }, normDays(c.DAYS), `${fmt12(c.TIME_FROM)}–${fmt12(c.TIME_TO)}`, c.INSTRUCTOR || '', String(c.MAXENR ?? ''), f.examDay ? `${f.examDay} ${fmt12(f.examStart)}–${fmt12(f.examEnd)}` : { text: f.note || 'Not set', italics: true, color: PC.sub }]; });
+    return [...(i ? [{ text: '', pageBreak: 'before' }] : []),
+      { text: `Nesbitt ${label}, ${semLabel(s)}`, style: 'h1' },
+      { text: `${list.length} class${list.length === 1 ? '' : 'es'} · weekly pattern${s.start ? `, classes ${fmtMD(s.start)}–${fmtMD(s.end)}` : ''}${s.finalsStart ? `, finals ${fmtMD(s.finalsStart)}–${fmtMD(s.finalsEnd)}` : ''} · made ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`, style: 'sub', margin: [0, 0, 0, 8] },
+      list.length ? { table: { headerRows: 1, widths: [40, '*', '*', '*', '*', '*'], heights: r => r === 0 ? 12 : 11, body: [[{ text: '', fillColor: PC.head }, ...WD.map(d => ({ text: d, style: 'th', alignment: 'center', fillColor: PC.head }))], ...grid] },
+        layout: { ...thin, hLineWidth: (k, node) => (k <= 1 || k === node.table.body.length) ? 0.6 : 0, paddingTop: () => 1, paddingBottom: () => 1 } } : { text: 'No classes in this room yet.', italics: true },
+      { text: 'Classes and final exams', style: 'h2', pageBreak: list.length > 10 ? 'before' : undefined },
+      { table: { headerRows: 1, widths: ['auto', 'auto', 'auto', '*', 'auto', '*'], body: [['Class', 'Days', 'Time', 'Instructor', 'Max', 'Final exam'].map(t => ({ text: t, style: 'th', fillColor: PC.head })), ...(fin.length ? fin : [[{ text: 'No classes in this room yet.', colSpan: 6, italics: true }, '', '', '', '', '']])] }, layout: thin }];
+  });
+  return { ...pdfBase(title, 'landscape'), content };
+}
+const roomList = room => room === 'both' ? ROOMS.map(r => r[0]) : [room];
+ACTS.roomPdf = async room => { const s = sem(), rooms = roomList(room); toast('Making the PDF…', 6000);
+  try { saveBlob(`room-${room === 'both' ? '4201A-and-4207' : room}-${s.id}.pdf`, await pdfBlob(roomPDF(s, rooms))); toast('PDF downloaded.'); } catch (e) { toast(e.message, 7000); } };
+
+/* shareable links (Editors): a snapshot of the HTML version behind a link that opens anywhere, for email */
+const LAB_W = 'https://lab-requests.junnynoh.workers.dev';
+const docHTML = (kind, arg) => { const s = sem();
+  if (kind === 'proposal') { const only = arg && arg !== 'all' ? [arg] : null; return { html: proposalHTML(s, only), title: `Lab due date proposal: ${semLabel(s)}${only ? ' · ' + (LAB_LANGS.find(l => l[0] === only[0])?.[1] || only[0]) : ''}` }; }
+  const rooms = roomList(arg); return { html: docPage(`Nesbitt ${rooms.join(' and ')}: ${semLabel(s)}`, rooms.map(roomDocSection).join('')), title: `Nesbitt ${rooms.join(' and ')} schedule: ${semLabel(s)}` }; };
+async function docsAPI(body) {
+  const r = await fetch(LAB_W + '/docs', { method: body ? 'POST' : 'GET', cache: 'no-store', headers: { ...(window.labHeaders ? window.labHeaders() : {}), ...(body ? { 'Content-Type': 'application/json' } : {}) }, body: body ? JSON.stringify(body) : undefined });
+  const d = await r.json().catch(() => ({})); if (r.status === 404 && (!d.error || d.error === 'Not found')) throw new Error('Shared links need the Worker’s update: paste the current worker.js into Cloudflare.');
+  if (!r.ok) throw new Error(d.error || `Shared links didn’t answer (${r.status}).`); return d;
+}
+const linkOf = id => `${LAB_W}/d/${id}`;
+async function copyText(t) { try { await navigator.clipboard.writeText(t); return true; } catch (e) { prompt('Copy this link:', t); return false; } }
+ACTS.shareDoc = async arg => { const [kind, x] = String(arg).split(':'), { html, title } = docHTML(kind, x);
+  toast('Making the link…', 6000);
+  try { const d = await docsAPI({ title, kind, html }); if (await copyText(linkOf(d.doc.id))) toast('Link copied. Paste it into your email: it opens in any browser, no sign-in. It shows the plan as it is today.', 7000); if (VIEW === 'docs') show('docs', false); }
+  catch (e) { toast(e.message, 8000); } };
+ACTS.copyDocLink = id => copyText(linkOf(id)).then(ok => ok && toast('Link copied.'));
+ACTS.removeDocLink = async id => { if (!confirm('Remove this link? Anyone who has it will see “This link isn’t available”.')) return;
+  try { await docsAPI({ action: 'remove', id }); toast('Link removed.'); show('docs', false); } catch (e) { toast(e.message, 7000); } };
+/* the same three choices wherever a document is offered */
+const canShare = () => document.documentElement.dataset.level === 'edit';
+const docBtns = (kind, arg) => (kind === 'proposal'
+  ? `<button class="btn sm primary" type="button" data-act="proposalZip" data-arg="${esc(arg)}" title="A ZIP with three PDFs: table, calendar, due dates">PDFs (ZIP)</button><button class="btn sm" type="button" data-act="proposal" data-arg="${esc(arg)}" title="One HTML file with the three views">HTML</button>`
+  : `<button class="btn sm primary" type="button" data-act="roomPdf" data-arg="${esc(arg)}">PDF</button><button class="btn sm" type="button" data-act="printRoom" data-arg="${esc(arg)}">HTML</button>`)
+  + (canShare() ? `<button class="btn sm" type="button" data-act="shareDoc" data-arg="${esc(kind)}:${esc(arg)}" title="Copies a link that opens in any browser: easy to email">Copy link</button>` : '');
+
+/* ---------- documents (2026-11-23): every page to share or print, for everyone, in one place ---------- */
 VIEWS.docs = () => {
   const s = sem(); if (!s) return head('Documents', 'Documents to share', '') + needSem();
   const off = offered(s), pl = placedLabs(s).filter(p => p.cls && !p.outside), langs = [...new Set(off.map(c => c.code))], n4201 = courses().filter(inNesbitt4201), A = roomsOf().assign;
   const doc = (title, what, btn, note) => `<li class="doc"><div><b>${title}</b><span class="small muted">${what}</span>${note ? `<span class="small warn-t">${note}</span>` : ''}</div>${btn}</li>`;
-  const dl = (act, arg, label = 'Download') => `<button class="btn sm" type="button" data-act="${act}"${arg ? ` data-arg="${esc(arg)}"` : ''}>${label}</button>`;
+  const dl = (kind, arg) => `<span class="row" style="gap:6px">${docBtns(kind, arg)}</span>`;
   const labNote = !off.length ? 'No lab classes chosen yet (Lab calendar).' : !pl.length ? 'No due dates placed yet (Lab calendar).' : '';
   const roomNote = !n4201.length ? 'No Nesbitt 4201 classes yet (Language courses).' : n4201.some(c => !A[c.CRN]) ? `${n4201.filter(c => !A[c.CRN]).length} classes still need a room (Room scheduling).` : '';
   return head(semLabel(s), 'Documents', 'Pages to share with instructors or print. Each is one HTML file that opens in any browser and is made fresh from the plan when you download it.')
-    + `<section class="card"><h2>Lab due dates</h2><p class="lede">For instructors and the department. Each file has three views: <b>Table</b> (weeks by class), <b>Calendar</b> (month by month) and <b>Due dates</b> (a list per class).</p><ul class="docs">`
+    + `<section class="card"><h2>Lab due dates</h2><p class="lede">For instructors and the department. Three views: <b>Table</b> (weeks by class), <b>Calendar</b> (month by month) and <b>Due dates</b> (a list per class). <b>PDFs</b> gives a ZIP with one PDF per view; <b>HTML</b> is one file with all three; <b>Copy link</b> makes a link to email.</p><ul class="docs">`
     + doc('Lab due date proposal: all languages', `${off.length} classes · ${pl.length} due dates`, dl('proposal', 'all'), labNote)
     + langs.map(code => doc(`Lab due date proposal: ${esc(LAB_LANGS.find(l => l[0] === code)[1])} only`, esc(off.filter(c => c.code === code).map(c => c.name).join(', ')), dl('proposal', code), '')).join('')
-    + `</ul></section><section class="card"><h2>Rooms</h2><p class="lede">The weekly schedule of each Nesbitt room, with final exams, to print and post by the door.</p><ul class="docs">`
-    + ROOMS.map(([r, l]) => doc(`Room ${esc(r)} weekly schedule`, esc(l), dl('printRoom', r), roomNote)).join('')
-    + doc('Both rooms in one file', '4201A and 4207, one room per page when printed', dl('printRoom', 'both'), roomNote)
-    + `</ul></section>`;
+    + `</ul></section><section class="card"><h2>Rooms</h2><p class="lede">The weekly schedule of each Nesbitt room, with final exams, to print and post by the door. <b>PDF</b> to print, <b>HTML</b> to open in a browser, <b>Copy link</b> to email.</p><ul class="docs">`
+    + ROOMS.map(([r, l]) => doc(`Room ${esc(r)} weekly schedule`, esc(l), dl('room', r), roomNote)).join('')
+    + doc('Both rooms in one file', '4201A and 4207, one room per page when printed', dl('room', 'both'), roomNote)
+    + `</ul></section>`
+    + (canShare() ? `<section class="card" aria-labelledby="sl-h"><h2 id="sl-h">Shared links</h2><p class="lede">Links you've made with <b>Copy link</b>. Each one shows the document as it was when you made it, opens in any browser without signing in, and isn't listed anywhere. Remove a link to end it.</p><div id="sl-list"><p class="loading">Loading the links…</p></div></section>` : '');
+};
+
+AFTER.docs = async () => {
+  const box = $('sl-list'); if (!box) return;
+  try { const l = (await docsAPI()).docs || [];
+    box.innerHTML = l.length ? `<ul class="docs">${l.map(d => `<li class="doc"><div><b>${esc(d.title)}</b><span class="small muted">Made ${esc(whenFull(d.created))}${d.by ? ' by ' + esc(d.by) : ''} · <span class="mono">${esc(linkOf(d.id))}</span></span></div><span class="row" style="gap:6px"><button class="btn sm" type="button" data-act="copyDocLink" data-arg="${esc(d.id)}">Copy link</button><a class="btn sm" href="${esc(linkOf(d.id))}" target="_blank" rel="noopener">Open</a><button class="btn sm danger" type="button" data-act="removeDocLink" data-arg="${esc(d.id)}">Remove</button></span></li>`).join('')}</ul>` : '<p class="empty">No shared links yet.</p>';
+  } catch (e) { box.innerHTML = `<p class="alert">${esc(e.message)}</p>`; }
 };
 
 /* ---------- outputs for D2L ---------- */
