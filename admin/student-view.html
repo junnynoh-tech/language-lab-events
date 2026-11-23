@@ -169,7 +169,7 @@ pre.code { white-space: pre-wrap; overflow-wrap: anywhere; background: var(--chi
     <div class="rail-foot">
       <div class="conn" id="conn"><span class="dot" aria-hidden="true"></span><span>Viewing only</span></div>
       <button class="btn sm" type="button" id="modeBtn">Dark mode</button>
-      <a class="btn sm" href="console.html#settings" data-editor-only>Connect (Events › Settings)</a>
+      <a class="btn sm" href="console.html#settings" data-editor-only id="connLink">Connect (Events › Settings)</a>
     </div>
   </header>
   <main id="main" tabindex="-1"><p class="loading">Loading the courses…</p></main>
@@ -192,7 +192,7 @@ function toast(m, ms = 3600) { const t = $('toast'); t.textContent = m; t.hidden
 function setMode(m) { document.documentElement.dataset.mode = m; $('modeBtn').textContent = m === 'dark' ? 'Light mode' : 'Dark mode'; try { localStorage.setItem('labConsoleMode', m); } catch (e) {} }
 (() => { let m = null; try { m = localStorage.getItem('labConsoleMode'); } catch (e) {} setMode(m || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')); })();
 $('modeBtn').onclick = () => setMode(document.documentElement.dataset.mode === 'dark' ? 'light' : 'dark');
-function connUI() { $('conn').innerHTML = token ? '<span class="dot on" aria-hidden="true"></span><span>Connected: you can save</span>' : '<span class="dot" aria-hidden="true"></span><span>Viewing only</span>'; }
+function connUI() { $('conn').innerHTML = token === window.LAB_GH_KEY ? '<span class="dot on" aria-hidden="true"></span><span>Saving through the Lab</span>' : token ? '<span class="dot on" aria-hidden="true"></span><span>Connected: you can save</span>' : '<span class="dot" aria-hidden="true"></span><span>Viewing only</span>'; }
 
 /* ---------- reading: the site's own copy (same origin), fresh from GitHub when it answers ---------- */
 async function getJSON(path) {
@@ -201,6 +201,8 @@ async function getJSON(path) {
   return null;
 }
 async function load() {
+  if (window.labGH && await window.labGH.can(REPO)) token = window.LAB_GH_KEY;   // an Editor saves through the Lab's Worker (no GitHub key needed)
+  if (token === window.LAB_GH_KEY && $('connLink')) $('connLink').style.display = 'none';
   try { const r = await fetch(`${API}/commits/${BRANCH}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} }); if (r.ok) S.head = (await r.json()).sha; } catch (e) {}
   const [reg, types, themes, man, dd, forms] = await Promise.all(['labs/registry.json', 'labs/types.json', 'labs/themes.json', 'instructions/manifest.json', 'labs/shared/lab-due-dates.json', 'labs/forms.json'].map(getJSON));
   if (!reg) { $('main').innerHTML = '<div class="empty" role="alert"><b>The course list could not be read.</b> Reload in a minute.</div>'; return; }

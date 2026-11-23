@@ -128,6 +128,36 @@ html.lab-gated body > :not(#labGate) { visibility: hidden; }`;
   // every call to the Worker sends both: a person locked to their email needs it with the passcode (Settings › People)
   // (the email header only when there is one: a Worker without the email lock would refuse the request otherwise)
   window.labHeaders = () => ({ 'X-Lab-Pass': get(K.pass), ...(get(K.email) ? { 'X-Lab-Email': get(K.email) } : {}) });
+  /* GitHub through the Lab (2026-11-23, Daniel: "rewire the github so it goes through cloudflare"). An Editor's saves
+     and reads of the two Lab repositories go to the Worker's /gh (its own GitHub key; signed with the person's name)
+     whenever the Worker can reach them, so nobody needs a GitHub key in the browser. The pages keep their GitHub calls
+     as they were and use window.LAB_GH_KEY as their key; this rewrites those calls to the Worker. A page with its own
+     GitHub key and a Worker that can't reach a repository yet keeps using the key, as before. */
+  const W_BASE = WORKER.replace('/plan?meta=1', '');
+  window.LAB_GH_KEY = 'lab-console-through-worker';
+  const nativeFetch = window.fetch.bind(window);
+  window.fetch = (input, init = {}) => {
+    const url = typeof input === 'string' ? input : (input && input.url) || '';
+    const m = url.match(/^https:\/\/api\.github\.com\/repos\/junnynoh-tech\/(language-lab-events|lab-event-requests)([/?].*)?$/);
+    if (m) {
+      const h = new Headers(init.headers || {});
+      if (h.get('Authorization') === 'Bearer ' + window.LAB_GH_KEY) {
+        h.delete('Authorization'); Object.entries(window.labHeaders()).forEach(([k, v]) => h.set(k, v));
+        return nativeFetch(`${W_BASE}/gh/${m[1]}${m[2] || ''}`, { ...init, headers: h });
+      }
+    }
+    return nativeFetch(input, init);
+  };
+  let ghStatusP = null;
+  window.labGH = {
+    status() {   // { repos: { name: { read, write } }, actions, expires } or null (not an Editor, or the Worker isn't updated)
+      if (!ghStatusP) ghStatusP = (get(K.role) === 'edit' && get(K.pass))
+        ? nativeFetch(`${W_BASE}/gh-status`, { cache: 'no-store', headers: window.labHeaders() }).then(r => r.ok ? r.json() : null).catch(() => null)
+        : Promise.resolve(null);
+      return ghStatusP;
+    },
+    async can(repo) { const s = await this.status(); return !!(s && s.repos && s.repos[repo] && s.repos[repo].write); }
+  };
   // before anything shows: hide the page until signed in, and send faculty straight to their page
   if (!OPTIONAL && (!state.pass || (state.role === 'faculty' && !FACULTY_PAGE) || (SETTINGS_PAGE && state.role !== 'edit'))) document.documentElement.classList.add('lab-gated');
   if (OPTIONAL) document.documentElement.classList.remove('lab-gated');

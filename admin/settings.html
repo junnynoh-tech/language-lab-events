@@ -224,8 +224,9 @@ table.t select { min-height: 36px; border: 1px solid var(--line); border-radius:
     </section>
 
     <section class="card" aria-labelledby="h-gh">
-      <h2 id="h-gh" class="h3">Saving events and lab instructions</h2>
-      <p style="margin:0">Those save straight to GitHub with your own GitHub key, set once on this computer in <a href="console.html#settings">Events › Settings</a>. Nobody else needs one.</p>
+      <h2 id="h-gh" class="h3">The Lab’s GitHub key</h2>
+      <p style="margin:0 0 10px">Saving events, lab instructions and the people list goes through the Lab’s Worker, which uses one GitHub key kept in Cloudflare (<code>GITHUB_TOKEN</code>). Nobody needs a GitHub key in their browser.</p>
+      <div id="ghStat" role="status"><p class="loading">Checking the key…</p></div>
     </section>
   </main>
 </div>
@@ -309,6 +310,22 @@ $('addForm').onsubmit = async e => {
   $('addBtn').disabled = false;
 };
 load();
+/* the Worker's GitHub key: can it reach both repositories, and when does it expire? */
+(async () => {
+  const box = $('ghStat'), s = window.labGH ? await window.labGH.status() : null;
+  if (!s || !s.repos) { box.innerHTML = '<p class="alert">The Worker can’t report on its GitHub key yet. Paste the current <code>labs/event-requests/worker.js</code> into the Worker in Cloudflare (Edit code, then Deploy) and reload.</p>'; return; }
+  const ok = b => b ? '<span class="st-on">✓ Yes</span>' : '<span class="st-off">✗ No</span>';
+  const ev = s.repos['language-lab-events'] || {}, rq = s.repos['lab-event-requests'] || {};
+  let exp = '';
+  if (s.expires) { const d = new Date(s.expires.replace(' UTC', 'Z').replace(' ', 'T')), days = Math.round((d - Date.now()) / 864e5);
+    exp = `<p class="${days < 30 ? 'alert' : 'note'}" style="margin:10px 0 0"><b>The key expires ${esc(d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }))}</b> (${days < 0 ? 'already expired' : days === 0 ? 'today' : `in ${days} day${days === 1 ? '' : 's'}`}). ${days < 30 ? 'Renew it now: ' : 'Before then: '}GitHub › Settings › Developer settings › Fine-grained tokens › this key › <b>Regenerate</b>, then paste the new key into Cloudflare (the Worker › Settings › Variables and Secrets › <code>GITHUB_TOKEN</code>).</p>`; }
+  else exp = '<p class="note" style="margin:10px 0 0">GitHub didn’t say when this key expires (a key without an end date, or a classic key).</p>';
+  const fix = !ev.write || !s.actions ? `<p class="alert" style="margin:10px 0 0">Until this is fixed, saving events and lab instructions still needs a GitHub key in your browser (Events › Settings). To fix it: GitHub › Settings › Developer settings › Fine-grained tokens › the Worker’s key › <b>Edit</b> › Repository access: add <b>language-lab-events</b> › Permissions: <b>Contents: Read and write</b>, <b>Actions: Read</b> › Update. No need to paste it again.</p>` : '';
+  box.innerHTML = `<div class="tw" tabindex="0" role="region" aria-label="What the key can reach"><table class="t"><caption class="sr">What the Lab’s GitHub key can reach</caption><thead><tr><th scope="col">For</th><th scope="col">Can save</th></tr></thead><tbody>`
+    + `<tr><th scope="row">Events and lab instructions (language-lab-events)</th><td>${ok(ev.write)}</td></tr>`
+    + `<tr><th scope="row">Requests, people and the shared plan (lab-event-requests)</th><td>${ok(rq.write)}</td></tr>`
+    + `<tr><th scope="row">Following page builds after a save</th><td>${ok(s.actions)}</td></tr></tbody></table></div>` + fix + exp;
+})();
 </script>
 </body>
 </html>

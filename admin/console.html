@@ -267,6 +267,7 @@ const bufB64 = buf => { let s = ''; const b = new Uint8Array(buf); for (let i = 
 const dump = o => JSON.stringify(o, null, 2) + '\n';
 
 async function load() {
+  if (window.labGH && await window.labGH.can(REPO)) token = window.LAB_GH_KEY;   // an Editor saves through the Lab's Worker (no GitHub key needed)
   $('main').innerHTML = '<p class="loading">Loading the events…</p>';
   try {
     const c = await gh(`/commits/${BRANCH}`); S.head = c.sha;
@@ -398,7 +399,7 @@ let show = function (v, focus = true) {
 function header(eyebrow, title, lede, actions = '') {
   return `<div class="head"><div><p class="eyebrow">${esc(eyebrow)}</p><h1 tabindex="-1">${esc(title)}</h1>${lede ? `<p class="lede">${esc(lede)}</p>` : ''}</div><div class="row">${actions}</div></div>`;
 }
-function connUI() { $('conn').innerHTML = gh.bad ? '<span class="dot" aria-hidden="true"></span><span>Key not accepted: Settings</span>' : token ? '<span class="dot on" aria-hidden="true"></span><span>Connected: you can save</span>' : '<span class="dot" aria-hidden="true"></span><span>Viewing only</span>'; }
+function connUI() { $('conn').innerHTML = gh.bad ? '<span class="dot" aria-hidden="true"></span><span>Key not accepted: Settings</span>' : token === window.LAB_GH_KEY ? '<span class="dot on" aria-hidden="true"></span><span>Saving through the Lab</span>' : token ? '<span class="dot on" aria-hidden="true"></span><span>Connected: you can save</span>' : '<span class="dot" aria-hidden="true"></span><span>Viewing only</span>'; }
 
 /* ---------- views ---------- */
 function flyerURL(name) { const f = item('flyers', name); return f?.image && S.tree['current/' + clean(f.image)] ? raw('current/' + clean(f.image)) : ''; }
@@ -452,6 +453,8 @@ function vLibrary(kind) {
       : `<p class="empty">Nothing here yet. Press New ${esc(K.one)}.</p>`);
 }
 function vSettings() {
+  if (token === window.LAB_GH_KEY) return header('Setup', 'Settings', 'Saving goes through the Lab: your Lab passcode is all you need, and each save is signed with your name. No GitHub key on this computer.')
+    + `<p class="note">People, passcodes and the Lab’s GitHub key: <a href="settings.html">Lab console › Settings</a>.</p>`;
   if (document.documentElement.dataset.level === 'view') return header('Setup', 'Settings', 'You’re signed in as a <b>Viewer</b>: you can look through everything here. Saving events and reading organizations’ requests is for the Lab coordinator, so there’s nothing to set up.');
   return header('Setup', 'Settings', 'Looking around needs nothing. To save from this console, connect a GitHub key once on this computer.')
     + `<ol class="howto"><li><span>Open <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub → new fine-grained token ↗</a>. Name it “Lab console”.</span></li>
@@ -463,6 +466,7 @@ function vSettings() {
       <p class="lede">Helpers without GitHub can keep using the <a href="${CMS}/file/events" target="_blank" rel="noopener">website editor ↗</a>; it edits the same files.</p>`;
 }
 function wireSettings() {
+  if (!$("tok")) return;   // saving through the Lab: no key form on this page
   $('tokSave').onclick = async () => {
     const v = $('tok').value.trim(); if (!v || v.startsWith('•')) { $('tokMsg').textContent = 'Paste the key first.'; return; }
     const old = token; token = v;
