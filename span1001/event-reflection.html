@@ -135,7 +135,7 @@ function clearPhoto(){ img.removeAttribute('src'); box.classList.remove('on'); d
 async function usePhoto(f){
   if(!f) return;
   if(/\.(heic|heif)$/i.test(f.name) || /heic|heif/i.test(f.type)){ st.textContent='Converting the iPhone photo…';
-    try{ if(!window.heic2any) await new Promise((res,rej)=>{ const s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js'; s.onload=res; s.onerror=rej; document.head.appendChild(s); });
+    try{ if(!window.heic2any) await new Promise((res,rej)=>{ const s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js'; s.integrity='sha384-OTofQ0MEeiSgh62havBcemCIK0gqj809wX6UA0uPISNMRnR6NZyCdGzX3SbLrgwL'; s.crossOrigin='anonymous'; s.onload=res; s.onerror=rej; document.head.appendChild(s); });
       f = await heic2any({blob:f, toType:'image/jpeg', quality:0.85}); }
     catch(e){ st.textContent='This photo could not be opened. Take a screenshot of it and use that instead.'; return; } }
   const r=new FileReader(); r.onload=()=>{ img.onload=()=>{ box.classList.add('on'); drop.hidden=true; st.textContent='Photo added. It stays on this device.'; };

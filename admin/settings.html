@@ -238,7 +238,6 @@ const LINKS = { view: 'https://junnynoh-tech.github.io/language-lab-events/admin
 const LEVEL = { edit: 'Editor', view: 'Viewer', faculty: 'Faculty' };
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const pass = (() => { try { return localStorage.getItem('labConsolePass') || ''; } catch (e) { return ''; } })();
 function toast(m, ms = 4000) { const t = $('toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, ms); }
 function setMode(m) { document.documentElement.dataset.mode = m; $('modeBtn').textContent = m === 'dark' ? 'Light mode' : 'Dark mode'; try { localStorage.setItem('labConsoleMode', m); } catch (e) {} }
 (() => { let m = null; try { m = localStorage.getItem('labConsoleMode'); } catch (e) {} setMode(m || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')); })();

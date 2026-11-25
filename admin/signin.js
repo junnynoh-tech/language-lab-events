@@ -21,7 +21,7 @@
   const BASE = ME && ME.src ? new URL('.', ME.src).href : '';
   const AREAS = [['console.html', 'Events', 'events'], ['semester.html', 'Semester plan', 'semester'], ['student-view.html', 'Student view', 'student'], ['faculty.html', 'Faculty view', 'faculty'], ['tutorials/index.html', 'Tutorials', 'tutorials']];
   const here = () => { const u = location.pathname; return (AREAS.find(a => u.endsWith('/' + a[0]) || (a[0] === 'tutorials/index.html' && /\/tutorials\/(index\.html)?$/.test(u))) || [])[0] || (u.endsWith('/settings.html') ? 'settings.html' : ''); };
-  const K = { pass: 'labConsolePass', role: 'labConsoleRole', name: 'labConsoleMe', token: 'labConsoleToken', email: 'labConsoleEmail', personal: 'labConsolePersonal', username: 'labConsoleUser' };
+  const K = { pass: 'labConsolePass', role: 'labConsoleRole', name: 'labConsoleMe', token: 'labConsoleToken', email: 'labConsoleEmail', personal: 'labConsolePersonal', username: 'labConsoleUser', session: 'labConsoleSession' };
   const get = k => { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } };
   const set = (k, v) => { try { v ? localStorage.setItem(k, v) : localStorage.removeItem(k); } catch (e) {} };
   const ICON = {   // drawn, so they show on every computer (an emoji can turn into an empty box)
@@ -124,10 +124,12 @@ html.lab-gated body > :not(#labGate) { visibility: hidden; }`;
   document.head.appendChild(css);
 
   // the name comes from the Worker: a person's own passcode is who they are (Settings › People). Nobody types a name.
-  const state = { pass: get(K.pass), role: get(K.role), name: get(K.name), email: get(K.email) };
+  /* Security (2026-11-25, labs/SECURITY.md): the browser keeps a signed 14-day session from the Worker, never the passcode.
+     state.pass is "signed in" (the session, or an old stored passcode until it's traded in on the next visit). */
+  const state = { pass: get(K.session) || get(K.pass), role: get(K.role), name: get(K.name), email: get(K.email) };
   // every call to the Worker sends both: a person locked to their email needs it with the passcode (Settings › People)
   // (the email header only when there is one: a Worker without the email lock would refuse the request otherwise)
-  window.labHeaders = () => ({ 'X-Lab-Pass': get(K.pass), ...(get(K.email) ? { 'X-Lab-Email': get(K.email) } : {}) });
+  window.labHeaders = () => get(K.session) ? { 'X-Lab-Session': get(K.session) } : { 'X-Lab-Pass': get(K.pass), ...(get(K.email) ? { 'X-Lab-Email': get(K.email) } : {}) };
   /* GitHub through the Lab (2026-11-23, Daniel: "rewire the github so it goes through cloudflare"). An Editor's saves
      and reads of the two Lab repositories go to the Worker's /gh (its own GitHub key; signed with the person's name)
      whenever the Worker can reach them, so nobody needs a GitHub key in the browser. The pages keep their GitHub calls
@@ -151,7 +153,7 @@ html.lab-gated body > :not(#labGate) { visibility: hidden; }`;
   let ghStatusP = null;
   window.labGH = {
     status() {   // { repos: { name: { read, write } }, actions, expires } or null (not an Editor, or the Worker isn't updated)
-      if (!ghStatusP) ghStatusP = (get(K.role) === 'edit' && get(K.pass))
+      if (!ghStatusP) ghStatusP = (get(K.role) === 'edit' && state.pass)
         ? nativeFetch(`${W_BASE}/gh-status`, { cache: 'no-store', headers: window.labHeaders() }).then(r => r.ok ? r.json() : null).catch(() => null)
         : Promise.resolve(null);
       return ghStatusP;
@@ -164,11 +166,29 @@ html.lab-gated body > :not(#labGate) { visibility: hidden; }`;
   if (!OPTIONAL && state.pass && state.role === 'faculty' && !FACULTY_PAGE) location.replace(BASE + 'faculty.html');
   const apply = () => { document.documentElement.dataset.level = state.pass ? (state.role || 'edit') : 'none'; window.LAB_AUTH = { ...state }; };
 
-  async function check(pass, email = state.email) {   // → 'edit' | 'view'; throws with a message people can act on
+  /* trade a passcode (and email or username) for a session; a Worker without sessions yet: keep the old way */
+  async function signIn(pass, email) {
     let r;
-    try { r = await fetch(WORKER, { cache: 'no-store', headers: { 'X-Lab-Pass': pass, ...(email ? { 'X-Lab-Email': email } : {}) } }); }
+    try { r = await nativeFetch(W_BASE + '/session', { method: 'POST', cache: 'no-store', headers: { 'X-Lab-Pass': pass, ...(email ? { 'X-Lab-Email': email } : {}) } }); }
+    catch (e) { return { legacy: true, ...(await check({ 'X-Lab-Pass': pass, ...(email ? { 'X-Lab-Email': email } : {}) })) }; }
+    if (r.status === 404) return { legacy: true, ...(await check({ 'X-Lab-Pass': pass, ...(email ? { 'X-Lab-Email': email } : {}) })) };
+    const d = await r.json().catch(() => ({}));
+    if (r.status === 429) throw new Error(d.error || 'Too many wrong passcodes. Wait 15 minutes, then try again.');
+    if (r.status === 401) throw new Error('That email or username and passcode didn’t work together. Check both and try again.');
+    if (r.ok && !d.session) return { legacy: true, ...(await check({ 'X-Lab-Pass': pass, ...(email ? { 'X-Lab-Email': email } : {}) })) };   // a Worker without sessions
+    if (!r.ok) throw new Error(`Sign-in didn’t answer (${r.status}). Try again in a minute.`);
+    return { session: d.session, role: lvl(d.role), name: String(d.name || '').slice(0, 80), personal: !!d.personal, username: String(d.username || '') };
+  }
+  function keep(x, email) {   // what this browser remembers after signing in (never the passcode once the Worker gives sessions)
+    set(K.session, x.session || ''); set(K.pass, x.legacy ? x.pass : ''); set(K.personal, x.personal ? '1' : ''); set(K.username, x.username);
+    set(K.role, x.role); set(K.name, x.name); set(K.email, email);
+  }
+  async function check(headers = window.labHeaders()) {   // → { role, name, … }; throws with a message people can act on
+    let r; const email = headers['X-Lab-Email'];
+    try { r = await nativeFetch(WORKER, { cache: 'no-store', headers }); }
     catch (e) { throw new Error(email ? 'Signing in with an email isn’t switched on yet (the Lab’s Worker needs its update). Leave the email empty if you have a shared passcode, or tell Daniel.' : 'The sign-in check couldn’t be reached. Check the internet connection and try again.'); }
     if (r.status === 401) throw new Error('That email or username and passcode didn’t work together. Check both and try again.');
+    if (r.status === 429) throw new Error('Too many wrong passcodes. Wait 15 minutes, then try again.');
     if (r.status === 404 || r.status === 503) throw new Error('Sign-in isn’t switched on yet. Tell Daniel.');
     if (!r.ok) throw new Error(`The sign-in check didn’t answer (${r.status}). Try again in a minute.`);
     const d = await r.json().catch(() => ({}));
@@ -237,9 +257,7 @@ html.lab-gated body > :not(#labGate) { visibility: hidden; }`;
       if (!pass) { msg.textContent = 'Type the passcode.'; g.querySelector('#labGatePass').focus(); return; }
       const btn = f.querySelector('button'); btn.disabled = true; btn.textContent = 'Checking…'; msg.textContent = '';
       try {
-        const { role, name, personal, username } = await check(pass, email);
-        set(K.personal, personal ? '1' : ''); set(K.username, username);
-        set(K.pass, pass); set(K.role, role); set(K.name, name); set(K.email, email);
+        const x = await signIn(pass, email); keep({ ...x, pass }, email);
         location.reload();   // each page starts from the signed-in state (the Semester plan opens the shared plan)
       } catch (err) { msg.textContent = err.message; btn.disabled = false; btn.textContent = 'Sign in'; }
     };
@@ -247,7 +265,7 @@ html.lab-gated body > :not(#labGate) { visibility: hidden; }`;
 
   function signOut() {
     if (!confirm('Sign out of the Lab console on this computer?\n\nThis computer forgets your email and passcode (and the GitHub key, if one was saved). Sign in again with the passcode any time.')) return;
-    [K.pass, K.role, K.token, K.email, K.name, K.personal, K.username].forEach(k => set(k, ''));
+    [K.session, K.pass, K.role, K.token, K.email, K.name, K.personal, K.username].forEach(k => set(k, ''));
     location.reload();
   }
 
@@ -258,17 +276,20 @@ html.lab-gated body > :not(#labGate) { visibility: hidden; }`;
     if (FACULTY_PAGE && state.role !== 'faculty') document.querySelectorAll('[data-coord-only]').forEach(e => e.hidden = false);
     return false;
   };
-  const start = () => {
+  const start = async () => {
     apply();
     if (!state.pass) return OPTIONAL ? undefined : gate();
+    if (get(K.pass) && !get(K.session)) {   // a passcode kept by an older version: trade it for a session and forget it
+      try { const x = await signIn(get(K.pass), get(K.email)); if (!x.legacy) { keep(x, get(K.email)); state.pass = x.session; } } catch (e) {}
+    }
     if (route()) return;
     document.documentElement.classList.remove('lab-gated');
     badge();
-    check(state.pass).then(({ role, name, personal, username }) => {   // the level or name can change (Settings › People): keep them current
+    check().then(({ role, name, personal, username }) => {   // the level or name can change (Settings › People): keep them current
       if (name !== state.name) { state.name = name; set(K.name, name); apply(); badge(); }
       if (username !== get(K.username) || (personal ? '1' : '') !== get(K.personal)) { set(K.username, username); set(K.personal, personal ? '1' : ''); badge(); }
       if (role !== state.role) { state.role = role; set(K.role, role); apply(); if (route()) return; badge(); document.dispatchEvent(new CustomEvent('labauth', { detail: { ...state } })); }
-    }).catch(err => { if (/didn’t work/.test(err.message) && !OPTIONAL) { set(K.pass, ''); set(K.role, ''); state.pass = ''; apply(); gate('Your passcode changed. Sign in with the new one.'); } });
+    }).catch(err => { if (/didn’t work/.test(err.message) && !OPTIONAL) { [K.session, K.pass, K.role].forEach(k => set(k, '')); state.pass = ''; apply(); gate('Your sign-in ended (two weeks passed, or your passcode or level changed). Sign in again.'); } });
   };
   apply();
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();

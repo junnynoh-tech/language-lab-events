@@ -725,10 +725,10 @@ const G = { pass: '', sha: '', err: '', checked: 0, role: (() => { try { return 
    shared plan (only the Lab coordinator's editing passcode saves). A Worker from before the tiers sends no role = edit. */
 const canSave = () => G.role !== 'view';
 const VIEW_MSG = 'View only: your passcode opens the shared plan but can\'t save it. Changes you try stay in this browser. Only the Lab coordinator saves the shared plan.';
-try { G.pass = localStorage.getItem(SH.passKey) || ''; } catch (e) {}
+try { G.pass = localStorage.getItem('labConsoleSession') || localStorage.getItem(SH.passKey) || ''; } catch (e) {}   // signed in: the session (or an old passcode until it's traded in)
 const shared = () => !!G.pass;
 async function wk(method = 'GET', body, q = '') {
-  let r; try { r = await fetch(SH.worker + '/plan' + q, { method, cache: 'no-store', headers: { 'X-Lab-Pass': G.pass, ...((e => e ? { 'X-Lab-Email': e } : {})((() => { try { return localStorage.getItem('labConsoleEmail') || ''; } catch (e) { return ''; } })())), ...(body ? { 'Content-Type': 'application/json' } : {}) }, body: body ? JSON.stringify(body) : undefined }); }
+  let r; try { r = await fetch(SH.worker + '/plan' + q, { method, cache: 'no-store', headers: { ...(window.labHeaders ? window.labHeaders() : { 'X-Lab-Pass': G.pass }), ...(body ? { 'Content-Type': 'application/json' } : {}) }, body: body ? JSON.stringify(body) : undefined }); }
   catch (e) { throw new Error('The shared plan couldn\'t be reached (offline?). Your work stays in this browser; Save again later.'); }
   const d = await r.json().catch(() => ({}));
   if (r.ok && method === 'GET') G.role = d.role || 'edit';
@@ -1940,7 +1940,7 @@ ACTS.importExcel = () => {
   const inp = document.createElement('input'); inp.type = 'file'; inp.accept = '.xlsx,.xls'; inp.className = 'sr'; inp.setAttribute('aria-label', 'Choose the Automatic Calendar workbook'); document.body.append(inp);
   inp.onchange = async () => { const f = inp.files[0]; inp.remove(); if (!f) return;
     try {
-      if (!window.XLSX) await new Promise((res, rej) => { const sc = document.createElement('script'); sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'; sc.onload = res; sc.onerror = () => rej(new Error('The Excel reader did not load (offline?).')); document.head.append(sc); });
+      if (!window.XLSX) await new Promise((res, rej) => { const sc = document.createElement('script'); sc.src = 'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js'; sc.integrity = 'sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT'; sc.crossOrigin = 'anonymous';   /* 0.20.3: fixes CVE-2023-30533 and CVE-2024-22363 in 0.18.5 (labs/SECURITY.md) */ sc.onload = res; sc.onerror = () => rej(new Error('The Excel reader did not load (offline?).')); document.head.append(sc); });
       const wb = XLSX.read(new Uint8Array(await f.arrayBuffer()), { type: 'array', cellDates: true });
       await backupLocal('before importing the Automatic Calendar');
       const r = importAutoCalendar(wb, s); changed();
@@ -2128,10 +2128,10 @@ td.num{text-align:right}section.room+section.room{margin-top:36px}
    the downloads as pdf, html, and shareable link"; the proposal downloads as a ZIP of three PDFs). PDFs are real text
    documents made in this browser with pdfmake (MIT, cdnjs); nothing leaves the browser except a link an Editor makes. */
 const PDFMAKE = 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.12/';
-const loadScript = src => new Promise((ok, no) => { const sc = document.createElement('script'); sc.src = src; sc.onload = ok; sc.onerror = () => no(new Error('The PDF maker didn’t load (offline?). Try again, or download the HTML.')); document.head.append(sc); });
-async function pdfMaker() { if (!window.pdfMake) { await loadScript(PDFMAKE + 'pdfmake.min.js'); await loadScript(PDFMAKE + 'vfs_fonts.min.js'); } return window.pdfMake; }
+const loadScript = (src, sri) => new Promise((ok, no) => { const sc = document.createElement('script'); sc.src = src; if (sri) { sc.integrity = sri; sc.crossOrigin = 'anonymous'; } sc.onload = ok; sc.onerror = () => no(new Error('The PDF maker didn’t load (offline?). Try again, or download the HTML.')); document.head.append(sc); });
+async function pdfMaker() { if (!window.pdfMake) { await loadScript(PDFMAKE + 'pdfmake.min.js', 'sha384-UbICcZf4B6+FB/cmTNLOqZzUc40rHayX14EhEDfAnFhmte7yAAA7s081OeuC8VVT'); await loadScript(PDFMAKE + 'vfs_fonts.min.js', 'sha384-nXUiXap6sIVQQCtbYdJPsTOTJwv3rZjOdv8Ckh+3udRCVp3YLpdgHnjpPHD/LaC0'); } return window.pdfMake; }
 async function pdfBlob(def) { const pm = await pdfMaker(); return new Promise(ok => pm.createPdf(def).getBlob(ok)); }
-async function zipLib() { if (!window.JSZip) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'); return window.JSZip; }
+async function zipLib() { if (!window.JSZip) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js', 'sha384-+mbV2IY1Zk/X1p/nWllGySJSUN8uMs+gUAN10Or95UBH0fpj6GfKgPmgC5EXieXG'); return window.JSZip; }
 function saveBlob(name, blob) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.append(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000); }
 const PC = { ink: '#1F2937', sub: '#5A6472', line: '#DCDDD8', head: '#E8EDF8', accent: '#1A3A6B', holiday: '#F9E3E3', break: '#FBEEDB', finals: '#EEF0F3', out: '#F1F2F4', flag: '#A12A2A' };
 const pdfBase = (title, orientation = 'portrait') => ({ info: { title, author: 'UNG Language Lab' }, pageSize: 'LETTER', pageOrientation: orientation, pageMargins: [32, 36, 32, 40],
@@ -2332,7 +2332,7 @@ ACTS.zipPicked = () => ACTS.zip([...OPICK]);
 ACTS.dlOut = n => { const o = OUTPUTS.find(x => x[0] === n); download(n, o[2](), n.endsWith('.csv') ? 'text/csv' : 'application/json'); };
 ACTS.zip = async only => {
   try {
-    if (!window.JSZip) await new Promise((res, rej) => { const sc = document.createElement('script'); sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'; sc.onload = res; sc.onerror = () => rej(new Error('The ZIP tool did not load (offline?). Download the files one by one.')); document.head.append(sc); });
+    if (!window.JSZip) await new Promise((res, rej) => { const sc = document.createElement('script'); sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'; sc.integrity = 'sha384-+mbV2IY1Zk/X1p/nWllGySJSUN8uMs+gUAN10Or95UBH0fpj6GfKgPmgC5EXieXG'; sc.crossOrigin = 'anonymous'; sc.onload = res; sc.onerror = () => rej(new Error('The ZIP tool did not load (offline?). Download the files one by one.')); document.head.append(sc); });
     const list = Array.isArray(only) && only.length ? OUTPUTS.filter(o => only.includes(o[0])) : OUTPUTS;
     const z = new JSZip(), d = z.folder('current').folder('data'); list.forEach(([n, , make]) => d.file(n, make()));
     const blob = await z.generateAsync({ type: 'blob' }), a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `lab-hub-data-${sem().id}${list.length < OUTPUTS.length ? '-' + list.length + '-files' : ''}.zip`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);

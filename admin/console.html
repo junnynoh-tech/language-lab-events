@@ -267,7 +267,7 @@ const bufB64 = buf => { let s = ''; const b = new Uint8Array(buf); for (let i = 
 const dump = o => JSON.stringify(o, null, 2) + '\n';
 
 async function load() {
-  if (window.labGH && await window.labGH.can(REPO)) token = window.LAB_GH_KEY;   // an Editor saves through the Lab's Worker (no GitHub key needed)
+  if (window.labGH && await window.labGH.can(REPO)) { token = window.LAB_GH_KEY; try { localStorage.removeItem(TOKEN_KEY); } catch (e) {} }   // saves go through the Lab's Worker; an old GitHub key in this browser is deleted (labs/SECURITY.md)
   $('main').innerHTML = '<p class="loading">Loading the events…</p>';
   try {
     const c = await gh(`/commits/${BRANCH}`); S.head = c.sha;
